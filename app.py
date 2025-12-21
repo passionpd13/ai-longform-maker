@@ -115,7 +115,7 @@ def generate_structure(client, full_script):
       
     [Output Format]
     1. **Video Theme/Title**: (Extract or suggest a catchy title based on the whole script)
-    2. **Intro**: (Hook and background, no music) Approve specific channel names, The intro hooks the overall topic
+    2. **Intro**: (Hook and background, no music) Approve specific channel names, The intro hooks the overall topic (안녕하십니까 같은 인사 금지)
     3. **Chapter 1** to **Chapter 8**: (Divide the main content into logical sections. Use detailed bullet points for each chapter.)
     4. **Epilogue**: (Conclusion and Subscribe Like Comments that make you anticipate the next specific content)
 
@@ -1361,5 +1361,6 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: st.error("파일 오류")
+
 
 
