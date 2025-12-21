@@ -189,6 +189,7 @@ def generate_section(client, section_title, full_structure, duration_type="fixed
     5. 영문 병기(괄호)는 하지 마세요. 깔끔하게 한글만.
     6. 쉼표와 접속어 등을 사용하여, 리듬이 있지만 너무 끊기지 않는 흐름을 만들 것
     7. 대본에는 챕터 표시를 하지 않는다.
+    8. "다음 챕터에서는" 같은 표현으로 챕터 넘어갈때 굳이 흐름을 끊지 않는다.
 
     [Output]
     (지금 바로 {section_title}의 원고를 작성 시작하세요)
@@ -1355,3 +1356,4 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: st.error("파일 오류")
+
