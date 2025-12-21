@@ -1024,10 +1024,15 @@ if start_btn:
     elif not script_input:
         st.warning("⚠️ 대본을 입력해주세요.")
     else:
+        # [FIX] 기존 결과 확실히 날리기
+        st.session_state['generated_results'] = [] 
         st.session_state['is_processing'] = True
-        # st.session_state['generated_results'] = []  <-- on_click에서 처리하므로 주석 처리
         
-        init_folders()
+        # [FIX] 기존 이미지 파일들 물리적으로 삭제 (찌꺼기 제거)
+        if os.path.exists(IMAGE_OUTPUT_DIR):
+            shutil.rmtree(IMAGE_OUTPUT_DIR) # 폴더 통째로 삭제
+        init_folders() # 다시 깨끗한 폴더 생성
+        
         client = genai.Client(api_key=api_key)
         
         status_box = st.status("작업 진행 중...", expanded=True)
