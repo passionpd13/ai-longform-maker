@@ -280,6 +280,7 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title):
     2. **색감(Colors):** 채도가 높고 선명한 색상을 사용하여 시인성을 높이십시오. (칙칙하거나 회색조 톤 금지)
     3. **구성(Composition):** 시청자가 상황을 한눈에 이해할 수 있도록 피사체를 화면 중앙에 명확하게 배치하십시오.
     4. **분위기(Mood):** 교육적이고, 중립적이며, 산뜻한 분위기여야 합니다. **(절대 우울하거나, 무섭거나, 기괴한 느낌 금지)**
+    6. 분활화면으로 연출하지 말고 하나의 화면으로 연출한다.
 
     [임무]
     제공된 대본 조각(Script Segment)을 바탕으로, 이미지 생성 AI가 그릴 수 있는 **구체적인 묘사 프롬프트**를 작성하십시오.
@@ -1386,6 +1387,7 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: st.error("파일 오류")
+
 
 
 
