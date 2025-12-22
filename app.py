@@ -37,7 +37,7 @@ AUDIO_OUTPUT_DIR = os.path.join(BASE_PATH, "output_audio")
 VIDEO_OUTPUT_DIR = os.path.join(BASE_PATH, "output_video") 
 
 # 텍스트 모델 설정
-GEMINI_TEXT_MODEL_NAME = "gemini-2.0-flash" 
+GEMINI_TEXT_MODEL_NAME = "gemini-2.5-pro" 
 
 # [기본값] 문서에 명시된 정확한 호스트 주소
 DEFAULT_SUPERTONE_URL = "https://supertoneapi.com"
@@ -604,12 +604,12 @@ with st.sidebar:
     st.markdown("---")
     
     st.subheader("🖼️ 이미지 모델 선택")
-    model_choice = st.radio("사용할 AI 모델:", ("Premium (Gemini 3 Pro)", "Fast (Gemini 2.5 Flash)"), index=0)
+    model_choice = st.radio("사용할 AI 모델:", ("Premium (Gemini 3 Pro)", "Fast (Gemini-2.5-pro)"), index=0)
     
     if "Gemini 3 Pro" in model_choice:
         SELECTED_IMAGE_MODEL = "gemini-3-pro-image-preview" 
     else:
-        SELECTED_IMAGE_MODEL = "gemini-2.0-flash"
+        SELECTED_IMAGE_MODEL = "gemini-2.5-pro"
 
     st.info(f"✅ 선택 모델: `{SELECTED_IMAGE_MODEL}`")
     
@@ -1387,6 +1387,7 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: st.error("파일 오류")
+
 
 
 
