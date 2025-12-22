@@ -900,36 +900,57 @@ if 'title_candidates' not in st.session_state:
 
 col_title_input, col_title_btn = st.columns([4, 1])
 
+# [수정됨] 버튼 로직: 구조 분석이 없어도 제목 입력이 있으면 작동하도록 변경
 with col_title_btn:
     st.write("") 
     st.write("") 
-    if st.button("💡 제목 5개 추천", help="입력한 제목이 있다면 그것과 비슷하게, 없다면 대본 기반으로 추천합니다.", use_container_width=True):
+    if st.button("💡 제목 5개 추천", help="입력한 키워드나 대본을 바탕으로 제목을 추천합니다.", use_container_width=True):
+        # 현재 입력된 제목(주제) 가져오기
+        current_user_title = st.session_state.get('video_title', "").strip()
+        has_structure = st.session_state.get('structured_content')
+
         if not api_key:
             st.error("API Key 필요")
-        elif not st.session_state.get('structured_content'):
-            st.warning("먼저 '구조 분석'을 실행하세요.")
+        # [핵심 수정] 구조 분석도 안 했고, 제목 입력도 없으면 경고
+        elif not has_structure and not current_user_title:
+            st.warning("⚠️ '구조 분석'을 먼저 하거나, 왼쪽에 '주제'를 입력해주세요.")
         else:
             client = genai.Client(api_key=api_key)
             with st.spinner("AI가 최적의 제목을 고민 중입니다..."):
-                user_input_title = st.session_state['video_title'].strip()
-                if user_input_title:
+                
+                # 1. 구조 분석 데이터는 없지만, 사용자가 입력한 주제는 있는 경우
+                if current_user_title and not has_structure:
                     prompt_instruction = f"""
-                    [Target Title]
-                    "{user_input_title}"
+                    [Target Topic]
+                    "{current_user_title}"
                     [Task]
-                    Generate 5 variations of this title suitable for YouTube.
+                    Generate 5 click-bait YouTube video titles based on the Target Topic above.
                     """
+                    context_data = "No script provided. Base it solely on the topic."
+
+                # 2. 구조 분석 데이터가 있는 경우 (입력한 제목이 있으면 그것도 반영)
                 else:
-                    prompt_instruction = f"""
-                    [Task]
-                    Read the provided script structure and generate 5 catchy YouTube video titles in Korean.
-                    """
+                    if current_user_title:
+                        prompt_instruction = f"""
+                        [Target Context]
+                        "{current_user_title}"
+                        [Task]
+                        Generate 5 variations of this title suitable for YouTube, considering the script below.
+                        """
+                    else:
+                        prompt_instruction = f"""
+                        [Task]
+                        Read the provided script structure and generate 5 catchy YouTube video titles in Korean.
+                        """
+                    context_data = st.session_state['structured_content']
 
                 title_prompt = f"""
                 [Role] You are a YouTube viral marketing expert.
                 {prompt_instruction}
+                
                 [Script Context]
-                {st.session_state['structured_content']}
+                {context_data}
+                
                 [Output Format]
                 - Output ONLY the list of 5 titles.
                 - No numbering (1., 2.), just 5 lines of text.
@@ -956,7 +977,7 @@ with col_title_input:
     st.text_input(
         "영상 제목 (직접 입력하거나 우측 버튼으로 추천받으세요)",
         key="video_title", 
-        placeholder="제목을 입력하면 이미지 생성의 기준이 됩니다."
+        placeholder="제목 혹은 만들고 싶은 주제를 입력하세요 (예: 부자들의 습관)"
     )
 
 if st.session_state['title_candidates']:
@@ -1361,6 +1382,7 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: st.error("파일 오류")
+
 
 
 
