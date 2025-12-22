@@ -253,47 +253,51 @@ def make_filename(scene_num, text_chunk):
     filename = f"S{scene_num:03d}_{summary}.png"
     return filename
 
+# ==========================================
+# [수정됨] 함수: 프롬프트 생성 (밝고 명확한 설명조 유도)
+# ==========================================
 def generate_prompt(api_key, index, text_chunk, style_instruction, video_title):
     scene_num = index + 1
     url = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_TEXT_MODEL_NAME}:generateContent?key={api_key}"
     headers = {'Content-Type': 'application/json'}
 
+    # [핵심 변경 사항]
+    # 1. 역할: 아트 디렉터 -> 정보 전달 전문 일러스트레이터
+    # 2. 조명: 그림자/무드 제거 -> 밝고 플랫한 조명(Flat Lighting)
+    # 3. 제약: 다크한 분위기 금지
     full_instruction = f"""
     [역할]
-    당신은 세계적인 수준의 AI 아트 디렉터입니다.
+    당신은 복잡한 상황을 아주 쉽고 직관적인 그림으로 표현하는 '비주얼 커뮤니케이션 전문가'이자 '교육용 일러스트레이터'입니다.
 
-    [전체 영상 테마 / 제목]
+    [전체 영상 주제]
     "{video_title}"
-    (모든 이미지는 이 전체적인 분위기와 테마를 따라야 합니다.)
 
-    [그림 스타일 가이드 - 최우선 준수 사항]
+    [그림 스타일 가이드 - 절대 준수]
     {style_instruction}
     
-    **중요 지침:**
-    1. 사용자가 제공한 위의 [그림 스타일 가이드]를 **문자 그대로 절대적으로 따르십시오.**
-    2. 만약 가이드에 '스틱맨(Stickman)', '2D', '단순함'이 있다면, 절대 실사(Photorealistic)나 3D로 묘사하지 마십시오.
-    3. 만약 가이드에 '실사', '사진', '4K'가 있다면, 그에 맞춰 아주 사실적으로 묘사하십시오.
-    4. 당신의 임무는 사용자가 원하는 스타일을 프롬프트에 정확히 반영하는 것입니다.
+    [필수 연출 지침]
+    1. **조명(Lighting):** 무조건 **'밝고 화사한 조명(High Key Lighting)'**을 사용하십시오. 그림자가 짙거나 어두운 부분은 없어야 합니다.
+    2. **색감(Colors):** 채도가 높고 선명한 색상을 사용하여 시인성을 높이십시오. (칙칙하거나 회색조 톤 금지)
+    3. **구성(Composition):** 시청자가 상황을 한눈에 이해할 수 있도록 피사체를 화면 중앙에 명확하게 배치하십시오.
+    4. **분위기(Mood):** 교육적이고, 중립적이며, 산뜻한 분위기여야 합니다. **(절대 우울하거나, 무섭거나, 기괴한 느낌 금지)**
 
     [임무]
-    제공된 대본 조각(Script Segment)을 바탕으로, 이미지 생성 AI에게 입력할 **아주 구체적이고 상세한 묘사 프롬프트**를 작성하십시오.
-      
-    [길이 및 디테일 제약사항 - 매우 중요]
-    1. **분량 필수:** 반드시 **최소 6문장 이상**으로 길고 풍성하게 작성하십시오. 짧게 요약하지 마십시오.
-    2. **필수 포함 요소:** 분량을 채우기 위해 다음 5가지 요소를 빠짐없이 상상하여 묘사하십시오.
-        - **캐릭터(Character):** 외모, 자세, 구체적인 표정, 의상 디테일 (사용자가 지정한 스타일 반영)
-        - **배경(Background):** 배경에 있는 사물들, 벽의 질감, 바닥 재질, 공간의 깊이감
-        - **조명(Lighting):** 빛의 방향, 빛의 색깔, 그림자의 농도, 빛 갈라짐 효과
-        - **분위기(Atmosphere):** 공기 중의 먼지, 안개, 온도감, 감정적인 무드
-        - **카메라(Camera):** 렌즈 느낌(광각/망원), 카메라 앵글(로우/하이), 초점 영역
-
+    제공된 대본 조각(Script Segment)을 바탕으로, 이미지 생성 AI가 그릴 수 있는 **구체적인 묘사 프롬프트**를 작성하십시오.
+    
+    [작성 요구사항]
+    - **분량:** 최소 5문장 이상으로 상세하게 묘사.
+    - **포함 요소:**
+        - **캐릭터 행동:** 대본의 상황을 연기하는 캐릭터의 구체적인 동작.
+        - **배경:** 상황을 설명하는 소품이나 장소 (배경은 깔끔하게).
+        - **시각적 은유:** 추상적인 내용일 경우, 이를 설명할 수 있는 시각적 아이디어 (예: 돈이 날아가는 모습, 그래프가 하락하는 모습 등).
+    
     [출력 형식]
     - **무조건 한국어(한글)**로만 작성하십시오.
     - 부가적인 설명 없이 **오직 프롬프트 텍스트만** 출력하십시오.
     """
     
     payload = {
-        "contents": [{"parts": [{"text": f"지시사항(Instruction):\n{full_instruction}\n\n대본 내용(Script Segment):\n\"{text_chunk}\"\n\n이미지 프롬프트 결과:"}]}]
+        "contents": [{"parts": [{"text": f"지시사항(Instruction):\n{full_instruction}\n\n대본 내용(Script Segment):\n\"{text_chunk}\"\n\n밝고 명확한 이미지 프롬프트 결과:"}]}]
     }
 
     try:
@@ -306,7 +310,7 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title):
             return (scene_num, prompt)
         elif response.status_code == 429:
             time.sleep(2)
-            return (scene_num, f"장면 묘사: {text_chunk}")
+            return (scene_num, f"밝고 명확한 일러스트: {text_chunk}")
         else:
             return (scene_num, f"Error generating prompt: {response.status_code}")
     except Exception as e:
@@ -1382,6 +1386,7 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: st.error("파일 오류")
+
 
 
 
