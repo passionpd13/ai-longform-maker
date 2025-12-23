@@ -320,28 +320,47 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title):
 
 def generate_image(client, prompt, filename, output_dir, selected_model_name):
     full_path = os.path.join(output_dir, filename)
-    try:
-        final_prompt = prompt
+    
+    # [설정] 재시도 관련 변수
+    max_retries = 20       # 최대 20번까지 재시도 (사실상 성공할 때까지)
+    retry_delay = 2        # 초기 대기 시간 (초)
+    max_delay = 60         # 대기 시간이 이 이상 늘어나지 않도록 제한
+    
+    for attempt in range(1, max_retries + 1):
+        try:
+            final_prompt = prompt
 
-        response = client.models.generate_content(
-            model=selected_model_name,
-            contents=[final_prompt],
-            config=types.GenerateContentConfig(
-                image_config=types.ImageConfig(aspect_ratio="16:9")
+            response = client.models.generate_content(
+                model=selected_model_name,
+                contents=[final_prompt],
+                config=types.GenerateContentConfig(
+                    image_config=types.ImageConfig(aspect_ratio="16:9")
+                )
             )
-        )
-        
-        if response.parts:
-            for part in response.parts:
-                if part.inline_data:
-                    img_data = part.inline_data.data
-                    image = Image.open(BytesIO(img_data))
-                    image.save(full_path)
-                    return full_path
-        return None
-    except Exception as e:
-        print(f"이미지 생성 에러: {e}")
-        return None
+            
+            if response.parts:
+                for part in response.parts:
+                    if part.inline_data:
+                        img_data = part.inline_data.data
+                        image = Image.open(BytesIO(img_data))
+                        image.save(full_path)
+                        return full_path
+            
+            # 응답은 왔으나 이미지 데이터가 없는 경우 (필터링 등)
+            print(f"⚠️ [재시도 {attempt}/{max_retries}] 이미지가 생성되지 않음. 재시도 중... ({filename})")
+            time.sleep(retry_delay)
+            
+        except Exception as e:
+            # 오류 발생 시 (429 Rate Limit, 500 Server Error 등)
+            print(f"⚠️ [재시도 {attempt}/{max_retries}] 에러 발생: {e}. {retry_delay}초 후 다시 시도합니다. ({filename})")
+            time.sleep(retry_delay)
+            
+            # 다음 대기 시간 늘리기 (지수 백오프: 2 -> 4 -> 8 ... -> 60)
+            retry_delay = min(retry_delay * 2, max_delay)
+            
+    # 모든 재시도 실패 시
+    print(f"❌ [최종 실패] {max_retries}회 시도했으나 이미지 생성 불가: {filename}")
+    return None
 
 def create_zip_buffer(source_dir):
     buffer = BytesIO()
@@ -1390,6 +1409,7 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: st.error("파일 오류")
+
 
 
 
