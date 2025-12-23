@@ -931,6 +931,7 @@ with col_title_btn:
                     "{current_user_title}"
                     [Task]
                     Generate 5 click-bait YouTube video titles based on the Target Topic above.
+                    사용자가 입력한거랑 최대한 비슷한 제목으로 추천, '몰락'이 들어간 경우 맨 뒤에 몰락으로 끝나게 한다.
                     """
                     context_data = "No script provided. Base it solely on the topic."
 
@@ -942,6 +943,7 @@ with col_title_btn:
                         "{current_user_title}"
                         [Task]
                         Generate 5 variations of this title suitable for YouTube, considering the script below.
+                        '몰락'이 들어간 경우 맨 뒤에 몰락으로 끝나게 한다.
                         """
                     else:
                         prompt_instruction = f"""
@@ -1388,6 +1390,7 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: st.error("파일 오류")
+
 
 
 
