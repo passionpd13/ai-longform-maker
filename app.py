@@ -254,34 +254,57 @@ def make_filename(scene_num, text_chunk):
     return filename
 
 # ==========================================
-# [수정됨] 함수: 프롬프트 생성 (밝고 명확한 설명조 유도)
+# [수정됨] 함수: 프롬프트 생성 (장르별 연출 분기 - 역사 모드 색감/텍스트 보완)
 # ==========================================
-def generate_prompt(api_key, index, text_chunk, style_instruction, video_title):
+def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, genre_mode="info"):
     scene_num = index + 1
     url = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_TEXT_MODEL_NAME}:generateContent?key={api_key}"
     headers = {'Content-Type': 'application/json'}
 
-    # [핵심 변경 사항]
-    # 1. 역할: 아트 디렉터 -> 정보 전달 전문 일러스트레이터
-    # 2. 조명: 그림자/무드 제거 -> 밝고 플랫한 조명(Flat Lighting)
-    # 3. 제약: 다크한 분위기 금지
+    # ---------------------------------------------------------
+    # [모드 1] 밝은 정보/이슈 (기존 유지)
+    # ---------------------------------------------------------
+    if genre_mode == "info":
+        role_desc = "당신은 복잡한 상황을 아주 쉽고 직관적인 그림으로 표현하는 '비주얼 커뮤니케이션 전문가'이자 '교육용 일러스트레이터'입니다."
+        lighting_guide = """
+    1. **조명(Lighting):** 무조건 **'밝고 화사한 조명(High Key Lighting)'**을 사용하십시오. 그림자가 짙거나 어두운 부분은 없어야 합니다.
+    2. **색감(Colors):** 채도가 높고 선명한 색상을 사용하여 시인성을 높이십시오. (칙칙하거나 회색조 톤 금지)
+    3. **분위기(Mood):** 교육적이고, 중립적이며, 산뜻한 분위기여야 합니다. (우울하거나, 무섭거나, 기괴한 느낌 금지)
+    4. **텍스트(Text):** 글자는 가급적 넣지 마십시오. 만약 꼭 필요하다면 핵심 키워드 1개만 아주 작게 표시하십시오.
+        """
+        
+    # ---------------------------------------------------------
+    # [모드 2] 역사/다큐 (수정됨: 색감 살리기 + 한글 키워드 배치)
+    # ---------------------------------------------------------
+    else: # genre_mode == "history"
+        role_desc = "당신은 역사적 사건을 생생하게 재현하는 '영화 컨셉 아티스트'이자 '다큐멘터리 감독'입니다."
+        # [핵심 변경 사항]
+        # 1. 조명: 너무 어두운 Chiaroscuro 대신 '깊이 있는 시네마틱' 강조, 흑백 느낌 경계.
+        # 2. 색감: 채도 낮춤 제거 -> 풍부하고 깊이 있는 색조(Rich tones) 강조.
+        # 3. 텍스트: 한글 키워드 1~2개 자연스러운 배치 추가.
+        lighting_guide = """
+    1. **조명(Lighting):** 입체감과 깊이를 주는 **'시네마틱 조명(Cinematic Lighting)'**을 사용하십시오. 단, 화면 전체가 너무 어둡거나 흑백 영화처럼 보이지 않게 하십시오.
+    2. **색감(Colors):** **색감을 풍부하게 살리십시오.** 현대적인 쨍함이 아니라, 그 시대의 명화나 필름처럼 **깊이 있고 진한 색조(Rich & Deep Tones)**를 사용하여 시대적 분위기를 연출하십시오. (예: 빛바랜 금색, 묵직한 붉은색, 깊은 나무색 등)
+    3. **분위기(Mood):** 가볍지 않고 진중하며, 마치 그 시대에 있는 듯한 현장감 넘치는 분위기를 만드십시오.
+    4. **디테일(Detail):** 인물의 복식, 건축 양식, 소품 등의 역사적 고증에 신경 써서 사실감을 극대화하십시오.
+    5. **텍스트(Text):** 대본의 핵심이 되는 **한글 키워드 1~2개**를 장면에 자연스럽게 녹여내십시오. (예: 오래된 현판, 깃발, 펼쳐진 문서, 비석 등에 쓰인 글씨처럼 연출. 현대적인 TV 자막 느낌은 지양할 것)
+        """
+
+    # 공통 지침 (글자 관련 공통 제한 제거함 - 각 모드에서 통제)
     full_instruction = f"""
     [역할]
-    당신은 복잡한 상황을 아주 쉽고 직관적인 그림으로 표현하는 '비주얼 커뮤니케이션 전문가'이자 '교육용 일러스트레이터'입니다.
+    {role_desc}
 
     [전체 영상 주제]
     "{video_title}"
 
-    [그림 스타일 가이드 - 절대 준수]
+    [그림 스타일 가이드 - 유저 지정]
     {style_instruction}
     
     [필수 연출 지침]
-    1. **조명(Lighting):** 무조건 **'밝고 화사한 조명(High Key Lighting)'**을 사용하십시오. 그림자가 짙거나 어두운 부분은 없어야 합니다.
-    2. **색감(Colors):** 채도가 높고 선명한 색상을 사용하여 시인성을 높이십시오. (칙칙하거나 회색조 톤 금지)
-    3. **구성(Composition):** 시청자가 상황을 한눈에 이해할 수 있도록 피사체를 화면 중앙에 명확하게 배치하십시오.
-    4. **분위기(Mood):** 교육적이고, 중립적이며, 산뜻한 분위기여야 합니다. **(절대 우울하거나, 무섭거나, 기괴한 느낌 금지)**
-    6. 분활화면으로 연출하지 말고 하나의 화면으로 연출한다.
-    7. 글자가 연촐될때는 글자가 화면 모서리에 되도록 나오지 않는다.
+    {lighting_guide}
+    6. **구성(Composition):** 시청자가 상황을 한눈에 이해할 수 있도록 핵심 피사체를 화면 중앙에 배치하여 주제를 명확히 하십시오.
+    7. 분활화면(Split screen)으로 연출하지 말고 하나의 화면(Full shot)으로 연출하십시오.
 
     [임무]
     제공된 대본 조각(Script Segment)을 바탕으로, 이미지 생성 AI가 그릴 수 있는 **구체적인 묘사 프롬프트**를 작성하십시오.
@@ -290,8 +313,8 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title):
     - **분량:** 최소 5문장 이상으로 상세하게 묘사.
     - **포함 요소:**
         - **캐릭터 행동:** 대본의 상황을 연기하는 캐릭터의 구체적인 동작.
-        - **배경:** 상황을 설명하는 소품이나 장소 (배경은 깔끔하게).
-        - **시각적 은유:** 추상적인 내용일 경우, 이를 설명할 수 있는 시각적 아이디어 (예: 돈이 날아가는 모습, 그래프가 하락하는 모습 등).
+        - **배경:** 상황을 설명하는 소품이나 장소. (역사 모드일 경우 시대적 배경 묘사 필수)
+        - **시각적 은유/텍스트:** 내용에 맞는 시각적 요소 및 (지시된 경우) 자연스러운 텍스트 배치.
     
     [출력 형식]
     - **무조건 한국어(한글)**로만 작성하십시오.
@@ -299,7 +322,7 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title):
     """
     
     payload = {
-        "contents": [{"parts": [{"text": f"지시사항(Instruction):\n{full_instruction}\n\n대본 내용(Script Segment):\n\"{text_chunk}\"\n\n밝고 명확한 이미지 프롬프트 결과:"}]}]
+        "contents": [{"parts": [{"text": f"지시사항(Instruction):\n{full_instruction}\n\n대본 내용(Script Segment):\n\"{text_chunk}\"\n\n이미지 프롬프트 결과:"}]}]
     }
 
     try:
@@ -312,7 +335,7 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title):
             return (scene_num, prompt)
         elif response.status_code == 429:
             time.sleep(2)
-            return (scene_num, f"밝고 명확한 일러스트: {text_chunk}")
+            return (scene_num, f"일러스트 묘사: {text_chunk}")
         else:
             return (scene_num, f"Error generating prompt: {response.status_code}")
     except Exception as e:
@@ -616,11 +639,19 @@ def merge_all_videos(video_paths, output_dir):
         return f"Merge Error: {e}"
 
 # ==========================================
-# [UI] 사이드바
+# [UI] 사이드바 (자동 로그인 + 장르 선택 적용)
 # ==========================================
 with st.sidebar:
     st.header("⚙️ 환경 설정")
-    api_key = st.text_input("🔑 Google API Key", type="password", help="Gemini API 키를 입력하세요.")
+    
+    # 1. Google API Key 자동 로드 (secrets.toml 활용)
+    # .streamlit/secrets.toml 파일에 [general] google_api_key = "..." 가 있으면 자동 로드
+    if "general" in st.secrets and "google_api_key" in st.secrets["general"]:
+        api_key = st.secrets["general"]["google_api_key"]
+        st.success("🔑 Google API Key가 로드되었습니다.")
+    else:
+        api_key = st.text_input("🔑 Google API Key", type="password", help="secrets.toml이 없으면 직접 입력하세요.")
+
     st.markdown("---")
     
     st.subheader("🖼️ 이미지 모델 선택")
@@ -639,7 +670,23 @@ with st.sidebar:
     chars_limit = chunk_duration * 8 
     
     st.markdown("---")
-    st.subheader("🎨 스타일 지침")
+    
+    # [NEW] 장르 선택 기능 (프롬프트 분기용)
+    st.subheader("🎨 영상 장르(Mood) 설정")
+    genre_select = st.radio(
+        "콘텐츠 성격 선택:",
+        ("밝은 정보/이슈 (Bright & Flat)", "역사/다큐 (Cinematic & Immersive)"),
+        index=0,
+        help="역사/다큐 선택 시 조명이 더 드라마틱해지고 배경 묘사가 깊어집니다."
+    )
+    
+    # 선택된 값 변수에 저장 (메인 로직에서 사용)
+    if "밝은" in genre_select:
+        SELECTED_GENRE_MODE = "info"
+    else:
+        SELECTED_GENRE_MODE = "history"
+
+    st.subheader("🖌️ 화풍(Style) 지침")
     default_style = """
 대사에 어울리는 2d 얼굴이 둥근 하얀색 스틱맨 연출로 설명과 이해가 잘되는 화면 자료 느낌으로 그려줘 상황을 잘 나타내게 분활화면으로 말고 하나의 장면으로
 너무 어지럽지 않게, 글씨는 핵심 키워드 2~3만 나오게 한다
@@ -647,28 +694,31 @@ with st.sidebar:
 글씨가 나올경우 핵심 키워드 중심으로만 나오게 너무 글이 많지 않도록 한다, 글자는 배경과 서물에 자연스럽게 연출, 전체 배경 연출은 2D로 디테일하게 몰입감 있게 연출해서 그려줘 (16:9)
 다양한 장소와 상황 연출로 배경을 디테일하게 한다. 무조건 2D 스틱맨 연출
     """
-    style_instruction = st.text_area("AI에게 지시할 그림 스타일", value=default_style.strip(), height=200)
+    style_instruction = st.text_area("AI에게 지시할 그림 스타일", value=default_style.strip(), height=150)
     st.markdown("---")
     
-    # [NEW] Supertone TTS 설정 사이드바 추가
+    # [NEW] Supertone TTS 설정 (secrets.toml 적용)
     st.subheader("🎙️ Supertone TTS 설정")
     
-    # API 주소 설정
-    supertone_base_url = st.text_input("API 주소 (Base URL)", value=DEFAULT_SUPERTONE_URL, help="문서상 주소: https://supertoneapi.com")
-    supertone_api_key = st.text_input("🔑 Supertone API Key", type="password", help="Supertone Console에서 발급받은 API 키")
+    # Base URL은 보통 안 바뀌므로 기본값 유지
+    supertone_base_url = st.text_input("API 주소 (Base URL)", value=DEFAULT_SUPERTONE_URL)
     
-    # 목소리 목록 가져오기 버튼
+    # API Key 자동 로드
+    if "general" in st.secrets and "supertone_api_key" in st.secrets["general"]:
+        supertone_api_key = st.secrets["general"]["supertone_api_key"]
+        st.success("🔑 Supertone API Key가 로드되었습니다.")
+    else:
+        supertone_api_key = st.text_input("🔑 Supertone API Key", type="password")
+    
+    # 목소리 목록 관리
     if 'supertone_voices' not in st.session_state:
         st.session_state['supertone_voices'] = []
     
-    available_voices = []
-    selected_voice_id = ""
-    
+    # 연결 테스트 버튼
     if supertone_api_key:
         if st.button("🔌 연결 테스트 및 목소리 갱신"):
-            with st.spinner("목소리 리스트를 조회 중입니다..."):
+            with st.spinner("목소리 리스트 조회 중..."):
                 success, voices, msg = check_connection_and_get_voices(supertone_api_key, supertone_base_url)
-                
                 if success:
                     st.session_state['supertone_voices'] = voices
                     st.success(f"{msg} ({len(voices)}개)")
@@ -677,37 +727,28 @@ with st.sidebar:
                     st.session_state['supertone_voices'] = []
     
     # 목소리 선택 UI
+    available_voices = []
+    selected_voice_id = ""
+    
     if st.session_state['supertone_voices']:
         raw_list = st.session_state['supertone_voices']
-        valid_voices = []
-        
-        if isinstance(raw_list, list):
-            for v in raw_list:
-                if isinstance(v, dict) and 'name' in v and 'voice_id' in v:
-                    valid_voices.append(v)
-        
+        valid_voices = [v for v in raw_list if isinstance(v, dict) and 'name' in v and 'voice_id' in v]
         if valid_voices:
             voice_options = {f"{v['name']} ({v['voice_id']})": v['voice_id'] for v in valid_voices}
             selected_voice_label = st.selectbox("목소리 선택", list(voice_options.keys()))
             selected_voice_id = voice_options[selected_voice_label]
             
+            # 썸네일 표시
             current_voice = next((v for v in valid_voices if v['voice_id'] == selected_voice_id), None)
             if current_voice and current_voice.get('thumbnail_image_url'):
                 st.image(current_voice['thumbnail_image_url'], width=100)
-        else:
-            st.warning("⚠️ API 응답 데이터에 유효한 목소리 정보가 없습니다.")
-            with st.expander("디버깅용 원본 데이터 보기"):
-                st.write(raw_list) 
     else:
-        if supertone_api_key:
-            st.warning("⚠️ '연결 테스트'를 먼저 눌러보세요.")
-        
+        # 연결 안 되었을 때 수동 입력창
         selected_voice_id = st.text_input("Voice ID 직접 입력", value=DEFAULT_VOICE_ID)
-        st.caption("주의: 위 ID가 유효하지 않으면 404 에러가 발생합니다.")
     
     st.caption("TTS 옵션")
     tts_speed = st.slider("말하기 속도", 0.5, 2.0, 1.0, 0.1)
-    tts_pitch = st.slider("피치 조절 (반음 단위)", -12, 12, 0, 1)
+    tts_pitch = st.slider("피치 조절", -12, 12, 0, 1)
 
     st.markdown("---")
     max_workers = st.slider("작업 속도(병렬 수)", 1, 10, 5)
@@ -1102,14 +1143,23 @@ if start_btn:
         if not current_video_title:
             current_video_title = "전반적인 대본 분위기에 어울리는 배경 (Context based on the script)"
 
-        # 2. 프롬프트 생성 (병렬)
-        status_box.write(f"📝 프롬프트 작성 중 ({GEMINI_TEXT_MODEL_NAME}) - 기준 테마: {current_video_title}...")
+	# 2. 프롬프트 생성 (병렬)
+        status_box.write(f"📝 프롬프트 작성 중 ({GEMINI_TEXT_MODEL_NAME}) - 모드: {SELECTED_GENRE_MODE}...") # (선택) 로그 메시지에 모드 표시 추가
         prompts = []
         with ThreadPoolExecutor(max_workers=10) as executor:
             futures = []
             
             for i, chunk in enumerate(chunks):
-                futures.append(executor.submit(generate_prompt, api_key, i, chunk, style_instruction, current_video_title))
+                # [수정할 부분] 아래 함수 호출 부분에 SELECTED_GENRE_MODE 를 맨 뒤에 추가하세요.
+                futures.append(executor.submit(
+                    generate_prompt, 
+                    api_key, 
+                    i, 
+                    chunk, 
+                    style_instruction, 
+                    current_video_title, 
+                    SELECTED_GENRE_MODE  # <--- [NEW] 이 변수를 꼭 추가해야 합니다!
+                ))
             
             for i, future in enumerate(as_completed(futures)):
                 prompts.append(future.result())
@@ -1409,13 +1459,4 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: st.error("파일 오류")
-
-
-
-
-
-
-
-
-
 
