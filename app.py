@@ -738,7 +738,6 @@ with st.sidebar:
     else:
         SELECTED_GENRE_MODE = "history"
 
-	st.markdown("---")
 
 	# [NEW] 장르 선택 기능
     st.subheader("🎨 영상 장르(Mood) 설정")
@@ -1530,6 +1529,7 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
+
 
 
 
