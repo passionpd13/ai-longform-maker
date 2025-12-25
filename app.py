@@ -360,23 +360,44 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
     except Exception as e:
         return (scene_num, f"Error: {e}")
 
+# ==========================================
+# [수정됨] generate_image: 안전 설정 추가 + 재시도 횟수 감소(속도 향상)
+# ==========================================
 def generate_image(client, prompt, filename, output_dir, selected_model_name):
     full_path = os.path.join(output_dir, filename)
     
-    # [설정] 재시도 관련 변수
-    max_retries = 20       # 최대 20번까지 재시도 (사실상 성공할 때까지)
-    retry_delay = 2        # 초기 대기 시간 (초)
-    max_delay = 60         # 대기 시간이 이 이상 늘어나지 않도록 제한
+    # [수정 1] 재시도 횟수 대폭 감소 (무한 로딩 방지)
+    max_retries = 4
+    retry_delay = 2
     
+    # [수정 2] 안전 필터 완화 (역사적 묘사가 차단되지 않도록 설정)
+    safety_settings = [
+        types.SafetySetting(
+            category="HARM_CATEGORY_DANGEROUS_CONTENT",
+            threshold="BLOCK_ONLY_HIGH"
+        ),
+        types.SafetySetting(
+            category="HARM_CATEGORY_HARASSMENT",
+            threshold="BLOCK_ONLY_HIGH"
+        ),
+        types.SafetySetting(
+            category="HARM_CATEGORY_HATE_SPEECH",
+            threshold="BLOCK_ONLY_HIGH"
+        ),
+        types.SafetySetting(
+            category="HARM_CATEGORY_SEXUALLY_EXPLICIT",
+            threshold="BLOCK_ONLY_HIGH"
+        ),
+    ]
+
     for attempt in range(1, max_retries + 1):
         try:
-            final_prompt = prompt
-
             response = client.models.generate_content(
                 model=selected_model_name,
-                contents=[final_prompt],
+                contents=[prompt],
                 config=types.GenerateContentConfig(
-                    image_config=types.ImageConfig(aspect_ratio="16:9")
+                    image_config=types.ImageConfig(aspect_ratio="16:9"),
+                    safety_settings=safety_settings # 안전 설정 적용
                 )
             )
             
@@ -388,20 +409,16 @@ def generate_image(client, prompt, filename, output_dir, selected_model_name):
                         image.save(full_path)
                         return full_path
             
-            # 응답은 왔으나 이미지 데이터가 없는 경우 (필터링 등)
-            print(f"⚠️ [재시도 {attempt}/{max_retries}] 이미지가 생성되지 않음. 재시도 중... ({filename})")
+            # 생성 실패 시 로그
+            print(f"⚠️ [시도 {attempt}/{max_retries}] 필터링됨/생성실패. 재시도 중... ({filename})")
             time.sleep(retry_delay)
             
         except Exception as e:
-            # 오류 발생 시 (429 Rate Limit, 500 Server Error 등)
-            print(f"⚠️ [재시도 {attempt}/{max_retries}] 에러 발생: {e}. {retry_delay}초 후 다시 시도합니다. ({filename})")
+            print(f"⚠️ [에러] {e} ({filename})")
             time.sleep(retry_delay)
             
-            # 다음 대기 시간 늘리기 (지수 백오프: 2 -> 4 -> 8 ... -> 60)
-            retry_delay = min(retry_delay * 2, max_delay)
-            
-    # 모든 재시도 실패 시
-    print(f"❌ [최종 실패] {max_retries}회 시도했으나 이미지 생성 불가: {filename}")
+    # [최종 실패 시]
+    print(f"❌ [최종 실패] {filename} - 너무 민감한 주제일 수 있습니다.")
     return None
 
 def create_zip_buffer(source_dir):
@@ -1478,6 +1495,7 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: st.error("파일 오류")
+
 
 
 
