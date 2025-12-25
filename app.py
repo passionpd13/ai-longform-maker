@@ -658,7 +658,7 @@ def process_single_video_task(item, output_dir, is_zoom_in):
             item['path'], 
             item['audio_path'], 
             output_dir, 
-            item['scene'],
+            item['scene'], 
             is_zoom_in=is_zoom_in
         )
     return None
@@ -737,18 +737,6 @@ with st.sidebar:
         SELECTED_GENRE_MODE = "info"
     else:
         SELECTED_GENRE_MODE = "history"
-
-
-	# [NEW] 장르 선택 기능
-    st.subheader("🎨 영상 장르(Mood) 설정")
-    genre_select = st.radio(
-        "콘텐츠 성격 선택:",
-        ("밝은 정보/이슈 (Bright & Flat)", "역사/다큐 (Cinematic & Immersive)"),
-        index=0,
-        help="역사/다큐 선택 시 조명이 더 드라마틱해지고 배경 묘사가 깊어집니다."
-    )
-    if "밝은" in genre_select: SELECTED_GENRE_MODE = "info"
-    else: SELECTED_GENRE_MODE = "history"
 
     st.markdown("---")
 
@@ -1220,13 +1208,13 @@ if start_btn:
         if not current_video_title:
             current_video_title = "전반적인 대본 분위기에 어울리는 배경 (Context based on the script)"
 
-	# 2. 프롬프트 생성 (병렬)
+        # 2. 프롬프트 생성 (병렬)
         status_box.write(f"📝 프롬프트 작성 중 ({GEMINI_TEXT_MODEL_NAME}) - 모드: {SELECTED_GENRE_MODE}...") # (선택) 로그 메시지에 모드 표시 추가
         prompts = []
         with ThreadPoolExecutor(max_workers=10) as executor:
             futures = []
             
-			for i, chunk in enumerate(chunks):
+            for i, chunk in enumerate(chunks):
                 # [수정] target_language 추가 전달
                 futures.append(executor.submit(
                     generate_prompt, 
@@ -1234,7 +1222,7 @@ if start_btn:
                     i, 
                     chunk, 
                     style_instruction, 
-                    current_video_title,  # (참고: 기존 코드에서 video_title 변수명 확인 필요)
+                    current_video_title, 
                     SELECTED_GENRE_MODE,
                     target_language  # <--- [NEW] 추가됨
                 ))
@@ -1441,7 +1429,7 @@ if st.session_state['generated_results']:
                             # 1. 프롬프트 다시 생성 (현재 대본과 스타일, 모드 반영)
                             current_title = st.session_state.get('video_title', '')
                             # 대본이 수정되었을 수도 있으므로 item['script'] 사용
-							_, new_prompt = generate_prompt(
+                            _, new_prompt = generate_prompt(
                                 api_key, index, item['script'], style_instruction,
                                 current_title, SELECTED_GENRE_MODE,
                                 target_language # <--- [NEW] 추가됨
@@ -1529,9 +1517,3 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
-
-
-
-
-
-
