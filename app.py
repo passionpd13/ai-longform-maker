@@ -1240,16 +1240,16 @@ if start_btn:
         status_box.update(label="✅ 완료되었습니다!", state="complete", expanded=False)
         st.session_state['is_processing'] = False
         
-# 결과창
+# ==========================================
+# [수정됨] 결과창 및 개별 재생성 기능 추가
+# ==========================================
 if st.session_state['generated_results']:
     st.divider()
-    col1, col2 = st.columns([3, 1])
-    with col1:
-        st.header(f"📸 결과물 ({len(st.session_state['generated_results'])}장)")
+    st.header(f"📸 결과물 ({len(st.session_state['generated_results'])}장)")
     
-    # ==========================================
-    # [NEW] 일괄 작업 버튼 영역 (원클릭 자동화 수정)
-    # ==========================================
+    # ------------------------------------------------
+    # 1. 일괄 작업 버튼 영역
+    # ------------------------------------------------
     st.write("---")
     st.subheader("⚡ 원클릭 일괄 생성 작업")
     
@@ -1259,47 +1259,33 @@ if st.session_state['generated_results']:
         zip_data = create_zip_buffer(IMAGE_OUTPUT_DIR)
         st.download_button("📦 전체 이미지 ZIP 다운로드", data=zip_data, file_name="all_images.zip", mime="application/zip", use_container_width=True)
 
-    # 1. TTS 전체 생성 버튼 (옵션 선택 추가)
+    # TTS 전체 생성
     with c_btn2:
-        # 드롭다운으로 TTS 모드 선택
-        tts_batch_mode = st.selectbox(
-            "TTS 생성 모드",
-            ["원본 음성 생성", "무음 조절 음성 (최대 0.3초)"],
-            help="무음 조절을 선택하면 생성된 음성에서 0.3초 이상의 공백을 자동으로 줄입니다."
-        )
-        
+        tts_batch_mode = st.selectbox("TTS 생성 모드", ["원본 음성 생성", "무음 조절 음성 (최대 0.3초)"], help="무음 조절 선택 시 공백 자동 축소")
         if st.button("🔊 TTS 일괄 생성", use_container_width=True):
             if not supertone_api_key or not selected_voice_id:
-                st.error("먼저 사이드바에서 Supertone API Key와 목소리를 설정해주세요.")
+                st.error("사이드바에서 API Key와 목소리를 설정해주세요.")
             else:
-                # [FIX] 오디오가 변경되면 기존 통합본(FINAL_VIDEO)도 무효화 -> 삭제
+                # 오디오 변경 시 통합본 삭제
                 final_merged_file = os.path.join(VIDEO_OUTPUT_DIR, "FINAL_FULL_VIDEO.mp4")
                 if os.path.exists(final_merged_file):
                     try: os.remove(final_merged_file)
                     except: pass
 
-                status_box = st.status("🎙️ TTS 오디오 일괄 생성 중 (병렬 처리)...", expanded=True)
+                status_box = st.status("🎙️ TTS 일괄 생성 중...", expanded=True)
                 progress_bar = status_box.progress(0)
                 
-                # 병렬 처리 설정
                 apply_trim = (tts_batch_mode == "무음 조절 음성 (최대 0.3초)")
                 total_files = len(st.session_state['generated_results'])
                 completed_cnt = 0
                 
-                # ThreadPoolExecutor를 사용한 병렬 처리
                 with ThreadPoolExecutor(max_workers=max_workers) as executor:
                     future_to_idx = {}
                     for i, item in enumerate(st.session_state['generated_results']):
                         future = executor.submit(
-                            process_single_tts_task,
-                            supertone_api_key, 
-                            selected_voice_id, 
-                            item['script'], 
-                            item['scene'],
-                            supertone_base_url,
-                            tts_speed,
-                            tts_pitch,
-                            apply_trim
+                            process_single_tts_task, supertone_api_key, selected_voice_id, 
+                            item['script'], item['scene'], supertone_base_url, 
+                            tts_speed, tts_pitch, apply_trim
                         )
                         future_to_idx[future] = i
                     
@@ -1307,7 +1293,6 @@ if st.session_state['generated_results']:
                         idx = future_to_idx[future]
                         try:
                             result_path = future.result()
-                            # 성공 시 업데이트
                             if "Error" not in str(result_path) and "VOICE_NOT_FOUND" not in str(result_path):
                                 st.session_state['generated_results'][idx]['audio_path'] = result_path
                                 st.session_state['generated_results'][idx]['video_path'] = None # 비디오 리셋
@@ -1319,43 +1304,30 @@ if st.session_state['generated_results']:
                         completed_cnt += 1
                         progress_bar.progress(completed_cnt / total_files)
                 
-                status_box.update(label="✅ TTS 생성 완료! 비디오를 다시 생성해주세요.", state="complete", expanded=False)
+                status_box.update(label="✅ TTS 생성 완료!", state="complete", expanded=False)
                 time.sleep(1)
                 st.rerun()
 
-    # 2. 비디오 전체 생성 버튼 (완성된 음성 기반)
+    # 비디오 전체 생성
     with c_btn3:
-        # 오디오가 하나라도 있는지 체크
         has_audio = any(item.get('audio_path') for item in st.session_state['generated_results'])
-        
-        # 버튼 설명에 현재 상태 반영
-        btn_label = "🎬 비디오 전체 일괄 생성"
-        
-        if st.button(btn_label, disabled=not has_audio, use_container_width=True):
-            # [FIX] 비디오들을 새로 생성하므로 기존 통합본(FINAL_VIDEO) 삭제
+        if st.button("🎬 비디오 전체 일괄 생성", disabled=not has_audio, use_container_width=True):
             final_merged_file = os.path.join(VIDEO_OUTPUT_DIR, "FINAL_FULL_VIDEO.mp4")
             if os.path.exists(final_merged_file):
                 try: os.remove(final_merged_file)
                 except: pass
             
-            status_box = st.status("🎬 비디오 렌더링 중 (병렬 처리)...", expanded=True)
+            status_box = st.status("🎬 비디오 렌더링 중...", expanded=True)
             progress_bar = status_box.progress(0)
             
             total_files = len(st.session_state['generated_results'])
             completed_cnt = 0
             
-            # [NEW] ThreadPoolExecutor를 사용한 병렬 비디오 생성
             with ThreadPoolExecutor(max_workers=max_workers) as executor:
                 future_to_idx = {}
                 for i, item in enumerate(st.session_state['generated_results']):
-                    # 짝수/홀수 줌 효과 교차 적용
                     is_zoom_in = (i % 2 == 0)
-                    future = executor.submit(
-                        process_single_video_task,
-                        item, 
-                        VIDEO_OUTPUT_DIR, 
-                        is_zoom_in
-                    )
+                    future = executor.submit(process_single_video_task, item, VIDEO_OUTPUT_DIR, is_zoom_in)
                     future_to_idx[future] = i
                 
                 for future in as_completed(future_to_idx):
@@ -1372,21 +1344,18 @@ if st.session_state['generated_results']:
                     completed_cnt += 1
                     progress_bar.progress(completed_cnt / total_files)
             
-            status_box.update(label="✅ 모든 씬의 비디오 생성이 완료되었습니다!", state="complete", expanded=False)
+            status_box.update(label="✅ 비디오 생성 완료!", state="complete", expanded=False)
             time.sleep(1)
             st.rerun()
 
-    # 3. 전체 병합 및 다운로드
+    # 전체 병합
     with c_btn4:
-        # 비디오가 하나라도 있는지 체크
         video_paths = [item.get('video_path') for item in st.session_state['generated_results'] if item.get('video_path')]
         final_path = os.path.join(VIDEO_OUTPUT_DIR, "FINAL_FULL_VIDEO.mp4")
         
         if video_paths:
-            # [FIX] 파일이 존재하더라도 강제로 다시 합칠 수 있는 버튼을 상단에 배치
             if st.button("🎞️ 전체 영상 합치기 (새로고침)", use_container_width=True):
                 with st.spinner("모든 비디오를 하나로 합치는 중..."):
-                    # 기존 파일 있으면 삭제 후 생성
                     if os.path.exists(final_path):
                         try: os.remove(final_path)
                         except: pass
@@ -1395,111 +1364,128 @@ if st.session_state['generated_results']:
                     if "Error" in merged_result:
                         st.error(merged_result)
                     else:
-                        st.success("병합 완료! 아래 다운로드 버튼을 눌러주세요.")
+                        st.success("병합 완료!")
                         st.rerun()
 
-            # 파일이 존재하면 다운로드 버튼 표시
             if os.path.exists(final_path):
                  with open(final_path, "rb") as f:
                     st.download_button("💾 전체 영상 다운로드 (MP4)", data=f, file_name="final_video.mp4", mime="video/mp4", use_container_width=True)
-            
         else:
             st.button("🎞️ 전체 영상 합치기", disabled=True, use_container_width=True)
 
     if not supertone_api_key or not selected_voice_id:
-        st.warning("🎙️ Supertone TTS를 사용하려면 사이드바에서 'Supertone API Key'를 입력하고 '목소리'를 선택해주세요.")
+        st.warning("🎙️ Supertone TTS 사용을 위해 API 설정을 확인하세요.")
 
+    # ------------------------------------------------
+    # 2. 개별 리스트 및 [재생성] 기능
+    # ------------------------------------------------
     for index, item in enumerate(st.session_state['generated_results']):
         with st.container(border=True):
             cols = st.columns([1, 2])
+            
+            # [왼쪽] 이미지 및 재생성 버튼
             with cols[0]:
                 try: st.image(item['path'], use_container_width=True)
                 except: st.error("이미지 없음")
+                
+                # [NEW] 이미지 개별 재생성 버튼
+                if st.button(f"🔄 이 장면만 이미지 다시 생성", key=f"regen_img_{index}", use_container_width=True):
+                    if not api_key:
+                        st.error("API Key가 필요합니다.")
+                    else:
+                        with st.spinner(f"Scene {item['scene']} 다시 그리는 중..."):
+                            client = genai.Client(api_key=api_key)
+                            
+                            # 1. 프롬프트 다시 생성 (현재 대본과 스타일, 모드 반영)
+                            current_title = st.session_state.get('video_title', '')
+                            # 대본이 수정되었을 수도 있으므로 item['script'] 사용
+                            _, new_prompt = generate_prompt(
+                                api_key, index, item['script'], style_instruction,
+                                current_title, SELECTED_GENRE_MODE
+                            )
+                            
+                            # 2. 이미지 생성
+                            new_path = generate_image(
+                                client, new_prompt, item['filename'], 
+                                IMAGE_OUTPUT_DIR, SELECTED_IMAGE_MODEL
+                            )
+                            
+                            if new_path:
+                                # 3. 결과 업데이트
+                                st.session_state['generated_results'][index]['path'] = new_path
+                                st.session_state['generated_results'][index]['prompt'] = new_prompt
+                                # 이미지가 바뀌었으므로 기존 비디오는 무효화
+                                st.session_state['generated_results'][index]['video_path'] = None
+                                st.success("이미지가 변경되었습니다!")
+                                time.sleep(0.5)
+                                st.rerun()
+                            else:
+                                st.error("이미지 생성에 실패했습니다.")
+
+            # [오른쪽] 정보 및 오디오/비디오 컨트롤
             with cols[1]:
                 st.subheader(f"Scene {item['scene']:02d}")
                 st.caption(f"파일명: {item['filename']}")
+                
+                # 대본 수정 가능하게 할지? (현재는 display만)
                 st.write(f"**대본:** {item['script']}")
                 
                 st.markdown("---")
                 audio_col1, audio_col2 = st.columns([1, 3])
                 
-                # 오디오 및 비디오 플레이어 로직
+                # 오디오 로직
                 if item.get('audio_path') and os.path.exists(item['audio_path']):
                     with audio_col1:
                         st.audio(item['audio_path'])
                         if st.button("🔄 오디오 재생성", key=f"re_tts_{item['scene']}"):
                              item['audio_path'] = None
-                             item['video_path'] = None # 오디오 바뀌면 비디오도 초기화
+                             item['video_path'] = None 
                              st.rerun()
                     
-                    # 오디오가 있으면 -> 비디오 생성 버튼 노출
                     with audio_col2:
                         if item.get('video_path') and os.path.exists(item['video_path']):
                             st.video(item['video_path'])
                             with open(item['video_path'], "rb") as vf:
                                 st.download_button("⬇️ 비디오 저장", data=vf, file_name=f"scene_{item['scene']}.mp4", mime="video/mp4", key=f"down_vid_{item['scene']}")
                         else:
-                            # 짝수번째는 줌인, 홀수번째는 줌아웃 (지루함 방지)
                             is_zoom_in_mode = (index % 2 == 0)
                             button_label = f"🎬 비디오 생성 ({'줌인' if is_zoom_in_mode else '줌아웃'})"
 
                             if st.button(button_label, key=f"gen_vid_{item['scene']}"):
-                                with st.spinner("비디오 렌더링 중... (시간이 걸릴 수 있습니다)"):
+                                with st.spinner("렌더링 중..."):
                                     vid_path = create_video_with_zoom(
-                                        item['path'], 
-                                        item['audio_path'], 
-                                        VIDEO_OUTPUT_DIR, 
-                                        item['scene'],
-                                        is_zoom_in=is_zoom_in_mode
+                                        item['path'], item['audio_path'], VIDEO_OUTPUT_DIR, 
+                                        item['scene'], is_zoom_in=is_zoom_in_mode
                                     )
                                     if "Error" in vid_path:
                                         st.error(vid_path)
                                     else:
                                         st.session_state['generated_results'][index]['video_path'] = vid_path
-                                        st.success("완료!")
                                         st.rerun()
-
-                # 오디오가 없을 때 -> 오디오 생성 버튼
                 else:
                     with audio_col1:
                         if st.button("🔊 TTS 생성", key=f"gen_tts_{item['scene']}"):
-                            if not supertone_api_key:
-                                st.error("Supertone API Key 필요")
-                            elif not selected_voice_id:
-                                st.error("목소리 선택 필요")
+                            if not supertone_api_key or not selected_voice_id:
+                                st.error("설정 필요")
                             else:
                                 with st.spinner("오디오 생성 중..."):
                                     audio_result = generate_supertone_tts(
-                                        supertone_api_key, 
-                                        selected_voice_id, 
-                                        item['script'], 
-                                        item['scene'],
-                                        supertone_base_url,
-                                        speed=tts_speed,
-                                        pitch=tts_pitch
+                                        supertone_api_key, selected_voice_id, 
+                                        item['script'], item['scene'], supertone_base_url, 
+                                        speed=tts_speed, pitch=tts_pitch
                                     )
-                                    
-                                    if audio_result == "VOICE_NOT_FOUND":
-                                        st.error(f"❌ 404 에러: 목소리 ID({selected_voice_id})가 없습니다. 사이드바에서 목록을 갱신해주세요.")
-                                    elif "Error" in str(audio_result):
-                                        st.error(audio_result)
-                                    else:
+                                    if "Error" not in str(audio_result) and "VOICE_NOT_FOUND" != audio_result:
                                         st.session_state['generated_results'][index]['audio_path'] = audio_result
-                                        st.success("완료!")
-                                        time.sleep(0.5)
                                         st.rerun()
+                                    else:
+                                        st.error(audio_result)
 
                 with st.expander("프롬프트 확인"):
                     st.text(item['prompt'])
                 try:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
-                except: st.error("파일 오류")
-
-
-
-
-
+                except: pass
 
 
 
