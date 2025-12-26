@@ -381,14 +381,15 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
 # ==========================================
 # [수정됨] generate_image: 안전 설정 추가 + 재시도 횟수 감소(속도 향상)
 # ==========================================
+# [수정됨] generate_image: 에러 발생 시 None 대신 구체적인 에러 메시지 반환
 def generate_image(client, prompt, filename, output_dir, selected_model_name):
     full_path = os.path.join(output_dir, filename)
     
-    # [수정 1] 재시도 횟수 대폭 감소 (무한 로딩 방지)
+    # 재시도 횟수 설정
     max_retries = 4
     retry_delay = 2
     
-    # [수정 2] 안전 필터 완화 (역사적 묘사가 차단되지 않도록 설정)
+    # 안전 설정 (기존 유지)
     safety_settings = [
         types.SafetySetting(
             category="HARM_CATEGORY_DANGEROUS_CONTENT",
@@ -408,6 +409,8 @@ def generate_image(client, prompt, filename, output_dir, selected_model_name):
         ),
     ]
 
+    last_error = ""
+
     for attempt in range(1, max_retries + 1):
         try:
             response = client.models.generate_content(
@@ -415,7 +418,7 @@ def generate_image(client, prompt, filename, output_dir, selected_model_name):
                 contents=[prompt],
                 config=types.GenerateContentConfig(
                     image_config=types.ImageConfig(aspect_ratio="16:9"),
-                    safety_settings=safety_settings # 안전 설정 적용
+                    safety_settings=safety_settings
                 )
             )
             
@@ -427,17 +430,27 @@ def generate_image(client, prompt, filename, output_dir, selected_model_name):
                         image.save(full_path)
                         return full_path
             
-            # 생성 실패 시 로그
-            print(f"⚠️ [시도 {attempt}/{max_retries}] 필터링됨/생성실패. 재시도 중... ({filename})")
+            # 생성은 됐으나 이미지가 없는 경우 (필터링 등)
+            print(f"⚠️ [시도 {attempt}/{max_retries}] 이미지가 반환되지 않음 (필터링 가능성). 재시도 중...")
             time.sleep(retry_delay)
             
         except Exception as e:
-            print(f"⚠️ [에러] {e} ({filename})")
+            error_msg = str(e)
+            print(f"⚠️ [에러] {error_msg} ({filename})")
+            last_error = error_msg # 에러 메시지 저장
+            
+            # 429 에러(할당량 초과)면 즉시 멈추거나 사용자에게 알리기 위해 루프 탈출 가능
+            if "429" in error_msg or "ResourceExhausted" in error_msg:
+                return f"Error_Quota: {error_msg}"
+                
             time.sleep(retry_delay)
             
-    # [최종 실패 시]
-    print(f"❌ [최종 실패] {filename} - 너무 민감한 주제일 수 있습니다.")
-    return None
+    # [최종 실패 시] None 대신 에러 메시지 리턴
+    print(f"❌ [최종 실패] {filename}")
+    if "429" in last_error or "ResourceExhausted" in last_error:
+        return f"Error_Quota: {last_error}"
+    else:
+        return f"Error_Unknown: {last_error}"
 
 def create_zip_buffer(source_dir):
     buffer = BytesIO()
@@ -1236,8 +1249,9 @@ if start_btn:
         prompts.sort(key=lambda x: x[0])
         
         # 3. 이미지 생성 (병렬)
-        status_box.write(f"🎨 이미지 생성 중 ({SELECTED_IMAGE_MODEL})...")
+status_box.write(f"🎨 이미지 생성 중 ({SELECTED_IMAGE_MODEL})...")
         results = []
+        error_logs = [] # 에러 수집용 리스트
         
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
             future_to_meta = {}
@@ -1252,24 +1266,49 @@ if start_btn:
             completed_cnt = 0
             for future in as_completed(future_to_meta):
                 s_num, fname, orig_text, p_text = future_to_meta[future]
-                path = future.result()
-                if path:
+                path_or_error = future.result() # 이제 경로 또는 에러메시지가 옴
+                
+                # [성공 케이스] 경로가 있고, "Error"로 시작하지 않음
+                if path_or_error and not str(path_or_error).startswith("Error"):
                     results.append({
                         "scene": s_num,
-                        "path": path,
+                        "path": path_or_error,
                         "filename": fname,
                         "script": orig_text,
                         "prompt": p_text,
                         "audio_path": None,
                         "video_path": None 
                     })
+                # [실패 케이스] 에러 메시지가 온 경우
+                else:
+                    error_msg = str(path_or_error)
+                    error_logs.append(f"Scene {s_num}: {error_msg}")
+                    
+                    # 할당량 초과 즉시 감지하여 경고 표시
+                    if "Quota" in error_msg or "429" in error_msg:
+                         st.toast(f"🚨 API 사용량 초과 감지! (Scene {s_num})", icon="🔥")
+
                 completed_cnt += 1
                 progress_bar.progress(0.5 + (completed_cnt / total_scenes * 0.5))
         
         results.sort(key=lambda x: x['scene'])
         st.session_state['generated_results'] = results
         
-        status_box.update(label="✅ 완료되었습니다!", state="complete", expanded=False)
+        # [결과 보고]
+        if error_logs:
+            status_box.update(label="⚠️ 일부 생성 실패 (아래 에러 메시지 확인)", state="error", expanded=True)
+            st.error("❌ 이미지 생성 중 오류가 발생했습니다.")
+            
+            # 구체적인 에러 로그 화면에 출력
+            with st.expander("🚨 에러 로그 확인 (클릭)", expanded=True):
+                for log in error_logs:
+                    if "Quota" in log or "429" in log:
+                        st.error(f"{log} \n👉 **원인:** 하루 무료 사용량(Quota)을 초과했거나 요청 속도가 너무 빠릅니다. 잠시 후 다시 시도하거나 API 키를 변경하세요.")
+                    else:
+                        st.warning(f"{log} \n👉 **원인:** 민감한 단어가 포함되어 필터링되었거나 서버 오류입니다.")
+        else:
+            status_box.update(label="✅ 모든 이미지 생성 완료!", state="complete", expanded=False)
+            
         st.session_state['is_processing'] = False
         
 # ==========================================
@@ -1519,4 +1558,5 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
+
 
