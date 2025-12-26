@@ -714,7 +714,7 @@ with st.sidebar:
     if "Gemini 3 Pro" in model_choice:
         SELECTED_IMAGE_MODEL = "gemini-3-pro-image-preview" 
     else:
-        SELECTED_IMAGE_MODEL = "gemini-2.5-pro"
+        SELECTED_IMAGE_MODEL = "gemini-2.5-flash-image"
 
     st.info(f"✅ 선택 모델: `{SELECTED_IMAGE_MODEL}`")
     
@@ -1519,5 +1519,6 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
+
 
 
