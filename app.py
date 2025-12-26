@@ -709,10 +709,23 @@ with st.sidebar:
     st.markdown("---")
     
     st.subheader("🖼️ 이미지 모델 선택")
-    model_choice = st.radio("사용할 AI 모델:", ("Premium (Gemini 3 Pro)", "Fast (Gemini-2.5-pro)"), index=0)
     
+    # [수정됨] 옵션을 3개로 늘립니다.
+    model_choice = st.radio(
+        "사용할 AI 모델:", 
+        (
+            "Premium (Gemini 3 Pro)", 
+            "High Quality (Imagen 3)", # [NEW] 추가된 옵션
+            "Fast (Gemini-2.5-flash)" 
+        ), 
+        index=0
+    )
+    
+    # [수정됨] 선택에 따른 모델 ID 매핑 로직
     if "Gemini 3 Pro" in model_choice:
         SELECTED_IMAGE_MODEL = "gemini-3-pro-image-preview" 
+    elif "Imagen 3" in model_choice:
+        SELECTED_IMAGE_MODEL = "imagen-3.0-generate-002" # [NEW] 요청하신 모델 ID
     else:
         SELECTED_IMAGE_MODEL = "gemini-2.5-flash-image"
 
@@ -1519,6 +1532,7 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
+
 
 
 
