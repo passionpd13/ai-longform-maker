@@ -379,16 +379,15 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
         return (scene_num, f"Error: {e}")
 
 # ==========================================
-# [수정됨] generate_image: 안전 설정 추가 + 재시도 횟수 감소(속도 향상)
+# [수정됨] generate_image: API 제한(429) 완벽 대응 + 재시도 강화
 # ==========================================
 def generate_image(client, prompt, filename, output_dir, selected_model_name):
     full_path = os.path.join(output_dir, filename)
     
-    # [수정 1] 재시도 횟수 대폭 감소 (무한 로딩 방지)
-    max_retries = 4
-    retry_delay = 2
+    # [수정 1] 재시도 횟수를 10회로 늘려서 절대 포기하지 않게 함
+    max_retries = 10
     
-    # [수정 2] 안전 필터 완화 (역사적 묘사가 차단되지 않도록 설정)
+    # [수정 2] 안전 필터 (기존 유지)
     safety_settings = [
         types.SafetySetting(
             category="HARM_CATEGORY_DANGEROUS_CONTENT",
@@ -415,7 +414,7 @@ def generate_image(client, prompt, filename, output_dir, selected_model_name):
                 contents=[prompt],
                 config=types.GenerateContentConfig(
                     image_config=types.ImageConfig(aspect_ratio="16:9"),
-                    safety_settings=safety_settings # 안전 설정 적용
+                    safety_settings=safety_settings 
                 )
             )
             
@@ -427,16 +426,24 @@ def generate_image(client, prompt, filename, output_dir, selected_model_name):
                         image.save(full_path)
                         return full_path
             
-            # 생성 실패 시 로그
-            print(f"⚠️ [시도 {attempt}/{max_retries}] 필터링됨/생성실패. 재시도 중... ({filename})")
-            time.sleep(retry_delay)
+            # 응답은 왔으나 이미지가 없는 경우 (필터링 등)
+            print(f"⚠️ [시도 {attempt}/{max_retries}] 이미지 데이터 없음. 재시도... ({filename})")
+            time.sleep(2)
             
         except Exception as e:
-            print(f"⚠️ [에러] {e} ({filename})")
-            time.sleep(retry_delay)
+            error_msg = str(e)
+            # [핵심 수정] 429 (Too Many Requests) 또는 429 Resource Exhausted 에러 발생 시
+            if "429" in error_msg or "ResourceExhausted" in error_msg:
+                wait_time = 30  # 30초 동안 멈췄다가 다시 시도 (분당 제한 초기화 대기)
+                print(f"🛑 [API 제한 감지] {filename} - {wait_time}초 대기 후 재시도합니다... (시도 {attempt}/{max_retries})")
+                time.sleep(wait_time)
+            else:
+                # 일반 에러는 5초 대기
+                print(f"⚠️ [에러] {error_msg} ({filename}) - 5초 대기")
+                time.sleep(5)
             
-    # [최종 실패 시]
-    print(f"❌ [최종 실패] {filename} - 너무 민감한 주제일 수 있습니다.")
+    # [최종 실패]
+    print(f"❌ [최종 실패] {filename} - 모든 재시도 실패.")
     return None
 
 def create_zip_buffer(source_dir):
@@ -1235,9 +1242,14 @@ if start_btn:
         
         prompts.sort(key=lambda x: x[0])
         
-        # 3. 이미지 생성 (병렬)
-        status_box.write(f"🎨 이미지 생성 중 ({SELECTED_IMAGE_MODEL})...")
+        # ... (이전 코드: 프롬프트 생성 부분은 그대로 유지) ...
+
+        # 3. 이미지 생성 (병렬 처리 + 속도 조절)
+        status_box.write(f"🎨 이미지 생성 중 ({SELECTED_IMAGE_MODEL})... (API 보호를 위해 천천히 진행됩니다)")
         results = []
+        
+        # [중요] API 제한을 피하기 위해 worker 수를 강제로 조절하거나, 제출 간격을 둡니다.
+        # 사용자가 설정한 max_workers를 쓰되, 요청 간격을 벌립니다.
         
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
             future_to_meta = {}
@@ -1246,13 +1258,20 @@ if start_btn:
                 orig_text = chunks[idx]
                 fname = make_filename(s_num, orig_text)
                 
+                # [핵심 수정] 요청을 한꺼번에 쏘지 않고 3초씩 쉬면서 제출합니다.
+                # 이렇게 하면 분당 20회 제한 안쪽으로 자연스럽게 들어옵니다.
+                time.sleep(3) 
+                
                 future = executor.submit(generate_image, client, prompt_text, fname, IMAGE_OUTPUT_DIR, SELECTED_IMAGE_MODEL)
                 future_to_meta[future] = (s_num, fname, orig_text, prompt_text)
             
+            # 결과 수집
             completed_cnt = 0
             for future in as_completed(future_to_meta):
                 s_num, fname, orig_text, p_text = future_to_meta[future]
                 path = future.result()
+                
+                # [핵심] 실패(None)하더라도 결과 리스트에는 넣어서 순서가 밀리지 않게 함 (원한다면 에러 이미지 처리 가능)
                 if path:
                     results.append({
                         "scene": s_num,
@@ -1263,6 +1282,10 @@ if start_btn:
                         "audio_path": None,
                         "video_path": None 
                     })
+                else:
+                    # 실패 시 로그만 남기고 넘어가거나, 더미 데이터를 넣을 수도 있음
+                    st.error(f"Scene {s_num} 이미지 생성 최종 실패.")
+
                 completed_cnt += 1
                 progress_bar.progress(0.5 + (completed_cnt / total_scenes * 0.5))
         
@@ -1519,5 +1542,6 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
+
 
 
