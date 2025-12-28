@@ -727,7 +727,7 @@ with st.sidebar:
     
     st.markdown("---")
     st.subheader("⏱️ 장면 분할 설정")
-    chunk_duration = st.slider("한 장면당 지속 시간 (초)", 10, 60, 20, 5)
+    chunk_duration = st.slider("한 장면당 지속 시간 (초)", 5, 60, 20, 5)
     chars_limit = chunk_duration * 8 
     
     st.markdown("---")
@@ -1542,6 +1542,7 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
+
 
 
 
