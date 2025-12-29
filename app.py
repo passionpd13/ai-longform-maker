@@ -1,5 +1,6 @@
 import streamlit as st
 import requests
+import random
 import json
 import time
 import os
@@ -384,10 +385,10 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
 def generate_image(client, prompt, filename, output_dir, selected_model_name):
     full_path = os.path.join(output_dir, filename)
     
-    # [수정 1] 재시도 횟수를 10회로 늘려서 절대 포기하지 않게 함
-    max_retries = 10
+    # 재시도 설정 (최대 5회, 대기 시간 점증)
+    max_retries = 5
     
-    # [수정 2] 안전 필터 (기존 유지)
+    # 안전 필터 설정
     safety_settings = [
         types.SafetySetting(
             category="HARM_CATEGORY_DANGEROUS_CONTENT",
@@ -409,6 +410,7 @@ def generate_image(client, prompt, filename, output_dir, selected_model_name):
 
     for attempt in range(1, max_retries + 1):
         try:
+            # 이미지 생성 요청
             response = client.models.generate_content(
                 model=selected_model_name,
                 contents=[prompt],
@@ -432,13 +434,16 @@ def generate_image(client, prompt, filename, output_dir, selected_model_name):
             
         except Exception as e:
             error_msg = str(e)
-            # [핵심 수정] 429 (Too Many Requests) 또는 429 Resource Exhausted 에러 발생 시
+            
+            # [핵심 수정] 429 에러(속도 제한) 발생 시 스마트 대기
             if "429" in error_msg or "ResourceExhausted" in error_msg:
-                wait_time = 30  # 30초 동안 멈췄다가 다시 시도 (분당 제한 초기화 대기)
-                print(f"🛑 [API 제한 감지] {filename} - {wait_time}초 대기 후 재시도합니다... (시도 {attempt}/{max_retries})")
+                # 시도 횟수가 늘어날수록 대기 시간 증가 (예: 5초 -> 10초 -> 20초...)
+                # 랜덤 시간을 섞어 스레드들이 동시에 재시도하는 것 방지 (Jitter)
+                wait_time = (5 * attempt) + random.uniform(1, 3)
+                print(f"🛑 [API 제한] {filename} - {wait_time:.1f}초 대기 후 재시도... (시도 {attempt})")
                 time.sleep(wait_time)
             else:
-                # 일반 에러는 5초 대기
+                # 일반 에러는 짧게 대기
                 print(f"⚠️ [에러] {error_msg} ({filename}) - 5초 대기")
                 time.sleep(5)
             
@@ -1251,6 +1256,10 @@ if start_btn:
         # [중요] API 제한을 피하기 위해 worker 수를 강제로 조절하거나, 제출 간격을 둡니다.
         # 사용자가 설정한 max_workers를 쓰되, 요청 간격을 벌립니다.
         
+# [수정됨] 병렬 처리 최적화
+        # time.sleep(3)을 제거하여 스레드가 즉시 투입되게 함.
+        # 속도 제한은 generate_image 함수 내부에서 처리함.
+        
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
             future_to_meta = {}
             for s_num, prompt_text in prompts:
@@ -1258,9 +1267,8 @@ if start_btn:
                 orig_text = chunks[idx]
                 fname = make_filename(s_num, orig_text)
                 
-                # [핵심 수정] 요청을 한꺼번에 쏘지 않고 3초씩 쉬면서 제출합니다.
-                # 이렇게 하면 분당 20회 제한 안쪽으로 자연스럽게 들어옵니다.
-                time.sleep(3) 
+                # [수정] 3초 대기 삭제 -> 0.1초 미세 지연만 줌 (순서 꼬임 방지용)
+                time.sleep(0.1) 
                 
                 future = executor.submit(generate_image, client, prompt_text, fname, IMAGE_OUTPUT_DIR, SELECTED_IMAGE_MODEL)
                 future_to_meta[future] = (s_num, fname, orig_text, prompt_text)
@@ -1271,7 +1279,6 @@ if start_btn:
                 s_num, fname, orig_text, p_text = future_to_meta[future]
                 path = future.result()
                 
-                # [핵심] 실패(None)하더라도 결과 리스트에는 넣어서 순서가 밀리지 않게 함 (원한다면 에러 이미지 처리 가능)
                 if path:
                     results.append({
                         "scene": s_num,
@@ -1283,7 +1290,6 @@ if start_btn:
                         "video_path": None 
                     })
                 else:
-                    # 실패 시 로그만 남기고 넘어가거나, 더미 데이터를 넣을 수도 있음
                     st.error(f"Scene {s_num} 이미지 생성 최종 실패.")
 
                 completed_cnt += 1
@@ -1542,6 +1548,7 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
+
 
 
 
