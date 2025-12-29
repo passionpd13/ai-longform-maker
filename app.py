@@ -224,19 +224,31 @@ def init_folders():
             os.makedirs(path, exist_ok=True)
 
 def split_script_by_time(script, chars_per_chunk=100):
+    # 마침표, 물음표, 느낌표 뒤에 파이프(|)를 넣어 문장을 구분
     temp_sentences = script.replace(".", ".|").replace("?", "?|").replace("!", "!|").split("|")
     chunks = []
     current_chunk = ""
+    
     for sentence in temp_sentences:
         sentence = sentence.strip()
         if not sentence: continue
+        
+        # 현재 문장을 더했을 때 제한을 넘지 않으면 합침
         if len(current_chunk) + len(sentence) < chars_per_chunk:
             current_chunk += " " + sentence
         else:
-            chunks.append(current_chunk.strip())
+            # [수정된 부분] 제한을 넘어서 새로운 청크를 만들 때, 
+            # 기존 current_chunk가 비어있지 않은 경우에만 추가함
+            if current_chunk.strip(): 
+                chunks.append(current_chunk.strip())
+            
+            # 긴 문장이 바로 current_chunk가 됨
             current_chunk = sentence
-    if current_chunk:
+            
+    # 마지막 남은 문장 처리
+    if current_chunk.strip():
         chunks.append(current_chunk.strip())
+        
     return chunks
 
 def make_filename(scene_num, text_chunk):
@@ -1548,6 +1560,7 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
+
 
 
 
