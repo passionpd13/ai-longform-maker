@@ -364,7 +364,8 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
         - **텍스트 지시:** (중요) 이미지에 들어갈 텍스트를 반드시 **'{target_language}'**로 명시하십시오.
         - **안전한 묘사:** 잔인한 장면은 은유적으로 표현하여 필터링을 피하십시오.
         - **시대적 배경:** 대본의 시대(고대/중세/근대)와 장소(동양/서양)를 명확히 반영한 배경 묘사.
-        - **캐릭터 연기:** 상황에 따른 캐릭터의 표정과 동작.
+        - **캐릭터 연기:** 상황에 따른 캐릭터의 감정 표정과 동작.
+        - 배경 보다는 인물과 상황에 더 초점을 맞춘다.
 
     [🎭 캐릭터 감정 연기 지침 (Character Acting Guide) - 중요]
     얼굴 표정이 단순한 스틱맨이므로, **과장된 몸짓과 표정(Body Language)**으로 감정을 표현하십시오.
@@ -1582,6 +1583,7 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
+
 
 
 
