@@ -392,7 +392,43 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
     - **무조건 한국어(한글)**로만 작성하십시오.
     - 부가적인 설명 없이 **오직 프롬프트 텍스트만** 출력하십시오.
     """
+
     
+    # ---------------------------------------------------------
+    # [모드 3] 3D 다큐멘터리 (NEW! - 요청하신 스타일 반영)
+    # ---------------------------------------------------------
+    else: # genre_mode == "3d_docu"
+        full_instruction = f"""
+    [역할]
+    당신은 'Unreal Engine 5'를 사용하는 3D 시네마틱 아티스트입니다.
+    현대 사회의 이슈나 미스터리한 현상을 고퀄리티 3D 그래픽으로 시각화합니다.
+
+    [전체 영상 주제] "{video_title}"
+    [유저 스타일 선호] {style_instruction}
+
+    [핵심 비주얼 스타일 가이드 - 절대 준수]
+    1. **화풍 (Art Style):** "A realistic 3D game cinematic screenshot", "Unreal Engine 5 render style", "8k resolution", "Highly detailed texture".
+    2. **캐릭터 디자인 (Character Design):** - 등장인물의 머리는 반드시 **"매끈하고 하얀, 이목구비가 없는 마네킹 머리 (Smooth white featureless mannequin head)"**여야 합니다.
+       - **얼굴 묘사 금지:** 눈, 코, 입이 절대 없어야 합니다 (Blank face, No eyes/nose/mouth).
+       - **의상:** 하지만 몸에는 **현실적인 의상(정장, 가디건, 청바지, 유니폼 등)**을 입혀서 기묘하고 현대적인 느낌을 줍니다.
+    3. **조명 및 분위기 (Lighting & Mood):** - "Cinematic lighting", "Dim lighting", "Volumetric fog".
+       - 다소 어둡고, 미스터리하며, 진지한 분위기를 연출하십시오.
+    4. **언어 (Text):** {lang_guide} {lang_example} (가능한 텍스트 묘사는 줄이고 상황 묘사에 집중)
+
+    [임무]
+    제공된 대본 조각(Script Segment)을 바탕으로, 위 스타일이 적용된 이미지 생성 프롬프트를 작성하십시오.
+    
+    [작성 팁]
+    - 프롬프트 시작 부분에 반드시 **"Unreal Engine 5 render style, Realistic 3D game screenshot, Smooth white featureless mannequin head character"** 키워드가 포함되도록 문장을 구성하십시오.
+    - 대본의 상황(좌절, 성공, 회의, 폭락 등)을 마네킹 캐릭터가 연기하도록 묘사하십시오.
+
+    [출력 형식]
+    - **무조건 한국어(한글)**로만 작성하십시오. (단, Unreal Engine 5 같은 핵심 영단어는 혼용 가능)
+    - 부가 설명 없이 **오직 프롬프트 텍스트만** 출력하십시오.
+    """
+
+
+        
 # 공통 실행 로직
     payload = {
         "contents": [{"parts": [{"text": f"Instruction:\n{full_instruction}\n\nScript Segment:\n\"{text_chunk}\"\n\nImage Prompt (Korean Only, Safe for Work):"}]}]
@@ -403,7 +439,7 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
         if response.status_code == 200:
             try:
                 prompt = response.json()['candidates'][0]['content']['parts'][0]['text'].strip()
-                # [안전장치] 혹시 모를 금지어 후처리 (Python 레벨에서 한 번 더 제거)
+                # 금지어 후처리
                 banned_words = ["피가", "피를", "시체", "절단", "학살", "살해", "Blood", "Kill", "Dead"]
                 for bad in banned_words:
                     prompt = prompt.replace(bad, "")
@@ -780,16 +816,22 @@ with st.sidebar:
     st.subheader("🎨 영상 장르(Mood) 설정")
     genre_select = st.radio(
         "콘텐츠 성격 선택:",
-        ("밝은 정보/이슈 (Bright & Flat)", "역사/다큐 (Cinematic & Immersive)"),
+        (
+            "밝은 정보/이슈 (Bright & Flat)", 
+            "역사/다큐 (Cinematic & Immersive)", 
+            "3D 다큐멘터리 (Realistic 3D Game Style)"  # <--- [추가된 부분]
+        ),
         index=0,
-        help="역사/다큐 선택 시 조명이 더 드라마틱해지고 배경 묘사가 깊어집니다."
+        help="3D 다큐멘터리 선택 시: 언리얼 엔진 5 스타일의 고퀄리티 그래픽과 얼굴 없는 마네킹 캐릭터가 등장합니다."
     )
     
     # 선택된 값 변수에 저장 (메인 로직에서 사용)
     if "밝은" in genre_select:
         SELECTED_GENRE_MODE = "info"
-    else:
+    elif "역사" in genre_select:
         SELECTED_GENRE_MODE = "history"
+    else:
+        SELECTED_GENRE_MODE = "3d_docu" # <--- [추가된 모드 변수]
 
     st.markdown("---")
 
@@ -1587,6 +1629,7 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
+
 
 
 
