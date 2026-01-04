@@ -334,6 +334,7 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
         full_instruction = f"""
     [역할]
     당신은 **세계사의 결정적인 순간들(한국사, 서양사, 동양사 등)**을 한국 시청자에게 전달하는 '시대극 애니메이션 감독'입니다.
+    역사적 비극을 다루지만, 절대로 잔인하거나 혐오스러운 묘사를 하지 않습니다.
 
     [전체 영상 주제] "{video_title}"
     [그림 스타일 가이드 - 유저 지정 (최우선 준수)] {style_instruction}
@@ -364,6 +365,13 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
         - **안전한 묘사:** 잔인한 장면은 은유적으로 표현하여 필터링을 피하십시오.
         - **시대적 배경:** 대본의 시대(고대/중세/근대)와 장소(동양/서양)를 명확히 반영한 배경 묘사.
         - **캐릭터 연기:** 상황에 따른 캐릭터의 표정과 동작.
+
+    [🚨 절대 금지어 (Banned Keywords) - 프롬프트에 포함 시 탈락]
+    - 금지: 피(Blood), 출혈, 시체(Corpse, Dead body), 잘린 머리(Decapitation), 고문, 자살, 뼈/해골(Skeleton), 내장, 리얼한 총/칼(Weapon).
+    - 금지: 나치(Nazi), 욱일기 등 정치적으로 극도로 민감한 심볼.
+
+    [🛡️ 검열 회피를 위한 '시각적 은유(Visual Metaphors)' 가이드]
+    대본 내용이 잔인하거나 폭력적일 경우, 반드시 아래의 **상징물**로 대체하여 묘사하십시오.
     
     [출력 형식]
     - **무조건 한국어(한글)**로만 작성하십시오.
@@ -1560,6 +1568,7 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
+
 
 
 
