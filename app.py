@@ -366,6 +366,16 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
         - **시대적 배경:** 대본의 시대(고대/중세/근대)와 장소(동양/서양)를 명확히 반영한 배경 묘사.
         - **캐릭터 연기:** 상황에 따른 캐릭터의 표정과 동작.
 
+    [🎭 캐릭터 감정 연기 지침 (Character Acting Guide) - 중요]
+    얼굴 표정이 단순한 스틱맨이므로, **과장된 몸짓과 표정(Body Language)**으로 감정을 표현하십시오.
+    
+    1. **절망/슬픔(Despair):**
+       - 단순히 서 있지 말고 -> **'무릎을 꿇고 땅을 치는 자세', '머리를 감싸 쥐고 웅크린 자세', '서로 부둥켜안고 우는 뒷모습'**으로 묘사.
+    2. **분노/항의(Anger):**
+       - 단순히 화난 표정이 아니라 -> **'주먹을 불끈 쥐고 하늘로 뻗은 자세', '가슴을 치며 통곡하는 자세', '거칠게 삿대질하는 실루엣'**
+    3. **공포/패배(Fear):**
+       - **'뒷걸음질 치는 다급한 자세', '바닥에 주저앉아 떠는 모습', '고개를 돌려 외면하는 모습'**   
+
     [🚨 절대 금지어 (Banned Keywords) - 프롬프트에 포함 시 탈락]
     - 금지: 피(Blood), 출혈, 시체(Corpse, Dead body), 잘린 머리(Decapitation), 고문, 자살, 뼈/해골(Skeleton), 내장, 리얼한 총/칼(Weapon).
     - 금지: 나치(Nazi), 욱일기 등 정치적으로 극도로 민감한 심볼.
@@ -1572,6 +1582,7 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
+
 
 
 
