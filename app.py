@@ -340,7 +340,7 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
     [그림 스타일 가이드 - 유저 지정 (최우선 준수)] {style_instruction}
     
     [필수 연출 지침]
-    1. **[매우 중요] 매체(Medium):** 무조건 **평면적인 '2D 일러스트레이션'** 또는 **'셀 애니메이션'** 스타일로 표현하십시오. (3D, 실사, 모델링 느낌 절대 금지)
+    1. **[매우 중요] 매체(Medium):** 무조건 **평면적인 '2D 스틱맨 일러스트레이션'** 또는 **'셀 애니메이션'** 스타일로 표현하십시오. (3D, 실사, 모델링 느낌 절대 금지)
     2. **[매우 중요] 텍스트 현지화(Localization):** 배경이 서양, 중국, 일본 등 어디든 상관없이, {lang_guide}
         - **금지:** 지정된 언어 외의 문자 사용을 절대 금지합니다.
         - **예시:** {lang_example}
@@ -366,7 +366,7 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
         - **안전한 묘사:** 잔인한 장면은 은유적으로 표현하여 필터링을 피하십시오.
         - **시대적 배경:** 대본의 시대(고대/중세/근대)와 장소(동양/서양)를 명확히 반영한 배경 묘사.
         - **캐릭터 연기:** 상황에 따른 캐릭터의 감정 표정과 동작(얼굴의 눈,입 필수 연출)
-            - 단순한 스틱맨이라도 감정이 폭발하는 **만화적이고 과장된 표현**을 사용하십시오.
+            - 단순한 스틱맨이라도 상황에 따른 감정 표현을 사용하십시오.
             - **얼굴 디테일:** **'눈'과 '입'의 모양을 반드시 구체적으로 묘사**하십시오. (예: 충격으로 튀어나올 듯 커진 눈, 공포에 질려 덜덜 떨리는 입, 분노로 이가 갈리도록 꽉 다문 입, 폭포수처럼 쏟아지는 눈물 등)
             - **역동적 몸짓:** 정적인 자세 대신 감정을 온몸으로 표현하는 동작을 묘사하십시오. (예: 땅을 치며 통곡하는 자세, 머리를 감싸 쥐고 주저앉은 모습, 삿대질하며 달려드는 동작 등)
         - 배경 보다는 인물과 상황에 더 초점을 맞춘다.
@@ -409,15 +409,16 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
        - **얼굴 묘사 금지:** 눈, 코, 입이 절대 없어야 합니다 (Blank face, No eyes/nose/mouth).
        - **의상:** 하지만 몸에는 **현실적인 의상(정장, 가디건, 청바지, 유니폼 등)**을 입혀서 기묘하고 현대적인 느낌을 줍니다.
     3. **조명 및 분위기 (Lighting & Mood):** - "Cinematic lighting", "Dim lighting", "Volumetric fog".
-       - 다소 어둡고, 미스터리하며, 진지한 분위기를 연출하십시오.
+       - 다소 어둡고, 밝기도 하며, 미스터리하며, 진지한 분위기를 연출하십시오.
     4. **언어 (Text):** {lang_guide} {lang_example} (가능한 텍스트 묘사는 줄이고 상황 묘사에 집중)
 
     [임무]
     제공된 대본 조각(Script Segment)을 바탕으로, 위 스타일이 적용된 이미지 생성 프롬프트를 작성하십시오.
     
     [작성 팁]
-    - 프롬프트 시작 부분에 반드시 **"Unreal Engine 5 render style, Realistic 3D game screenshot, Smooth white featureless mannequin head character"** 키워드가 포함되도록 문장을 구성하십시오.
+    - 프롬프트 시작 부분에 반드시 **"언리얼 엔진 5 스타일, Realistic 3D game screenshot, Smooth white featureless mannequin head character"** 키워드가 포함되도록 문장을 구성하십시오.
     - 대본의 상황(좌절, 성공, 회의, 폭락 등)을 마네킹 캐릭터가 연기하도록 묘사하십시오.
+    - **분량:** 최소 7문장 이상으로 상세하게 묘사.
 
     [출력 형식]
     - **무조건 한국어(한글)**로만 작성하십시오. (단, Unreal Engine 5 같은 핵심 영단어는 혼용 가능)
@@ -1669,6 +1670,7 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
+
 
 
 
