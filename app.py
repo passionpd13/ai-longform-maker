@@ -378,9 +378,9 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
     - 부가적인 설명 없이 **오직 프롬프트 텍스트만** 출력하십시오.
     """
     
-    # 공통 실행 로직
+# 공통 실행 로직
     payload = {
-        "contents": [{"parts": [{"text": f"지시사항(Instruction):\n{full_instruction}\n\n대본 내용(Script Segment):\n\"{text_chunk}\"\n\n이미지 프롬프트 결과:"}]}]
+        "contents": [{"parts": [{"text": f"Instruction:\n{full_instruction}\n\nScript Segment:\n\"{text_chunk}\"\n\nImage Prompt (Korean Only, Safe for Work):"}]}]
     }
 
     try:
@@ -388,6 +388,10 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
         if response.status_code == 200:
             try:
                 prompt = response.json()['candidates'][0]['content']['parts'][0]['text'].strip()
+                # [안전장치] 혹시 모를 금지어 후처리 (Python 레벨에서 한 번 더 제거)
+                banned_words = ["피가", "피를", "시체", "절단", "학살", "살해", "Blood", "Kill", "Dead"]
+                for bad in banned_words:
+                    prompt = prompt.replace(bad, "")
             except:
                 prompt = text_chunk
             return (scene_num, prompt)
@@ -1568,6 +1572,7 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
+
 
 
 
