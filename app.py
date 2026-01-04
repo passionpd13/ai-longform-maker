@@ -780,8 +780,7 @@ def merge_all_videos(video_paths, output_dir):
 with st.sidebar:
     st.header("⚙️ 환경 설정")
     
-    # 1. Google API Key 자동 로드 (secrets.toml 활용)
-    # .streamlit/secrets.toml 파일에 [general] google_api_key = "..." 가 있으면 자동 로드
+    # 1. Google API Key 자동 로드
     if "general" in st.secrets and "google_api_key" in st.secrets["general"]:
         api_key = st.secrets["general"]["google_api_key"]
         st.success("🔑 Google API Key가 로드되었습니다.")
@@ -807,26 +806,79 @@ with st.sidebar:
     
     st.markdown("---")
     
-    # [NEW] 장르 선택 기능 (프롬프트 분기용)
+    # ---------------------------------------------------------------------------
+    # [NEW] 스마트 장르 선택 & 직접 입력 로직 (수정된 부분)
+    # ---------------------------------------------------------------------------
     st.subheader("🎨 영상 장르(Mood) 설정")
+
+    # 1. 프리셋 정의
+    PRESET_INFO = """대사에 어울리는 2d 얼굴이 둥근 하얀색 스틱맨 연출로 설명과 이해가 잘되는 화면 자료 느낌으로 그려줘 상황을 잘 나타내게 분활화면으로 말고 하나의 장면으로 너무 어지럽지 않게, 글씨는 핵심 키워드 2~3만 나오게 한다.
+글씨가 너무 많지 않게 핵심만. 2D 스틱맨을 활용해 대본을 설명이 잘되게 설명하는 연출을 한다. 자막 스타일 연출은 하지 않는다.
+글씨가 나올경우 핵심 키워드 중심으로만 나오게 너무 글이 많지 않도록 한다, 글자는 배경과 서물에 자연스럽게 연출, 전체 배경 연출은 2D로 디테일하게 몰입감 있게 연출해서 그려줘 (16:9).
+다양한 장소와 상황 연출로 배경을 디테일하게 한다. 무조건 2D 스틱맨 연출."""
+
+    PRESET_HISTORY = """역사적 사실을 기반으로 한 웅장하고 비극적인 '2D 시네마틱 얼굴이 둥근 하얀색 스틱맨 애니메이션' 스타일.
+깊이 있는 색감(Dark & Rich Tone)과 극적인 조명 사용.
+캐릭터는 2D 실루엣이나 스틱맨이지만 시대에 맞는 의상(갑옷, 한복, 정장 등)을 착용.
+전쟁, 기근 등의 묘사는 상징적이고 은유적으로 표현.
+배경 묘사에 디테일을 살려 시대적 분위기를 강조.무조건 2D 스틱맨 연출."""
+
+    PRESET_3D = """Unreal Engine 5 render style, Realistic 3D game cinematic screenshot.
+피사체: 매끈하고 하얀 이목구비 없는 마네킹 머리 (Smooth white featureless mannequin head). 눈코입 없음.
+복장: 가디건, 청바지, 정장 등 현실적인 의상을 입혀 기묘한 느낌 강조.
+조명: 영화 같은 조명 (Cinematic lighting), 다소 어둡고 분위기 있는(Moody) 연출.
+배경: 낡은 소파, 어지러진 방 등 사실적인 텍스처와 디테일(8k resolution)."""
+
+    # 2. 세션 상태 초기화
+    if 'style_prompt_area' not in st.session_state:
+        st.session_state['style_prompt_area'] = PRESET_INFO
+    
+    # 옵션 리스트 정의
+    OPT_INFO = "밝은 정보/이슈 (Bright & Flat)"
+    OPT_HISTORY = "역사/다큐 (Cinematic & Immersive)"
+    OPT_3D = "3D 다큐멘터리 (Realistic 3D Game Style)"
+    OPT_CUSTOM = "직접 입력 (Custom Style)"
+
+    # 3. 콜백 함수: 라디오 버튼 변경 시 -> 텍스트 업데이트
+    def update_text_from_radio():
+        selection = st.session_state.genre_radio_key
+        if selection == OPT_INFO:
+            st.session_state['style_prompt_area'] = PRESET_INFO
+        elif selection == OPT_HISTORY:
+            st.session_state['style_prompt_area'] = PRESET_HISTORY
+        elif selection == OPT_3D:
+            st.session_state['style_prompt_area'] = PRESET_3D
+        # "직접 입력" 선택 시에는 텍스트를 변경하지 않음 (사용자 입력 유지)
+
+    # 4. 콜백 함수: 텍스트 직접 수정 시 -> 라디오 버튼을 '직접 입력'으로 변경
+    def set_radio_to_custom():
+        st.session_state.genre_radio_key = OPT_CUSTOM
+
+    # 5. 라디오 버튼
     genre_select = st.radio(
         "콘텐츠 성격 선택:",
-        (
-            "밝은 정보/이슈 (Bright & Flat)", 
-            "역사/다큐 (Cinematic & Immersive)", 
-            "3D 다큐멘터리 (Realistic 3D Game Style)"  # <--- [추가된 부분]
-        ),
+        (OPT_INFO, OPT_HISTORY, OPT_3D, OPT_CUSTOM), # 옵션 4개
         index=0,
-        help="3D 다큐멘터리 선택 시: 언리얼 엔진 5 스타일의 고퀄리티 그래픽과 얼굴 없는 마네킹 캐릭터가 등장합니다."
+        key="genre_radio_key",
+        on_change=update_text_from_radio,
+        help="텍스트를 직접 수정하면 자동으로 '직접 입력' 모드로 전환됩니다."
     )
     
-    # 선택된 값 변수에 저장 (메인 로직에서 사용)
-    if "밝은" in genre_select:
+    # 내부 로직용 모드 변수 할당
+    if genre_select == OPT_INFO:
         SELECTED_GENRE_MODE = "info"
-    elif "역사" in genre_select:
+    elif genre_select == OPT_HISTORY:
         SELECTED_GENRE_MODE = "history"
+    elif genre_select == OPT_3D:
+        SELECTED_GENRE_MODE = "3d_docu"
     else:
-        SELECTED_GENRE_MODE = "3d_docu" # <--- [추가된 모드 변수]
+        # 직접 입력일 경우, 텍스트 내용에 따라 3D인지 2D인지 대략 판단하거나 기본값 설정
+        # (여기서는 텍스트에 '3D'나 'Unreal'이 있으면 3D 모드로 처리하는 센스 추가)
+        current_text = st.session_state.get('style_prompt_area', "")
+        if "3D" in current_text or "Unreal" in current_text or "Realistic" in current_text:
+            SELECTED_GENRE_MODE = "3d_docu"
+        else:
+            SELECTED_GENRE_MODE = "info" # 기본값
 
     st.markdown("---")
 
@@ -842,34 +894,31 @@ with st.sidebar:
     st.markdown("---")
 
     st.subheader("🖌️ 화풍(Style) 지침")
-    default_style = """
-대사에 어울리는 2d 얼굴이 둥근 하얀색 스틱맨 연출로 설명과 이해가 잘되는 화면 자료 느낌으로 그려줘 상황을 잘 나타내게 분활화면으로 말고 하나의 장면으로
-너무 어지럽지 않게, 글씨는 핵심 키워드 2~3만 나오게 한다
-글씨가 너무 많지 않게 핵심만. 2D 스틱맨을 활용해 대본을 설명이 잘되게 설명하는 연출을 한다. 자막 스타일 연출은 하지 않는다.
-글씨가 나올경우 핵심 키워드 중심으로만 나오게 너무 글이 많지 않도록 한다, 글자는 배경과 서물에 자연스럽게 연출, 전체 배경 연출은 2D로 디테일하게 몰입감 있게 연출해서 그려줘 (16:9)
-다양한 장소와 상황 연출로 배경을 디테일하게 한다. 무조건 2D 스틱맨 연출
-    """
-    style_instruction = st.text_area("AI에게 지시할 그림 스타일", value=default_style.strip(), height=150)
+    # 텍스트 에어리어 (on_change에 set_radio_to_custom 연결)
+    style_instruction = st.text_area(
+        "AI에게 지시할 그림 스타일 (직접 수정 가능)", 
+        key="style_prompt_area", 
+        height=200,
+        on_change=set_radio_to_custom # <--- 핵심: 글자를 치면 라디오버튼이 '직접입력'으로 바뀜
+    )
+    # ---------------------------------------------------------------------------
+
     st.markdown("---")
     
-    # [NEW] Supertone TTS 설정 (secrets.toml 적용)
+    # [NEW] Supertone TTS 설정
     st.subheader("🎙️ Supertone TTS 설정")
     
-    # Base URL은 보통 안 바뀌므로 기본값 유지
     supertone_base_url = st.text_input("API 주소 (Base URL)", value=DEFAULT_SUPERTONE_URL)
     
-    # API Key 자동 로드
     if "general" in st.secrets and "supertone_api_key" in st.secrets["general"]:
         supertone_api_key = st.secrets["general"]["supertone_api_key"]
         st.success("🔑 Supertone API Key가 로드되었습니다.")
     else:
         supertone_api_key = st.text_input("🔑 Supertone API Key", type="password")
     
-    # 목소리 목록 관리
     if 'supertone_voices' not in st.session_state:
         st.session_state['supertone_voices'] = []
     
-    # 연결 테스트 버튼
     if supertone_api_key:
         if st.button("🔌 연결 테스트 및 목소리 갱신"):
             with st.spinner("목소리 리스트 조회 중..."):
@@ -881,8 +930,6 @@ with st.sidebar:
                     st.error(msg)
                     st.session_state['supertone_voices'] = []
     
-    # 목소리 선택 UI
-    available_voices = []
     selected_voice_id = ""
     
     if st.session_state['supertone_voices']:
@@ -893,12 +940,10 @@ with st.sidebar:
             selected_voice_label = st.selectbox("목소리 선택", list(voice_options.keys()))
             selected_voice_id = voice_options[selected_voice_label]
             
-            # 썸네일 표시
             current_voice = next((v for v in valid_voices if v['voice_id'] == selected_voice_id), None)
             if current_voice and current_voice.get('thumbnail_image_url'):
                 st.image(current_voice['thumbnail_image_url'], width=100)
     else:
-        # 연결 안 되었을 때 수동 입력창
         selected_voice_id = st.text_input("Voice ID 직접 입력", value=DEFAULT_VOICE_ID)
     
     st.caption("TTS 옵션")
@@ -1624,6 +1669,7 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
+
 
 
 
