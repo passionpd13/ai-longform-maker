@@ -370,6 +370,7 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
             - **얼굴 디테일:** **'눈'과 '입'의 모양을 반드시 구체적으로 묘사**하십시오. (예: 공포에 질려 덜덜 떨리는 입, 분노로 이가 갈리도록 꽉 다문 입, 폭포수처럼 쏟아지는 눈물 등)
             - **역동적 몸짓:** 정적인 자세 대신 감정을 온몸으로 표현하는 동작을 묘사하십시오. (예: 땅을 치며 통곡하는 자세, 머리를 감싸 쥐고 주저앉은 모습, 삿대질하며 달려드는 동작 등)
         - 배경 보다는 인물과 상황에 더 초점을 맞춘다.
+        - 자막 같은 연출 하지 않는다. ("화면 하단 중앙에는 명조체로 **'필리핀, 1944년'**이라는 한글 텍스트가 선명하게 새겨져 있다" 이런 연출 하면 안된다) 
 
     [🎭 캐릭터 감정 연기 지침 (Character Acting Guide) - 중요]
     얼굴 표정이 단순한 스틱맨이므로, **몸짓과 표정(Body Language)**으로 감정을 표현하십시오.
@@ -1670,6 +1671,7 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
+
 
 
 
