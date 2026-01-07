@@ -437,13 +437,14 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
     2. **분위기 및 조명 (Atmosphere & Lighting):**
         - **"Clean Studio Lighting", "Bright", "Educational"**.
         - 그림자가 너무 짙거나 어두워서는 안 됩니다. 모든 부품과 인물이 명확하게 보여야 합니다.
-    3. **피사체 (Subject) - 기계와 인물의 조화:**
+    3. **피사체 (Subject) - 기계와 인물의 조화 및 변주:**
         - **기계/구조물:** 단면도(Cutaway), 투시도(X-ray view), 분해도(Exploded view)를 적극 활용하여 내부 작동 원리를 보여주십시오.
         - **배경 (Background):** 대본에 맞는 시대적/공간적 배경 (예: 19세기 유럽 거리, 거대한 댐 건설 현장, 미래 도시 전경).
         - **[중요] 인물(Characters):** 대본 내용에 맞춰 엔지니어, 과학자, 작업자를 등장시키십시오.
             - **복장:** 안전모, 실험 가운, 작업복 등 전문적인 복장.
             - **행동:** 단순히 서 있는 것이 아니라, **기계를 조작하거나, 특정 부위를 가리키며 설명하거나, 단면을 관찰하는 등 '기능적인 행동'**을 취해야 합니다.
-    4. **카메라 (Camera):** "Clear view", "Isometric view"(선택적), "Slight zoom"(디테일 강조). 과도한 아웃포커싱(심도)은 자제하고 전체적으로 쨍하게 보여주십시오.
+        - **[연출 변주]:** 항상 풀샷을 고집하지 마십시오. **대본 내용에 따라 기계 부품을 화면 가득 채우는 '초근접 확대(Extreme Close-up)'나, 설명하는 엔지니어를 강조하는 '인물 중심(Character Focus)' 샷**을 적절히 섞어 지루하지 않게 연출하십시오.
+    4. **카메라 (Camera):** "Clear view", "Isometric view"(전체 조망), **"Macro view"(부품 강조), "Medium Shot"(인물 강조)**. 과도한 아웃포커싱(심도)은 자제하고 전체적으로 쨍하게 보여주십시오.
     5. **언어 (Text):** {lang_guide} {lang_example} (화살표와 함께 부품 명칭을 지시할 때만 최소한으로 사용)
 
     [임무]
@@ -452,6 +453,7 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
     [작성 팁]
     - 프롬프트 시작 부분에 반드시 **"3D technical animation, Blender Cycles render, Clean studio lighting, Cutaway view"** 키워드를 포함하십시오.
     - **인물 등장 시 행동 묘사 예시:** "안전모를 쓴 엔지니어가 거대한 터빈의 단면을 손으로 가리키고 있다", "과학자가 실험 장비를 조작하며 데이터를 확인하는 모습".
+    - **샷의 다양성:** 핵심 부품이 나올 땐 'Macro shot of gear' 등으로, 인물의 반응이 중요할 땐 'Focus on Engineer's face' 등으로 구체적으로 명시하십시오.
     - **분량:** 최소 7문장 이상으로 상세하게 묘사.
 
     [출력 형식]
@@ -1721,4 +1723,5 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
+
 
