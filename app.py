@@ -421,39 +421,40 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
         """
         
     # ---------------------------------------------------------
-    # [모드 4] 과학/엔지니어링 (Cinematic Tech & Character) - [NEW! 수정됨]
+    # [모드 4] 과학/엔지니어링 (Clean Technical + Characters) - [NEW! 재수정됨]
     # ---------------------------------------------------------
     elif genre_mode == "scifi":
         full_instruction = f"""
     [역할]
-    당신은 'Fern', 'AiTelly', 'Blackfiles' 채널의 엔지니어링 감성과, 영화적 스토리텔링을 결합한 '3D 시네마틱 테크 아티스트'입니다.
-    과학 원리와 기계 구조를 보여주되, 탐구하는 '인물'의 서사와 '역동적인 카메라' 연출을 중요시합니다.
+    당신은 'Fern', 'AiTelly', 'Blackfiles' 채널 스타일의 **깔끔하고 명확한 '3D 테크니컬 애니메이터'**입니다.
+    복잡한 기계나 과학 원리를 설명하되, **엔지니어/과학자 캐릭터의 행동**을 통해 시청자의 이해를 돕습니다. (어둡고 과한 시네마틱 X, 밝고 명확한 교육용 O)
 
     [전체 영상 주제] "{video_title}"
     [유저 스타일 선호] {style_instruction}
 
     [핵심 비주얼 스타일 가이드 - 절대 준수]
-    1. **화풍 (Art Style):** "Unreal Engine 5", "Blender Cycles Render", "Cinematic Engineering", "Photorealistic", "8k".
-    2. **카메라 및 연출 (Camera & Direction):**
-        - **[다양성 필수]:** 매번 똑같은 정면 샷(Front view)은 금지입니다.
-        - **Zoom & Depth:** "Shallow depth of field(아웃포커싱)"를 사용하여 인물이나 중요 부품에 시선을 집중시키십시오.
-        - **Angles:** "Low angle(웅장함)", "High angle(구조 파악)", "Extreme Close-up(손, 눈, 부품 디테일)", "Over-the-shoulder(인물 시점)".
-    3. **피사체 (Subject) - 인물과 기계의 조화:**
-        - **인물 중심 (Character-centric):** 대본에서 누군가 고민하거나, 발견하거나, 조작하는 내용이라면 **과감하게 인물을 메인(Hero)으로** 내세우십시오. (예: 빛나는 상자를 열어보는 남자, 거대 엔진 앞에 선 엔지니어).
-        - **기계 중심 (Object-centric):** 구조 설명이 주를 이룰 때는 단면도(Cutaway)나 분해도(Exploded view)를 사용하십시오.
-    4. **조명 (Lighting):** - 단순한 스튜디오 조명을 넘어, **"Volumetric lighting(빛내림)", "Cinematic mood", "Dramatic shadows"**를 사용하여 깊이감을 만드십시오.
-    5. **언어 (Text):** {lang_guide} {lang_example} (텍스트 최소화, 비주얼 집중)
+    1. **화풍 (Art Style):** "3D Technical Animation", "Blender Cycles Render", "Clean rendering", "High detail".
+    2. **분위기 및 조명 (Atmosphere & Lighting):**
+        - **"Clean Studio Lighting", "Bright", "Educational"**.
+        - 그림자가 너무 짙거나 어두워서는 안 됩니다. 모든 부품과 인물이 명확하게 보여야 합니다.
+    3. **피사체 (Subject) - 기계와 인물의 조화:**
+        - **기계/구조물:** 단면도(Cutaway), 투시도(X-ray view), 분해도(Exploded view)를 적극 활용하여 내부 작동 원리를 보여주십시오.
+        - **[중요] 인물(Characters):** 대본 내용에 맞춰 엔지니어, 과학자, 작업자를 등장시키십시오.
+            - **복장:** 안전모, 실험 가운, 작업복 등 전문적인 복장.
+            - **행동:** 단순히 서 있는 것이 아니라, **기계를 조작하거나, 특정 부위를 가리키며 설명하거나, 단면을 관찰하는 등 '기능적인 행동'**을 취해야 합니다.
+    4. **카메라 (Camera):** "Clear view", "Isometric view"(선택적), "Slight zoom"(디테일 강조). 과도한 아웃포커싱(심도)은 자제하고 전체적으로 쨍하게 보여주십시오.
+    5. **언어 (Text):** {lang_guide} {lang_example} (화살표와 함께 부품 명칭을 지시할 때만 최소한으로 사용)
 
     [임무]
-    제공된 대본 조각(Script Segment)을 바탕으로, 시각적으로 지루하지 않고 영화 같은 3D 프롬프트를 작성하십시오.
+    제공된 대본 조각(Script Segment)을 바탕으로, 마치 공학 교육 영상의 한 장면 같은 3D 프롬프트를 작성하십시오.
     
     [작성 팁]
-    - 프롬프트 시작 부분에 반드시 **"Cinematic 3D animation, Unreal Engine 5 render, Volumetric lighting, Shallow depth of field"** 키워드를 포함하십시오.
-    - **인물 등장 시:** "A mysterious man in a suit examining a glowing artifact", "An engineer looking up at a massive structure" 등 구체적인 행동과 감정을 묘사하십시오.
+    - 프롬프트 시작 부분에 반드시 **"3D technical animation, Blender Cycles render, Clean studio lighting, Cutaway view"** 키워드를 포함하십시오.
+    - **인물 등장 시 행동 묘사 예시:** "안전모를 쓴 엔지니어가 거대한 터빈의 단면을 손으로 가리키고 있다", "과학자가 실험 장비를 조작하며 데이터를 확인하는 모습".
     - **분량:** 최소 7문장 이상으로 상세하게 묘사.
 
     [출력 형식]
-    - **무조건 한국어(한글)**로만 작성하십시오. (단, Cinematic, Volumetric lighting 같은 핵심 영단어는 혼용 가능)
+    - **무조건 한국어(한글)**로만 작성하십시오. (단, Cutaway, X-ray view 같은 핵심 영단어는 혼용 가능)
     - 부가 설명 없이 **오직 프롬프트 텍스트만** 출력하십시오.
         """
 
@@ -866,12 +867,12 @@ with st.sidebar:
 조명: 영화 같은 조명 (Cinematic lighting), 다소 어둡고 분위기 있는(Moody) 연출.
 배경: 낡은 소파, 어지러진 방 등 사실적인 텍스처와 디테일(8k resolution)."""
 
-    # [NEW] 공상과학/엔지니어링 프리셋 수정 (시네마틱 인물 + 다이나믹 카메라)
-    PRESET_SCIFI = """3D Cinematic Engineering & Discovery (Fern, AiTelly + Storytelling).
-화풍: Blender Cycles / Unreal Engine 5, Cinematic Lighting.
-연출: 기술적 단면도(Cutaway)와 드라마틱한 인물 연기(Character Acting)의 조화.
-카메라: 역동적인 앵글(Low angle, Top view), 줌인/아웃, 뎁스 오브 필드(DoF).
-피사체: 거대 기계, 미스터리한 유물, 또는 그것을 탐구하는 엔지니어/과학자(주인공)."""
+    # [NEW] 공상과학/엔지니어링 프리셋 수정 (Clean Technical + Characters)
+    PRESET_SCIFI = """3D Technical Animation (Fern, AiTelly Style).
+화풍: Blender Cycles / Clean Rendering, 밝은 스튜디오 조명(Clean Studio Lighting).
+연출: 기계/건축물의 단면도(Cutaway) 및 작동 원리 시각화.
+인물: 엔지니어/과학자 캐릭터가 등장하여 기계를 조작하거나 설명하는 기능적 역할 수행.
+분위기: 깔끔하고, 교육적이며, 명확함(Clear & Educational). 과도한 그림자 배제."""
 
     # 2. 세션 상태 초기화
     if 'style_prompt_area' not in st.session_state:
