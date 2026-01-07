@@ -421,44 +421,39 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
         """
         
     # ---------------------------------------------------------
-    # [모드 4] 과학/엔지니어링 (Fern/AiTelly Style) - [NEW! 수정됨]
+    # [모드 4] 과학/엔지니어링 (Cinematic Tech & Character) - [NEW! 수정됨]
     # ---------------------------------------------------------
     elif genre_mode == "scifi":
         full_instruction = f"""
     [역할]
-    당신은 'Fern', 'AiTelly', 'Blackfiles' 채널 스타일의 '3D 테크니컬 아티스트'입니다.
-    복잡한 과학 원리, 기계 내부 구조, 거대 건축물을 아주 명쾌하고 직관적인 '3D 엔지니어링 애니메이션' 스타일로 시각화합니다.
+    당신은 'Fern', 'AiTelly', 'Blackfiles' 채널의 엔지니어링 감성과, 영화적 스토리텔링을 결합한 '3D 시네마틱 테크 아티스트'입니다.
+    과학 원리와 기계 구조를 보여주되, 탐구하는 '인물'의 서사와 '역동적인 카메라' 연출을 중요시합니다.
 
     [전체 영상 주제] "{video_title}"
     [유저 스타일 선호] {style_instruction}
 
     [핵심 비주얼 스타일 가이드 - 절대 준수]
-    1. **화풍 (Art Style):** "3D Technical Animation", "Blender Cycles Render", "Realistic Engineering rendering", "Clean cutaway view (단면도)", "Hard Surface Modeling".
-    2. **분위기 (Atmosphere):** "Clean", "Educational", "Studio Lighting", "Professional", "High-tech".
-        - **[주의]:** 무조건 어두운 우주 배경이나 네온 사인이 아닙니다. **설명하고자 하는 물체가 가장 잘 보이는 깔끔한 환경**입니다.
-    3. **배경 (Background):**
-        - 피사체를 돋보이게 하는 **'단색 스튜디오 배경 (Solid Studio Background)'** (흰색, 연회색, 또는 짙은 남색 그라데이션).
-        - 복잡한 우주 배경이나 풍경보다는 **물체 자체에 집중**하십시오.
-    4. **피사체 (Subject) & 인물 등장(Characters):**
-        - **기본:** 대본에 나오는 **기계, 건축물, 신체 기관 등의 '내부 구조'와 '작동 원리'**를 시각화하십시오.
-        - **[중요] 인물 연출:** 대본 상황상 **'사람의 조작', '크기 비교', '설명'이 필요한 경우에만** 엔지니어, 과학자, 작업자 캐릭터를 등장시키십시오.
-            - 등장 시: 안전모를 쓴 엔지니어, 실험 가운을 입은 과학자 등 **전문적인 복장**.
-            - 행동: 기계를 조작하거나, 단면도를 가리키거나, 팔짱을 끼고 관찰하는 등 **전문적인 제스처**를 취하십시오. (과도한 감정 표현보다는 차분한 전문가 느낌)
-        - 필요하다면 **반투명한 외관(Transparent casing)**이나 **단면도(Cutaway/Cross-section)**를 사용하여 내부가 보이게 연출하십시오.
-    5. **조명 (Lighting):** "Softbox lighting", "Three-point lighting", "Clean reflections". 그림자가 너무 짙지 않게 하여 모든 디테일이 잘 보여야 합니다.
-    6. **언어 (Text):** {lang_guide} {lang_example} (텍스트는 부품의 명칭 등을 지시할 때만 사용)
+    1. **화풍 (Art Style):** "Unreal Engine 5", "Blender Cycles Render", "Cinematic Engineering", "Photorealistic", "8k".
+    2. **카메라 및 연출 (Camera & Direction):**
+        - **[다양성 필수]:** 매번 똑같은 정면 샷(Front view)은 금지입니다.
+        - **Zoom & Depth:** "Shallow depth of field(아웃포커싱)"를 사용하여 인물이나 중요 부품에 시선을 집중시키십시오.
+        - **Angles:** "Low angle(웅장함)", "High angle(구조 파악)", "Extreme Close-up(손, 눈, 부품 디테일)", "Over-the-shoulder(인물 시점)".
+    3. **피사체 (Subject) - 인물과 기계의 조화:**
+        - **인물 중심 (Character-centric):** 대본에서 누군가 고민하거나, 발견하거나, 조작하는 내용이라면 **과감하게 인물을 메인(Hero)으로** 내세우십시오. (예: 빛나는 상자를 열어보는 남자, 거대 엔진 앞에 선 엔지니어).
+        - **기계 중심 (Object-centric):** 구조 설명이 주를 이룰 때는 단면도(Cutaway)나 분해도(Exploded view)를 사용하십시오.
+    4. **조명 (Lighting):** - 단순한 스튜디오 조명을 넘어, **"Volumetric lighting(빛내림)", "Cinematic mood", "Dramatic shadows"**를 사용하여 깊이감을 만드십시오.
+    5. **언어 (Text):** {lang_guide} {lang_example} (텍스트 최소화, 비주얼 집중)
 
     [임무]
-    제공된 대본 조각(Script Segment)을 바탕으로, 마치 공학 다큐멘터리의 한 장면 같은 3D 프롬프트를 작성하십시오.
+    제공된 대본 조각(Script Segment)을 바탕으로, 시각적으로 지루하지 않고 영화 같은 3D 프롬프트를 작성하십시오.
     
     [작성 팁]
-    - 프롬프트 시작 부분에 반드시 **"3D engineering animation, Cutaway view, Blender Cycles render, Clean studio background"** 키워드가 포함되도록 문장을 구성하십시오.
-    - 대본이 설명하는 원리를 **시각적 다이어그램**처럼 묘사하십시오.
-    - **인물 등장 시:** "An engineer in a hard hat pointing at the engine part" 처럼 구체적인 행동을 묘사하십시오.
+    - 프롬프트 시작 부분에 반드시 **"Cinematic 3D animation, Unreal Engine 5 render, Volumetric lighting, Shallow depth of field"** 키워드를 포함하십시오.
+    - **인물 등장 시:** "A mysterious man in a suit examining a glowing artifact", "An engineer looking up at a massive structure" 등 구체적인 행동과 감정을 묘사하십시오.
     - **분량:** 최소 7문장 이상으로 상세하게 묘사.
 
     [출력 형식]
-    - **무조건 한국어(한글)**로만 작성하십시오. (단, Cutaway, X-ray view 같은 핵심 영단어는 혼용 가능)
+    - **무조건 한국어(한글)**로만 작성하십시오. (단, Cinematic, Volumetric lighting 같은 핵심 영단어는 혼용 가능)
     - 부가 설명 없이 **오직 프롬프트 텍스트만** 출력하십시오.
         """
 
@@ -871,14 +866,12 @@ with st.sidebar:
 조명: 영화 같은 조명 (Cinematic lighting), 다소 어둡고 분위기 있는(Moody) 연출.
 배경: 낡은 소파, 어지러진 방 등 사실적인 텍스처와 디테일(8k resolution)."""
 
-    # [NEW] 공상과학/엔지니어링 프리셋 수정 (Fern, AiTelly 스타일 + 인물 연출 추가)
-    PRESET_SCIFI = """3D Technical Animation Style (Fern, AiTelly style).
-주제: 공학(Engineering), 과학 원리, 기계 내부 구조.
-화풍: Blender Cycles Render, Realistic Material, 4k.
-연출: 단면도(Cutaway), 내부가 보이는 투시도(X-ray view), 부품 분해도(Exploded view).
-인물: 필요 시 엔지니어/과학자 등장 (전문적인 행동 및 복장).
-배경: 깔끔한 스튜디오 조명과 단색 배경(Clean Studio Background). 불필요한 장식 배제.
-피사체: 기계 장치, 인체 장기, 건축물 등의 디테일한 3D 모델."""
+    # [NEW] 공상과학/엔지니어링 프리셋 수정 (시네마틱 인물 + 다이나믹 카메라)
+    PRESET_SCIFI = """3D Cinematic Engineering & Discovery (Fern, AiTelly + Storytelling).
+화풍: Blender Cycles / Unreal Engine 5, Cinematic Lighting.
+연출: 기술적 단면도(Cutaway)와 드라마틱한 인물 연기(Character Acting)의 조화.
+카메라: 역동적인 앵글(Low angle, Top view), 줌인/아웃, 뎁스 오브 필드(DoF).
+피사체: 거대 기계, 미스터리한 유물, 또는 그것을 탐구하는 엔지니어/과학자(주인공)."""
 
     # 2. 세션 상태 초기화
     if 'style_prompt_area' not in st.session_state:
@@ -888,7 +881,7 @@ with st.sidebar:
     OPT_INFO = "밝은 정보/이슈 (Bright & Flat)"
     OPT_HISTORY = "역사/다큐 (Cinematic & Immersive)"
     OPT_3D = "3D 다큐멘터리 (Realistic 3D Game Style)"
-    OPT_SCIFI = "과학/엔지니어링 (3D Tech & Cutaway)" # [NEW] 이름 변경
+    OPT_SCIFI = "과학/엔지니어링 (3D Tech & Character)" # [NEW] 이름 변경
     OPT_CUSTOM = "직접 입력 (Custom Style)"
 
     # 3. 콜백 함수: 라디오 버튼 변경 시 -> 텍스트 업데이트
