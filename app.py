@@ -387,7 +387,7 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
         """
 
     # ---------------------------------------------------------
-    # [모드 3] 3D 다큐멘터리 (NEW! - 요청하신 스타일 반영)
+    # [모드 3] 3D 다큐멘터리 (현대/미스터리)
     # ---------------------------------------------------------
     elif genre_mode == "3d_docu":
         full_instruction = f"""
@@ -421,36 +421,40 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
         """
         
     # ---------------------------------------------------------
-    # [모드 4] 공상과학/우주 (Sci-Fi 3D) - [NEW! 추가된 부분]
+    # [모드 4] 과학/엔지니어링 (Fern/AiTelly Style) - [NEW! 수정된 부분]
     # ---------------------------------------------------------
     elif genre_mode == "scifi":
         full_instruction = f"""
     [역할]
-    당신은 'Sci-Fi Concept Artist'이자 'Scientific Visualizer'입니다.
-    복잡한 과학 이론, 우주 현상, 미래 기술을 'Unreal Engine 5' 및 'Octane Render' 스타일의 초고화질 3D 아트로 시각화합니다.
+    당신은 'Fern', 'AiTelly', 'Blackfiles' 채널 스타일의 '3D 테크니컬 아티스트'입니다.
+    복잡한 과학 원리, 기계 내부 구조, 거대 건축물을 아주 명쾌하고 직관적인 '3D 엔지니어링 애니메이션' 스타일로 시각화합니다.
 
     [전체 영상 주제] "{video_title}"
     [유저 스타일 선호] {style_instruction}
 
     [핵심 비주얼 스타일 가이드 - 절대 준수]
-    1. **화풍 (Art Style):** "Unreal Engine 5", "Octane Render", "8k resolution", "Hyper-realistic", "Cinematic Space Art".
-    2. **분위기 (Atmosphere):** "Mysterious", "Futuristic", "Vast Scale", "Neon & Dark Blue Tones", "Glowing Particles", "Cyberpunk elements (if applicable)".
-    3. **피사체 (Subject):**
-       - **인물 필요 시:** "미래형 우주복을 입은 비행사(얼굴은 헬멧으로 가려짐)", "첨단 기술이 적용된 실루엣", "AI 로봇". (일반 현대인은 등장하지 않음)
-       - **현상 묘사 시:** 블랙홀, 성운(Nebula), DNA 이중나선, 양자 입자, 미래 도시, 우주선 내부, 실험실 등 **과학적 상상력을 극대화**하십시오.
-    4. **조명 (Lighting):** "Volumetric lighting", "Rim light", "Bioluminescence", "Neon Lights".
-    5. **언어 (Text):** {lang_guide} {lang_example} (텍스트는 최소화하고 시각적 웅장함에 집중)
+    1. **화풍 (Art Style):** "3D Technical Animation", "Blender Cycles Render", "Realistic Engineering rendering", "Clean cutaway view (단면도)", "Hard Surface Modeling".
+    2. **분위기 (Atmosphere):** "Clean", "Educational", "Studio Lighting", "Professional", "High-tech".
+        - **[주의]:** 무조건 어두운 우주 배경이나 네온 사인이 아닙니다. **설명하고자 하는 물체가 가장 잘 보이는 깔끔한 환경**입니다.
+    3. **배경 (Background):**
+        - 피사체를 돋보이게 하는 **'단색 스튜디오 배경 (Solid Studio Background)'** (흰색, 연회색, 또는 짙은 남색 그라데이션).
+        - 복잡한 우주 배경이나 풍경보다는 **물체 자체에 집중**하십시오.
+    4. **피사체 (Subject):**
+        - 대본에 나오는 **기계, 건축물, 신체 기관 등의 '내부 구조'와 '작동 원리'**를 시각화하십시오.
+        - 필요하다면 **반투명한 외관(Transparent casing)**이나 **단면도(Cutaway/Cross-section)**를 사용하여 내부가 보이게 연출하십시오.
+    5. **조명 (Lighting):** "Softbox lighting", "Three-point lighting", "Clean reflections". 그림자가 너무 짙지 않게 하여 모든 디테일이 잘 보여야 합니다.
+    6. **언어 (Text):** {lang_guide} {lang_example} (텍스트는 부품의 명칭 등을 지시할 때만 사용)
 
     [임무]
-    제공된 대본 조각(Script Segment)을 바탕으로, 과학적 상상력과 시각적 충격(Visual Impact)을 주는 3D 프롬프트를 작성하십시오.
+    제공된 대본 조각(Script Segment)을 바탕으로, 마치 공학 다큐멘터리의 한 장면 같은 3D 프롬프트를 작성하십시오.
     
     [작성 팁]
-    - 프롬프트 시작 부분에 반드시 **"Unreal Engine 5, Octane Render, Sci-Fi Cinematic, Hyper-realistic"** 키워드가 포함되도록 문장을 구성하십시오.
-    - 대본이 설명하는 과학적 원리나 미래 상황을 구체적인 시각물로 변환하십시오.
+    - 프롬프트 시작 부분에 반드시 **"3D engineering animation, Cutaway view, Blender Cycles render, Clean studio background"** 키워드가 포함되도록 문장을 구성하십시오.
+    - 대본이 설명하는 원리를 **시각적 다이어그램**처럼 묘사하십시오. (예: 엔진 내부에서 피스톤이 움직이는 모습, 건물의 층별 구조 등)
     - **분량:** 최소 7문장 이상으로 상세하게 묘사.
 
     [출력 형식]
-    - **무조건 한국어(한글)**로만 작성하십시오. (단, Octane Render, Nebula 같은 핵심 영단어는 혼용 가능)
+    - **무조건 한국어(한글)**로만 작성하십시오. (단, Cutaway, X-ray view 같은 핵심 영단어는 혼용 가능)
     - 부가 설명 없이 **오직 프롬프트 텍스트만** 출력하십시오.
         """
 
@@ -863,13 +867,13 @@ with st.sidebar:
 조명: 영화 같은 조명 (Cinematic lighting), 다소 어둡고 분위기 있는(Moody) 연출.
 배경: 낡은 소파, 어지러진 방 등 사실적인 텍스처와 디테일(8k resolution)."""
 
-    # [NEW] 공상과학/우주 프리셋 추가
-    PRESET_SCIFI = """Unreal Engine 5 render style, Octane Render, 8k Resolution.
-주제: 공상과학(Sci-Fi), 우주(Space), 미래기술(Future Tech).
-피사체: 미래형 우주복을 입은 우주인(얼굴 안보임), 최첨단 AI 로봇, 실루엣.
-분위기: 신비롭고 웅장함(Mysterious & Epic), 네온 사인, 발광 입자(Glowing Particles).
-배경: 광활한 우주, 블랙홀, 성운, 미래 도시, 하이테크 실험실.
-조명: 볼류메트릭 라이팅(Volumetric Lighting), 림 라이트(Rim Light), 시네마틱 톤."""
+    # [NEW] 공상과학/엔지니어링 프리셋 수정 (Fern, AiTelly 스타일)
+    PRESET_SCIFI = """3D Technical Animation Style (Fern, AiTelly style).
+주제: 공학(Engineering), 과학 원리, 기계 내부 구조.
+화풍: Blender Cycles Render, Realistic Material, 4k.
+연출: 단면도(Cutaway), 내부가 보이는 투시도(X-ray view), 부품 분해도(Exploded view).
+배경: 깔끔한 스튜디오 조명과 단색 배경(Clean Studio Background). 불필요한 장식 배제.
+피사체: 기계 장치, 인체 장기, 건축물 등의 디테일한 3D 모델."""
 
     # 2. 세션 상태 초기화
     if 'style_prompt_area' not in st.session_state:
@@ -879,7 +883,7 @@ with st.sidebar:
     OPT_INFO = "밝은 정보/이슈 (Bright & Flat)"
     OPT_HISTORY = "역사/다큐 (Cinematic & Immersive)"
     OPT_3D = "3D 다큐멘터리 (Realistic 3D Game Style)"
-    OPT_SCIFI = "공상과학/우주 (Sci-Fi 3D & Space)" # [NEW]
+    OPT_SCIFI = "과학/엔지니어링 (3D Tech & Cutaway)" # [NEW] 이름 변경
     OPT_CUSTOM = "직접 입력 (Custom Style)"
 
     # 3. 콜백 함수: 라디오 버튼 변경 시 -> 텍스트 업데이트
