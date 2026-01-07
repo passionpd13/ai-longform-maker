@@ -389,7 +389,7 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
     # ---------------------------------------------------------
     # [모드 3] 3D 다큐멘터리 (NEW! - 요청하신 스타일 반영)
     # ---------------------------------------------------------
-    else: # genre_mode == "3d_docu"
+    elif genre_mode == "3d_docu":
         full_instruction = f"""
     [역할]
     당신은 'Unreal Engine 5'를 사용하는 3D 시네마틱 아티스트입니다.
@@ -419,6 +419,44 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
     - **무조건 한국어(한글)**로만 작성하십시오. (단, Unreal Engine 5 같은 핵심 영단어는 혼용 가능)
     - 부가 설명 없이 **오직 프롬프트 텍스트만** 출력하십시오.
         """
+        
+    # ---------------------------------------------------------
+    # [모드 4] 공상과학/우주 (Sci-Fi 3D) - [NEW! 추가된 부분]
+    # ---------------------------------------------------------
+    elif genre_mode == "scifi":
+        full_instruction = f"""
+    [역할]
+    당신은 'Sci-Fi Concept Artist'이자 'Scientific Visualizer'입니다.
+    복잡한 과학 이론, 우주 현상, 미래 기술을 'Unreal Engine 5' 및 'Octane Render' 스타일의 초고화질 3D 아트로 시각화합니다.
+
+    [전체 영상 주제] "{video_title}"
+    [유저 스타일 선호] {style_instruction}
+
+    [핵심 비주얼 스타일 가이드 - 절대 준수]
+    1. **화풍 (Art Style):** "Unreal Engine 5", "Octane Render", "8k resolution", "Hyper-realistic", "Cinematic Space Art".
+    2. **분위기 (Atmosphere):** "Mysterious", "Futuristic", "Vast Scale", "Neon & Dark Blue Tones", "Glowing Particles", "Cyberpunk elements (if applicable)".
+    3. **피사체 (Subject):**
+       - **인물 필요 시:** "미래형 우주복을 입은 비행사(얼굴은 헬멧으로 가려짐)", "첨단 기술이 적용된 실루엣", "AI 로봇". (일반 현대인은 등장하지 않음)
+       - **현상 묘사 시:** 블랙홀, 성운(Nebula), DNA 이중나선, 양자 입자, 미래 도시, 우주선 내부, 실험실 등 **과학적 상상력을 극대화**하십시오.
+    4. **조명 (Lighting):** "Volumetric lighting", "Rim light", "Bioluminescence", "Neon Lights".
+    5. **언어 (Text):** {lang_guide} {lang_example} (텍스트는 최소화하고 시각적 웅장함에 집중)
+
+    [임무]
+    제공된 대본 조각(Script Segment)을 바탕으로, 과학적 상상력과 시각적 충격(Visual Impact)을 주는 3D 프롬프트를 작성하십시오.
+    
+    [작성 팁]
+    - 프롬프트 시작 부분에 반드시 **"Unreal Engine 5, Octane Render, Sci-Fi Cinematic, Hyper-realistic"** 키워드가 포함되도록 문장을 구성하십시오.
+    - 대본이 설명하는 과학적 원리나 미래 상황을 구체적인 시각물로 변환하십시오.
+    - **분량:** 최소 7문장 이상으로 상세하게 묘사.
+
+    [출력 형식]
+    - **무조건 한국어(한글)**로만 작성하십시오. (단, Octane Render, Nebula 같은 핵심 영단어는 혼용 가능)
+    - 부가 설명 없이 **오직 프롬프트 텍스트만** 출력하십시오.
+        """
+
+    else: # genre_mode == "3d_docu"
+        # 위에서 3d_docu를 elif로 처리했으므로 이 else문은 실행되지 않겠지만 구조상 남겨둠 (혹은 Fallback)
+        full_instruction = f"스타일: {style_instruction}. 대본 내용: {text_chunk}. 이미지 프롬프트 작성."
 
     # 공통 실행 로직
     payload = {
@@ -825,6 +863,14 @@ with st.sidebar:
 조명: 영화 같은 조명 (Cinematic lighting), 다소 어둡고 분위기 있는(Moody) 연출.
 배경: 낡은 소파, 어지러진 방 등 사실적인 텍스처와 디테일(8k resolution)."""
 
+    # [NEW] 공상과학/우주 프리셋 추가
+    PRESET_SCIFI = """Unreal Engine 5 render style, Octane Render, 8k Resolution.
+주제: 공상과학(Sci-Fi), 우주(Space), 미래기술(Future Tech).
+피사체: 미래형 우주복을 입은 우주인(얼굴 안보임), 최첨단 AI 로봇, 실루엣.
+분위기: 신비롭고 웅장함(Mysterious & Epic), 네온 사인, 발광 입자(Glowing Particles).
+배경: 광활한 우주, 블랙홀, 성운, 미래 도시, 하이테크 실험실.
+조명: 볼류메트릭 라이팅(Volumetric Lighting), 림 라이트(Rim Light), 시네마틱 톤."""
+
     # 2. 세션 상태 초기화
     if 'style_prompt_area' not in st.session_state:
         st.session_state['style_prompt_area'] = PRESET_INFO
@@ -833,6 +879,7 @@ with st.sidebar:
     OPT_INFO = "밝은 정보/이슈 (Bright & Flat)"
     OPT_HISTORY = "역사/다큐 (Cinematic & Immersive)"
     OPT_3D = "3D 다큐멘터리 (Realistic 3D Game Style)"
+    OPT_SCIFI = "공상과학/우주 (Sci-Fi 3D & Space)" # [NEW]
     OPT_CUSTOM = "직접 입력 (Custom Style)"
 
     # 3. 콜백 함수: 라디오 버튼 변경 시 -> 텍스트 업데이트
@@ -844,6 +891,8 @@ with st.sidebar:
             st.session_state['style_prompt_area'] = PRESET_HISTORY
         elif selection == OPT_3D:
             st.session_state['style_prompt_area'] = PRESET_3D
+        elif selection == OPT_SCIFI: # [NEW]
+            st.session_state['style_prompt_area'] = PRESET_SCIFI
         # "직접 입력" 선택 시에는 텍스트를 변경하지 않음 (사용자 입력 유지)
 
     # 4. 콜백 함수: 텍스트 직접 수정 시 -> 라디오 버튼을 '직접 입력'으로 변경
@@ -853,7 +902,7 @@ with st.sidebar:
     # 5. 라디오 버튼
     genre_select = st.radio(
         "콘텐츠 성격 선택:",
-        (OPT_INFO, OPT_HISTORY, OPT_3D, OPT_CUSTOM), # 옵션 4개
+        (OPT_INFO, OPT_HISTORY, OPT_3D, OPT_SCIFI, OPT_CUSTOM), # [NEW] 옵션 5개로 증가
         index=0,
         key="genre_radio_key",
         on_change=update_text_from_radio,
@@ -867,6 +916,8 @@ with st.sidebar:
         SELECTED_GENRE_MODE = "history"
     elif genre_select == OPT_3D:
         SELECTED_GENRE_MODE = "3d_docu"
+    elif genre_select == OPT_SCIFI: # [NEW]
+        SELECTED_GENRE_MODE = "scifi"
     else:
         # 직접 입력일 경우, 텍스트 내용에 따라 3D인지 2D인지 대략 판단하거나 기본값 설정
         # (여기서는 텍스트에 '3D'나 'Unreal'이 있으면 3D 모드로 처리하는 센스 추가)
@@ -1665,24 +1716,3 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
