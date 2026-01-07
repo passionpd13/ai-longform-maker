@@ -439,7 +439,7 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
         - 그림자가 너무 짙거나 어두워서는 안 됩니다. 모든 부품과 인물이 명확하게 보여야 합니다.
     3. **피사체 (Subject) - 기계와 인물의 조화:**
         - **기계/구조물:** 단면도(Cutaway), 투시도(X-ray view), 분해도(Exploded view)를 적극 활용하여 내부 작동 원리를 보여주십시오.
-        - **[중요] 인물(Characters):** 대본 내용에 맞춰 엔지니어, 과학자, 작업자를 등장시키십시오.
+        - **[중요] 인물(Characters):** 대본 내용에 맞춰 엔지니어, 과학자, 작업자를 3d 게임 캐릭터 처럼 등장시키십시오.
             - **복장:** 안전모, 실험 가운, 작업복 등 전문적인 복장.
             - **행동:** 단순히 서 있는 것이 아니라, **기계를 조작하거나, 특정 부위를 가리키며 설명하거나, 단면을 관찰하는 등 '기능적인 행동'**을 취해야 합니다.
     4. **카메라 (Camera):** "Clear view", "Isometric view"(선택적), "Slight zoom"(디테일 강조). 과도한 아웃포커싱(심도)은 자제하고 전체적으로 쨍하게 보여주십시오.
@@ -871,7 +871,7 @@ with st.sidebar:
     PRESET_SCIFI = """3D Technical Animation (Fern, AiTelly Style).
 화풍: Blender Cycles / Clean Rendering, 밝은 스튜디오 조명(Clean Studio Lighting).
 연출: 기계/건축물의 단면도(Cutaway) 및 작동 원리 시각화.
-인물: 엔지니어/과학자 캐릭터가 등장하여 기계를 조작하거나 설명하는 기능적 역할 수행.
+인물: 엔지니어/과학자/교사/회사원/군인 등등 다양한 3d 캐릭터가 등장하여 기계를 조작하거나 설명하는 기능적 역할 수행.
 분위기: 깔끔하고, 교육적이며, 명확함(Clear & Educational). 과도한 그림자 배제."""
 
     # 2. 세션 상태 초기화
@@ -1719,3 +1719,4 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
+
