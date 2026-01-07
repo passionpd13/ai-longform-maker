@@ -873,8 +873,8 @@ with st.sidebar:
 화풍: Blender Cycles / Clean Rendering, 밝은 스튜디오 조명(Clean Studio Lighting).
 연출: 기계/건축물의 단면도(Cutaway) 및 작동 원리 시각화.
 인물: 엔지니어/과학자 캐릭터가 등장하여 기계를 조작하거나 설명하는 기능적 역할 수행.
-분위기: 깔끔하고, 교육적이며, 명확함(Clear & Educational). 과도한 그림자 배제."""
-배경 : 대본에 맞는 시대적/공간적 배경 (예: 19세기 유럽 거리, 거대한 댐 건설 현장).
+분위기: 깔끔하고, 교육적이며, 명확함(Clear & Educational). 과도한 그림자 배제.
+배경 : 대본에 맞는 시대적/공간적 배경 (예: 19세기 유럽 거리, 거대한 댐 건설 현장)."""
 
     # 2. 세션 상태 초기화
     if 'style_prompt_area' not in st.session_state:
@@ -1721,3 +1721,4 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
+
