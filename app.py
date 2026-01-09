@@ -859,7 +859,7 @@ with st.sidebar:
     PRESET_HISTORY = """역사적 사실을 기반으로 한 웅장하고 비극적인 '2D 시네마틱 얼굴이 둥근 하얀색 스틱맨 애니메이션' 스타일.
 깊이 있는 색감(Dark & Rich Tone)과 극적인 조명 사용.
 캐릭터는 2D 실루엣이나 스틱맨이지만 시대에 맞는 의상(갑옷, 한복, 정장 등)을 착용.
-전쟁, 기근 등의 묘사는 상징적이고 은유적으로 표현.
+전쟁, 기근 등의 묘사는 상징적이고 은유적으로 표현. 너무 고어틱한 연출은 하지 않는다.
 배경 묘사에 디테일을 살려 시대적 분위기를 강조.무조건 2D 스틱맨 연출."""
 
     PRESET_3D = """Unreal Engine 5 render style, Realistic 3D game cinematic screenshot.
@@ -1720,5 +1720,6 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
+
 
 
