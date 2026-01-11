@@ -88,6 +88,10 @@ def num_to_kor(num_str):
 
 def normalize_text_for_tts(text):
     """TTS 발음을 위해 특수문자와 숫자를 한글로 변환"""
+    # [추가] 일본어 문자가 포함되어 있으면 정규화(숫자 한글 변환)를 건너뜀
+    if any("\u3040" <= char <= "\u30ff" for char in text):
+        return text
+
     text = text.replace("%", " 퍼센트")
     
     def replace_decimal(match):
@@ -225,7 +229,6 @@ def init_folders():
 
 def split_script_by_time(script, chars_per_chunk=100):
     # [수정됨] 일본어 구두점 및 줄바꿈(\n)도 확실하게 분리하도록 개선
-    # 마침표, 물음표, 느낌표, 일본어 구두점, 그리고 '줄바꿈' 뒤에 구분자(|)를 넣습니다.
     temp_script = script.replace(".", ".|").replace("?", "?|").replace("!", "!|") \
                         .replace("。", "。|").replace("？", "？|").replace("！", "！|") \
                         .replace("\n", "\n|")  # 줄바꿈도 강제 분리 기준으로 추가
@@ -239,25 +242,17 @@ def split_script_by_time(script, chars_per_chunk=100):
         sentence = sentence.strip()
         if not sentence: continue
         
-        # [수정] 일본어는 띄어쓰기가 없으므로 합칠 때 공백을 넣지 않는 것이 자연스럽지만,
-        # 프롬프트 인식용으로는 공백이 있어도 무방합니다. 
-        # 단, 글자수 계산 시 정확도를 위해 current_chunk 길이를 체크합니다.
-        
         if len(current_chunk) + len(sentence) < chars_per_chunk:
-            # 기존 청크에 이어서 붙임 (가독성을 위해 공백 하나 추가)
             if current_chunk:
                 current_chunk += " " + sentence
             else:
                 current_chunk = sentence
         else:
-            # 제한을 넘으면 현재 청크 저장 후 초기화
             if current_chunk.strip(): 
                 chunks.append(current_chunk.strip())
             
-            # 긴 문장이 바로 current_chunk가 됨
             current_chunk = sentence
             
-    # 마지막 남은 문장 처리
     if current_chunk.strip():
         chunks.append(current_chunk.strip())
         
@@ -278,7 +273,6 @@ def make_filename(scene_num, text_chunk):
     words = clean_line.split()
     
     # 조건: 단어가 1개뿐이거나(일본어), 아시아권 문자(한글/일본어 등 유니코드 > 12000)가 포함된 경우
-    # 참고: 한글 '가'는 유니코드 44032이므로 이 조건에 걸려 안전하게 처리됨
     if len(words) <= 1 or any(ord(c) > 12000 for c in clean_line[:10]): 
         if len(clean_line) > 16:
             # 앞 8자 ... 뒤 8자 (총 19자)
@@ -525,17 +519,17 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
         return (scene_num, f"Error: {e}")
 
 # ==========================================
-# [수정됨] generate_image: API 제한(429) 완벽 대응 + 재시도 강화
+# [수정됨] generate_image: API 제한(429) 완벽 대응 + 재시도 강화 + 에러 반환
 # ==========================================
 def generate_image(client, prompt, filename, output_dir, selected_model_name):
     full_path = os.path.join(output_dir, filename)
     
     # 재시도 설정 (최대 5회, 대기 시간 점증)
     max_retries = 5
-
-    # [NEW] 마지막 에러를 기억할 변수
-    last_error_msg = "알 수 없는 오류"
     
+    # [NEW] 마지막 에러를 기억할 변수
+    last_error_msg = "알 수 없는 오류" 
+
     # 안전 필터 설정
     safety_settings = [
         types.SafetySetting(
@@ -558,32 +552,48 @@ def generate_image(client, prompt, filename, output_dir, selected_model_name):
 
     for attempt in range(1, max_retries + 1):
         try:
-            # ... (중략: generate_content 요청 부분) ...
+            # 이미지 생성 요청
+            response = client.models.generate_content(
+                model=selected_model_name,
+                contents=[prompt],
+                config=types.GenerateContentConfig(
+                    image_config=types.ImageConfig(aspect_ratio="16:9"),
+                    safety_settings=safety_settings 
+                )
+            )
             
             if response.parts:
-                # ... (이미지 저장 로직) ...
-                image.save(full_path)
-                return full_path
+                for part in response.parts:
+                    if part.inline_data:
+                        img_data = part.inline_data.data
+                        image = Image.open(BytesIO(img_data))
+                        image.save(full_path)
+                        return full_path
             
-            # 이미지가 없는 경우
+            # 응답은 왔으나 이미지가 없는 경우 (필터링 등)
             last_error_msg = "이미지 데이터 없음 (Blocked by Safety Filter?)"
-            print(f"⚠️ ...")
+            print(f"⚠️ [시도 {attempt}/{max_retries}] {last_error_msg} ({filename})")
             time.sleep(2)
             
         except Exception as e:
             error_msg = str(e)
             last_error_msg = error_msg # [NEW] 에러 메시지 저장
             
+            # [핵심 수정] 429 에러(속도 제한) 발생 시 스마트 대기
             if "429" in error_msg or "ResourceExhausted" in error_msg:
-                # ... (대기 로직) ...
+                # 시도 횟수가 늘어날수록 대기 시간 증가 (예: 5초 -> 10초 -> 20초...)
+                # 랜덤 시간을 섞어 스레드들이 동시에 재시도하는 것 방지 (Jitter)
+                wait_time = (5 * attempt) + random.uniform(1, 3)
+                print(f"🛑 [API 제한] {filename} - {wait_time:.1f}초 대기 후 재시도... (시도 {attempt})")
                 time.sleep(wait_time)
             else:
+                # 일반 에러는 짧게 대기
                 print(f"⚠️ [에러] {error_msg} ({filename}) - 5초 대기")
                 time.sleep(5)
             
-    # [최종 실패]
-    print(f"❌ [최종 실패] {filename} - 모든 재시도 실패.")
-    return None
+    # [최종 실패] 에러 메시지 반환
+    print(f"❌ [최종 실패] {filename}")
+    return f"ERROR_DETAILS: {last_error_msg}"
 
 def create_zip_buffer(source_dir):
     buffer = BytesIO()
@@ -648,9 +658,14 @@ def generate_supertone_tts(api_key, voice_id, text, scene_num, base_url, speed=1
     
     safe_text = normalized_text[:500] 
     
+    # [수정] 일본어 감지 시 언어 설정 변경
+    lang_code = "ko"
+    if any("\u3040" <= char <= "\u30ff" for char in safe_text):
+        lang_code = "ja" # Supertone에서 일본어 지원 시
+
     payload = {
         "text": safe_text,
-        "language": "ko",
+        "language": lang_code, # 언어 자동 할당
         "model": "sona_speech_1",
         "voice_settings": {
             "speed": float(speed),
@@ -1401,7 +1416,10 @@ if start_btn:
         
         # [FIX] 기존 이미지 파일들 물리적으로 삭제 (찌꺼기 제거)
         if os.path.exists(IMAGE_OUTPUT_DIR):
-            shutil.rmtree(IMAGE_OUTPUT_DIR) # 폴더 통째로 삭제
+            try:
+                shutil.rmtree(IMAGE_OUTPUT_DIR) # 폴더 통째로 삭제
+            except:
+                pass
         init_folders() # 다시 깨끗한 폴더 생성
         
         client = genai.Client(api_key=api_key)
@@ -1444,19 +1462,11 @@ if start_btn:
         
         prompts.sort(key=lambda x: x[0])
         
-        # ... (이전 코드: 프롬프트 생성 부분은 그대로 유지) ...
-
         # 3. 이미지 생성 (병렬 처리 + 속도 조절)
         status_box.write(f"🎨 이미지 생성 중 ({SELECTED_IMAGE_MODEL})... (API 보호를 위해 천천히 진행됩니다)")
         results = []
         
-        # [중요] API 제한을 피하기 위해 worker 수를 강제로 조절하거나, 제출 간격을 둡니다.
-        # 사용자가 설정한 max_workers를 쓰되, 요청 간격을 벌립니다.
-        
-# [수정됨] 병렬 처리 최적화
-        # time.sleep(3)을 제거하여 스레드가 즉시 투입되게 함.
-        # 속도 제한은 generate_image 함수 내부에서 처리함.
-        
+        # [수정됨] 병렬 처리 최적화
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
             future_to_meta = {}
             for s_num, prompt_text in prompts:
@@ -1474,9 +1484,13 @@ if start_btn:
             completed_cnt = 0
             for future in as_completed(future_to_meta):
                 s_num, fname, orig_text, p_text = future_to_meta[future]
-                path = future.result()
                 
-                if path:
+                # [중요 수정] 변수명을 'result'로 통일하여 NameError 방지
+                result = future.result() 
+                
+                # 성공 여부 판별 ("ERROR_DETAILS"라는 글자가 없어야 성공)
+                if result and "ERROR_DETAILS" not in result:
+                    path = result # 성공했으므로 경로(path)에 할당
                     results.append({
                         "scene": s_num,
                         "path": path,
@@ -1487,12 +1501,11 @@ if start_btn:
                         "video_path": None 
                     })
                 else:
-                    # [NEW] 에러 메시지 발라내기
-                    error_reason = result.replace("ERROR_DETAILS:", "") if result else "원인 불명"
+                    # 실패 시 에러 메시지 추출
+                    error_reason = result.replace("ERROR_DETAILS:", "") if result else "원인 불명 (None 반환)"
                     st.error(f"🚨 Scene {s_num} 실패!\n이유: {error_reason}")
-                    # 파일명 문제일 가능성이 높으므로 파일명도 같이 찍어줌
                     st.caption(f"문제의 파일명: {fname}")
-                        
+
                 completed_cnt += 1
                 progress_bar.progress(0.5 + (completed_cnt / total_scenes * 0.5))
         
@@ -1673,7 +1686,8 @@ if st.session_state['generated_results']:
                                 IMAGE_OUTPUT_DIR, SELECTED_IMAGE_MODEL
                             )
                             
-                            if new_path:
+                            # [수정] 개별 생성에서도 에러 체크
+                            if new_path and "ERROR_DETAILS" not in new_path:
                                 # 3. 결과 업데이트
                                 st.session_state['generated_results'][index]['path'] = new_path
                                 st.session_state['generated_results'][index]['prompt'] = new_prompt
@@ -1683,7 +1697,8 @@ if st.session_state['generated_results']:
                                 time.sleep(0.5)
                                 st.rerun()
                             else:
-                                st.error("이미지 생성에 실패했습니다.")
+                                err_msg = new_path.replace("ERROR_DETAILS:", "") if new_path else "Unknown Error"
+                                st.error(f"이미지 생성 실패: {err_msg}")
 
             # [오른쪽] 정보 및 오디오/비디오 컨트롤
             with cols[1]:
@@ -1749,10 +1764,3 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
-
-
-
-
-
-
-
