@@ -266,28 +266,37 @@ def split_script_by_time(script, chars_per_chunk=100):
 def make_filename(scene_num, text_chunk):
     # 1. 줄바꿈을 공백으로 변경하고 양쪽 공백 제거
     clean_line = text_chunk.replace("\n", " ").strip()
+    
     # 2. 파일명에 쓸 수 없는 특수문자 제거
     clean_line = re.sub(r'[\\/:*?"<>|]', "", clean_line)
     
-    # [수정됨] 일본어 대응 로직 추가
-    # 띄어쓰기로 나눴을 때 단어가 1개밖에 없거나(일본어), 전체 길이가 긴 경우
+    # [안전장치] 만약 정제 후 내용이 없다면 기본값 반환
+    if not clean_line:
+        return f"S{scene_num:03d}_Scene.png"
+    
+    # [수정됨] 일본어/긴 문자열 대응 로직
     words = clean_line.split()
     
+    # 조건: 단어가 1개뿐이거나(일본어), 아시아권 문자(한글/일본어 등 유니코드 > 12000)가 포함된 경우
+    # 참고: 한글 '가'는 유니코드 44032이므로 이 조건에 걸려 안전하게 처리됨
     if len(words) <= 1 or any(ord(c) > 12000 for c in clean_line[:10]): 
-        # 일본어/중국어 등 띄어쓰기가 없는 언어이거나 단어가 하나로 인식된 경우
         if len(clean_line) > 16:
-            # 요청하신 대로 앞 8자 ... 뒤 8자 사용
+            # 앞 8자 ... 뒤 8자 (총 19자)
             summary = f"{clean_line[:8]}...{clean_line[-8:]}"
         else:
             summary = clean_line
     else:
-        # 기존 로직 (한국어/영어 등 띄어쓰기가 있는 경우)
+        # 기존 로직 (영어 등 띄어쓰기가 명확한 경우)
         if len(words) <= 6:
             summary = " ".join(words)
         else:
             start_part = " ".join(words[:3])
             end_part = " ".join(words[-3:])
             summary = f"{start_part}...{end_part}"
+            
+            # [추가 안전장치] 영어라도 단어가 너무 길 경우를 대비해 50자로 강제 절삭
+            if len(summary) > 50:
+                summary = summary[:50]
     
     # 최종 파일명 생성
     filename = f"S{scene_num:03d}_{summary}.png"
@@ -1747,6 +1756,7 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
+
 
 
 
