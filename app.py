@@ -224,12 +224,14 @@ def init_folders():
             os.makedirs(path, exist_ok=True)
 
 def split_script_by_time(script, chars_per_chunk=100):
-    # [수정됨] 기존 마침표(.) 외에 일본어 구두점(。)과 전각 기호(？, ！)도 인식하도록 변경
-    # 파이프(|)를 구분자로 심어서 split 합니다.
-    temp_sentences = script.replace(".", ".|").replace("?", "?|").replace("!", "!|") \
-                           .replace("。", "。|").replace("？", "？|").replace("！", "！|") \
-                           .split("|")
-                           
+    # [수정됨] 일본어 구두점 및 줄바꿈(\n)도 확실하게 분리하도록 개선
+    # 마침표, 물음표, 느낌표, 일본어 구두점, 그리고 '줄바꿈' 뒤에 구분자(|)를 넣습니다.
+    temp_script = script.replace(".", ".|").replace("?", "?|").replace("!", "!|") \
+                        .replace("。", "。|").replace("？", "？|").replace("！", "！|") \
+                        .replace("\n", "\n|")  # 줄바꿈도 강제 분리 기준으로 추가
+
+    temp_sentences = temp_script.split("|")
+                            
     chunks = []
     current_chunk = ""
     
@@ -237,12 +239,18 @@ def split_script_by_time(script, chars_per_chunk=100):
         sentence = sentence.strip()
         if not sentence: continue
         
-        # 현재 문장을 더했을 때 제한을 넘지 않으면 합침
+        # [수정] 일본어는 띄어쓰기가 없으므로 합칠 때 공백을 넣지 않는 것이 자연스럽지만,
+        # 프롬프트 인식용으로는 공백이 있어도 무방합니다. 
+        # 단, 글자수 계산 시 정확도를 위해 current_chunk 길이를 체크합니다.
+        
         if len(current_chunk) + len(sentence) < chars_per_chunk:
-            current_chunk += " " + sentence
+            # 기존 청크에 이어서 붙임 (가독성을 위해 공백 하나 추가)
+            if current_chunk:
+                current_chunk += " " + sentence
+            else:
+                current_chunk = sentence
         else:
-            # 제한을 넘어서 새로운 청크를 만들 때, 
-            # 기존 current_chunk가 비어있지 않은 경우에만 추가함
+            # 제한을 넘으면 현재 청크 저장 후 초기화
             if current_chunk.strip(): 
                 chunks.append(current_chunk.strip())
             
@@ -256,17 +264,32 @@ def split_script_by_time(script, chars_per_chunk=100):
     return chunks
 
 def make_filename(scene_num, text_chunk):
+    # 1. 줄바꿈을 공백으로 변경하고 양쪽 공백 제거
     clean_line = text_chunk.replace("\n", " ").strip()
+    # 2. 파일명에 쓸 수 없는 특수문자 제거
     clean_line = re.sub(r'[\\/:*?"<>|]', "", clean_line)
+    
+    # [수정됨] 일본어 대응 로직 추가
+    # 띄어쓰기로 나눴을 때 단어가 1개밖에 없거나(일본어), 전체 길이가 긴 경우
     words = clean_line.split()
     
-    if len(words) <= 6:
-        summary = " ".join(words)
+    if len(words) <= 1 or any(ord(c) > 12000 for c in clean_line[:10]): 
+        # 일본어/중국어 등 띄어쓰기가 없는 언어이거나 단어가 하나로 인식된 경우
+        if len(clean_line) > 16:
+            # 요청하신 대로 앞 8자 ... 뒤 8자 사용
+            summary = f"{clean_line[:8]}...{clean_line[-8:]}"
+        else:
+            summary = clean_line
     else:
-        start_part = " ".join(words[:3])
-        end_part = " ".join(words[-3:])
-        summary = f"{start_part}...{end_part}"
+        # 기존 로직 (한국어/영어 등 띄어쓰기가 있는 경우)
+        if len(words) <= 6:
+            summary = " ".join(words)
+        else:
+            start_part = " ".join(words[:3])
+            end_part = " ".join(words[-3:])
+            summary = f"{start_part}...{end_part}"
     
+    # 최종 파일명 생성
     filename = f"S{scene_num:03d}_{summary}.png"
     return filename
 
@@ -1724,6 +1747,7 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
+
 
 
 
