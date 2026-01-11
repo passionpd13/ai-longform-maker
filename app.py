@@ -341,6 +341,7 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
     6. **[텍스트 언어]:** {lang_guide} {lang_example}
     - **[절대 금지]:** 화면의 네 모서리(Corners)나 가장자리(Edges)에 글자를 배치하지 마십시오. 글자는 반드시 중앙 피사체 주변에만 연출하십시오.
     7. 캐릭터의 감정도 느껴진다.
+    8. 특정 국가에 대한 내용일시 배경에 국가 분위기가 연출 잘되게 한다.
 
     [임무]
     제공된 대본 조각(Script Segment)을 바탕으로, 이미지 생성 AI가 그릴 수 있는 **구체적인 묘사 프롬프트**를 작성하십시오.
@@ -1764,3 +1765,4 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
+
