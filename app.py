@@ -532,6 +532,9 @@ def generate_image(client, prompt, filename, output_dir, selected_model_name):
     
     # 재시도 설정 (최대 5회, 대기 시간 점증)
     max_retries = 5
+
+    # [NEW] 마지막 에러를 기억할 변수
+    last_error_msg = "알 수 없는 오류"
     
     # 안전 필터 설정
     safety_settings = [
@@ -555,40 +558,26 @@ def generate_image(client, prompt, filename, output_dir, selected_model_name):
 
     for attempt in range(1, max_retries + 1):
         try:
-            # 이미지 생성 요청
-            response = client.models.generate_content(
-                model=selected_model_name,
-                contents=[prompt],
-                config=types.GenerateContentConfig(
-                    image_config=types.ImageConfig(aspect_ratio="16:9"),
-                    safety_settings=safety_settings 
-                )
-            )
+            # ... (중략: generate_content 요청 부분) ...
             
             if response.parts:
-                for part in response.parts:
-                    if part.inline_data:
-                        img_data = part.inline_data.data
-                        image = Image.open(BytesIO(img_data))
-                        image.save(full_path)
-                        return full_path
+                # ... (이미지 저장 로직) ...
+                image.save(full_path)
+                return full_path
             
-            # 응답은 왔으나 이미지가 없는 경우 (필터링 등)
-            print(f"⚠️ [시도 {attempt}/{max_retries}] 이미지 데이터 없음. 재시도... ({filename})")
+            # 이미지가 없는 경우
+            last_error_msg = "이미지 데이터 없음 (Blocked by Safety Filter?)"
+            print(f"⚠️ ...")
             time.sleep(2)
             
         except Exception as e:
             error_msg = str(e)
+            last_error_msg = error_msg # [NEW] 에러 메시지 저장
             
-            # [핵심 수정] 429 에러(속도 제한) 발생 시 스마트 대기
             if "429" in error_msg or "ResourceExhausted" in error_msg:
-                # 시도 횟수가 늘어날수록 대기 시간 증가 (예: 5초 -> 10초 -> 20초...)
-                # 랜덤 시간을 섞어 스레드들이 동시에 재시도하는 것 방지 (Jitter)
-                wait_time = (5 * attempt) + random.uniform(1, 3)
-                print(f"🛑 [API 제한] {filename} - {wait_time:.1f}초 대기 후 재시도... (시도 {attempt})")
+                # ... (대기 로직) ...
                 time.sleep(wait_time)
             else:
-                # 일반 에러는 짧게 대기
                 print(f"⚠️ [에러] {error_msg} ({filename}) - 5초 대기")
                 time.sleep(5)
             
@@ -1498,8 +1487,12 @@ if start_btn:
                         "video_path": None 
                     })
                 else:
-                    st.error(f"Scene {s_num} 이미지 생성 최종 실패.")
-
+                    # [NEW] 에러 메시지 발라내기
+                    error_reason = result.replace("ERROR_DETAILS:", "") if result else "원인 불명"
+                    st.error(f"🚨 Scene {s_num} 실패!\n이유: {error_reason}")
+                    # 파일명 문제일 가능성이 높으므로 파일명도 같이 찍어줌
+                    st.caption(f"문제의 파일명: {fname}")
+                        
                 completed_cnt += 1
                 progress_bar.progress(0.5 + (completed_cnt / total_scenes * 0.5))
         
@@ -1756,6 +1749,7 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
+
 
 
 
