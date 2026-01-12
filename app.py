@@ -334,14 +334,15 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
     
     [필수 연출 지침]
     1. **조명(Lighting):** 무조건 **'밝고 화사한 조명(High Key Lighting)'**을 사용하십시오. 그림자가 짙거나 어두운 부분은 없어야 합니다.
-    2. **색감(Colors):** 채도가 높고 선명한 색상을 사용하여 시인성을 높이십시오. (칙칙하거나 회색조 톤 금지)
+    2. **색감(Colors):** 선명한 색상을 사용하여 시인성을 높이십시오. (칙칙하거나 회색조 톤 금지)
     3. **구성(Composition):** 시청자가 상황을 한눈에 이해할 수 있도록 피사체를 화면 중앙에 명확하게 배치하십시오.
-    4. **분위기(Mood):** 교육적이고, 중립적이며, 산뜻한 분위기여야 합니다. **(절대 우울하거나, 무섭거나, 기괴한 느낌 금지)**
+    4. **분위기(Mood):** 교육적이고, 중립적이며, 분위기여야 합니다. **(절대 우울하거나, 무섭거나, 기괴한 느낌 금지)**
     5. 분활화면으로 연출하지 말고 하나의 화면으로 연출한다.
     6. **[텍스트 언어]:** {lang_guide} {lang_example}
     - **[절대 금지]:** 화면의 네 모서리(Corners)나 가장자리(Edges)에 글자를 배치하지 마십시오. 글자는 반드시 중앙 피사체 주변에만 연출하십시오.
     7. 캐릭터의 감정도 느껴진다.
     8. 특정 국가에 대한 내용일시 배경에 국가 분위기가 연출 잘되게 한다.
+    9. 배경 현실감(Background Realism): 배경은 단순한 평면이 아닌, **깊이감(Depth)**과 **질감(Texture)**이 살아있는 입체적인 공간으로 연출하십시오. 추상적이거나 흐릿한 배경 대신, 실제 장소에 있는 듯한 **구체적인 환경 디테일(건축 양식, 자연물, 소품 배치 등)을 선명하게 묘사하여 2d이지만 현장감을 극대화하십시오.
 
     [임무]
     제공된 대본 조각(Script Segment)을 바탕으로, 이미지 생성 AI가 그릴 수 있는 **구체적인 묘사 프롬프트**를 작성하십시오.
@@ -1765,4 +1766,5 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
+
 
