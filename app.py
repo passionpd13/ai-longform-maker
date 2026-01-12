@@ -7,7 +7,6 @@ import os
 import re
 import shutil
 import zipfile
-import base64  # [NEW] Google TTS 오디오 디코딩용
 from io import BytesIO
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from PIL import Image
@@ -860,48 +859,6 @@ def merge_all_videos(video_paths, output_dir):
         return f"Merge Error: {e}"
 
 # ==========================================
-# [NEW] Google Cloud TTS (Neural2) 함수 추가
-# ==========================================
-def generate_google_cloud_tts(api_key, text):
-    """
-    Google Cloud Text-to-Speech REST API 사용
-    (gTTS 아님, 번역기 아님, 고품질 Neural2 사용)
-    """
-    url = f"https://texttospeech.googleapis.com/v1/text:synthesize?key={api_key}"
-    headers = {"Content-Type": "application/json"}
-    
-    # 텍스트 정규화
-    clean_text = normalize_text_for_tts(text)
-
-    data = {
-        "input": {"text": clean_text},
-        "voice": {
-            "languageCode": "ko-KR",
-            "name": "ko-KR-Neural2-C"  # Neural2 남성 보이스 (고품질)
-            # "name": "ko-KR-Wavenet-A" # WaveNet 여성 보이스 등 변경 가능
-        },
-        "audioConfig": {
-            "audioEncoding": "MP3",
-            "speakingRate": 1.0,
-            "pitch": 0.0
-        }
-    }
-
-    try:
-        response = requests.post(url, headers=headers, json=data)
-        if response.status_code == 200:
-            result = response.json()
-            audio_content = result.get("audioContent")
-            if audio_content:
-                return base64.b64decode(audio_content)
-            else:
-                raise Exception("No audio content in response")
-        else:
-            raise Exception(f"API Error {response.status_code}: {response.text}")
-    except Exception as e:
-        raise e
-
-# ==========================================
 # [UI] 사이드바 (자동 로그인 + 장르 선택 적용)
 # ==========================================
 with st.sidebar:
@@ -1445,65 +1402,12 @@ if 'generated_results' not in st.session_state:
     st.session_state['generated_results'] = []
 if 'is_processing' not in st.session_state:
     st.session_state['is_processing'] = False
-if 'preview_audio_data' not in st.session_state: # [NEW] 미리듣기 오디오 데이터 저장용
-    st.session_state['preview_audio_data'] = None
 
 # [KEY FIX] 버튼 클릭 시 결과물 초기화 함수 추가
 def clear_generated_results():
     st.session_state['generated_results'] = []
 
-# ------------------------------------------------------------------
-# [NEW] 버튼 레이아웃 변경 (이미지 생성 vs Google TTS)
-# ------------------------------------------------------------------
-col_gen_action, col_tts_preview = st.columns([4, 1])
-
-# 1. 왼쪽: 이미지 생성 버튼
-with col_gen_action:
-    start_btn = st.button("🚀 이미지 생성 시작", type="primary", use_container_width=True, on_click=clear_generated_results)
-
-# 2. 오른쪽: Google TTS 생성 버튼
-with col_tts_preview:
-    tts_google_btn = st.button("🎙️ Google AI TTS", use_container_width=True, help="고품질 Google Cloud TTS (Neural2)로 대본을 읽습니다.")
-
-# ------------------------------------------------------------------
-# [NEW] Google TTS 실행 로직 (Neural2 모델 사용)
-# ------------------------------------------------------------------
-if tts_google_btn:
-    if not api_key:
-        st.error("⚠️ 먼저 사이드바에서 Google API Key를 입력해주세요.")
-    elif not script_input:
-        st.warning("⚠️ 먼저 대본을 입력해주세요.")
-    else:
-        try:
-            with st.spinner("Google Cloud TTS (Neural2) 생성 중..."):
-                # REST API 호출 함수 사용
-                audio_data = generate_google_cloud_tts(api_key, script_input)
-                st.session_state['preview_audio_data'] = audio_data
-                st.success("✅ 오디오 생성 완료!")
-        except Exception as e:
-            st.error(f"❌ TTS 생성 실패: {e}")
-            st.caption("참고: 사용 중인 API Key에 'Cloud Text-to-Speech API'가 활성화되어 있어야 합니다.")
-
-# ------------------------------------------------------------------
-# [NEW] 생성된 오디오 플레이어 및 다운로드 버튼 표시
-# ------------------------------------------------------------------
-if st.session_state['preview_audio_data']:
-    st.markdown("---")
-    st.subheader("🔊 미리듣기 및 다운로드 (Google Neural2)")
-    
-    col_play, col_down = st.columns([3, 1])
-    with col_play:
-        st.audio(st.session_state['preview_audio_data'], format='audio/mp3')
-    
-    with col_down:
-        st.download_button(
-            label="💾 MP3 다운로드",
-            data=st.session_state['preview_audio_data'],
-            file_name="google_tts_preview.mp3",
-            mime="audio/mp3",
-            use_container_width=True
-        )
-    st.markdown("---")
+start_btn = st.button("🚀 이미지 생성 시작", type="primary", width="stretch", on_click=clear_generated_results)
 
 if start_btn:
     if not api_key:
