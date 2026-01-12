@@ -7,6 +7,7 @@ import os
 import re
 import shutil
 import zipfile
+import base64  # [NEW] Google TTS 오디오 디코딩용
 from io import BytesIO
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from PIL import Image
@@ -859,6 +860,48 @@ def merge_all_videos(video_paths, output_dir):
         return f"Merge Error: {e}"
 
 # ==========================================
+# [NEW] Google Cloud TTS (Neural2) 함수 추가
+# ==========================================
+def generate_google_cloud_tts(api_key, text):
+    """
+    Google Cloud Text-to-Speech REST API 사용
+    (gTTS 아님, 번역기 아님, 고품질 Neural2 사용)
+    """
+    url = f"https://texttospeech.googleapis.com/v1/text:synthesize?key={api_key}"
+    headers = {"Content-Type": "application/json"}
+    
+    # 텍스트 정규화
+    clean_text = normalize_text_for_tts(text)
+
+    data = {
+        "input": {"text": clean_text},
+        "voice": {
+            "languageCode": "ko-KR",
+            "name": "ko-KR-Neural2-C"  # Neural2 남성 보이스 (고품질)
+            # "name": "ko-KR-Wavenet-A" # WaveNet 여성 보이스 등 변경 가능
+        },
+        "audioConfig": {
+            "audioEncoding": "MP3",
+            "speakingRate": 1.0,
+            "pitch": 0.0
+        }
+    }
+
+    try:
+        response = requests.post(url, headers=headers, json=data)
+        if response.status_code == 200:
+            result = response.json()
+            audio_content = result.get("audioContent")
+            if audio_content:
+                return base64.b64decode(audio_content)
+            else:
+                raise Exception("No audio content in response")
+        else:
+            raise Exception(f"API Error {response.status_code}: {response.text}")
+    except Exception as e:
+        raise e
+
+# ==========================================
 # [UI] 사이드바 (자동 로그인 + 장르 선택 적용)
 # ==========================================
 with st.sidebar:
@@ -1410,7 +1453,7 @@ def clear_generated_results():
     st.session_state['generated_results'] = []
 
 # ------------------------------------------------------------------
-# [NEW] 버튼 레이아웃 변경 (이미지 생성 vs Gemini TTS)
+# [NEW] 버튼 레이아웃 변경 (이미지 생성 vs Google TTS)
 # ------------------------------------------------------------------
 col_gen_action, col_tts_preview = st.columns([4, 1])
 
@@ -1418,60 +1461,35 @@ col_gen_action, col_tts_preview = st.columns([4, 1])
 with col_gen_action:
     start_btn = st.button("🚀 이미지 생성 시작", type="primary", use_container_width=True, on_click=clear_generated_results)
 
-# 2. 오른쪽: Gemini TTS 생성 버튼
+# 2. 오른쪽: Google TTS 생성 버튼
 with col_tts_preview:
-    tts_gemini_btn = st.button("🎙️ Gemini TTS 듣기", use_container_width=True, help="gemini-2.5-pro-preview-tts 모델로 대본을 읽습니다.")
+    tts_google_btn = st.button("🎙️ Google AI TTS", use_container_width=True, help="고품질 Google Cloud TTS (Neural2)로 대본을 읽습니다.")
 
 # ------------------------------------------------------------------
-# [NEW] Gemini TTS 실행 로직 (오디오 생성 + 다운로드)
+# [NEW] Google TTS 실행 로직 (Neural2 모델 사용)
 # ------------------------------------------------------------------
-if tts_gemini_btn:
+if tts_google_btn:
     if not api_key:
         st.error("⚠️ 먼저 사이드바에서 Google API Key를 입력해주세요.")
     elif not script_input:
         st.warning("⚠️ 먼저 대본을 입력해주세요.")
     else:
         try:
-            client = genai.Client(api_key=api_key)
-            
-            with st.spinner("Gemini가 대본을 읽고 있습니다... (Audio Generating)"):
-                # [핵심] 사용자가 요청한 모델 사용
-                tts_model = "models/gemini-2.5-pro-preview-tts" 
-                
-                # Gemini에게 오디오 생성을 요청하는 프롬프트 구성
-                # (모델 특성에 따라 config에 response_mime_type을 지정하거나 프롬프트로 유도)
-                response = client.models.generate_content(
-                    model=tts_model,
-                    contents=f"Read the following text naturally and clearly in Korean:\n\n{script_input}",
-                    config=types.GenerateContentConfig(
-                        response_mime_type="audio/mp3" # 오디오 출력을 명시
-                    )
-                )
-                
-                # 바이너리 데이터 추출 (Gemini API 응답 구조에 따름)
-                audio_bytes = None
-                
-                if response.parts:
-                    for part in response.parts:
-                        if part.inline_data:
-                            audio_bytes = part.inline_data.data
-                            break
-                
-                if audio_bytes:
-                    st.session_state['preview_audio_data'] = audio_bytes
-                    st.success(f"✅ 오디오 생성 완료! ({tts_model})")
-                else:
-                    st.error("❌ 오디오 데이터를 받지 못했습니다. 모델이 오디오 출력을 지원하지 않거나 응답이 비어있습니다.")
-                    
+            with st.spinner("Google Cloud TTS (Neural2) 생성 중..."):
+                # REST API 호출 함수 사용
+                audio_data = generate_google_cloud_tts(api_key, script_input)
+                st.session_state['preview_audio_data'] = audio_data
+                st.success("✅ 오디오 생성 완료!")
         except Exception as e:
-            st.error(f"❌ Gemini TTS 오류 발생: {e}")
+            st.error(f"❌ TTS 생성 실패: {e}")
+            st.caption("참고: 사용 중인 API Key에 'Cloud Text-to-Speech API'가 활성화되어 있어야 합니다.")
 
 # ------------------------------------------------------------------
 # [NEW] 생성된 오디오 플레이어 및 다운로드 버튼 표시
 # ------------------------------------------------------------------
 if st.session_state['preview_audio_data']:
     st.markdown("---")
-    st.subheader("🔊 미리듣기 및 다운로드")
+    st.subheader("🔊 미리듣기 및 다운로드 (Google Neural2)")
     
     col_play, col_down = st.columns([3, 1])
     with col_play:
@@ -1481,7 +1499,7 @@ if st.session_state['preview_audio_data']:
         st.download_button(
             label="💾 MP3 다운로드",
             data=st.session_state['preview_audio_data'],
-            file_name="gemini_tts_preview.mp3",
+            file_name="google_tts_preview.mp3",
             mime="audio/mp3",
             use_container_width=True
         )
