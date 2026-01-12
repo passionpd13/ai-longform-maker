@@ -389,6 +389,7 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
     - **[절대 금지]:** 텍스트가 화면의 네 모서리(Corners)나 가장자리에 배치되는 것을 절대 금지합니다. (자막 공간 확보)
     9. **[매우 중요] 배경보다 **'인물(Character)'이 무조건 우선**입니다. 캐릭터가 화면을 장악해야 합니다.
     10. 상호작용하는 소품 (Interactive Props): 스틱맨 캐릭터가 대본 속 중요한 사물과 어떻게 상호작용하는지 명확히 그리십시오. 사물은 단순하지만 그 특징이 명확해야 합니다.
+    11. 캐릭터 연출 : 스틱맨은 시대를 반영하는 의상과 헤어스타일을 연출한다.
     
     [임무]
     제공된 대본 조각(Script Segment)을 바탕으로, 이미지 생성 AI가 그릴 수 있는 **구체적인 묘사 프롬프트**를 작성하십시오.
@@ -402,6 +403,7 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
         - **시대적 배경:** 대본의 시대(고대/중세/근대)와 장소(동양/서양)를 명확히 반영한 배경 묘사.
         - **[수정됨] 절제된 캐릭터 연기 묘사:**
             - 스틱맨의 얼굴은 **단순한 선으로 표현된 슬픈 눈매, 굳게 다문 입매** 정도로 절제하여 묘사하십시오. (기괴한 표정 묘사 금지)
+            - 스틱맨의 시대적 의상과 헤어스타일을 연출한다.
             - **감정은 몸짓으로 표현하십시오.** (예: 고개를 깊이 숙인 모습, 얼굴을 감싸 쥔 손, 힘없이 축 늘어진 어깨, 무릎 꿇고 기도하는 자세 등 정적인 동작 위주)
         - 배경 보다는 대본에 어울리는 인물들과 상황 연출에 더 초점을 맞춘다.
         - 자막 같은 연출 하지 않는다. ("화면 하단 중앙에는 명조체로 **'필리핀, 1944년'**이라는 한글 텍스트가 선명하게 새겨져 있다" 이런 연출 하면 안된다) 
@@ -1770,6 +1772,7 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
+
 
 
 
