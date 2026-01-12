@@ -397,6 +397,7 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
     - **분량:** 최소 7문장 이상으로 상세하게 묘사.
     - **포함 요소:**
         - **텍스트 지시:** (중요) 이미지에 들어갈 텍스트를 반드시 **'{target_language}'**로 명시하십시오.
+            - 텍스트는 그래픽 연출이 아니라 화면의 사물에 자연스럽게 연출되게 한다.
         - **안전한 묘사:** 잔인한 장면은 은유적으로 표현하여 필터링을 피하십시오.
         - **시대적 배경:** 대본의 시대(고대/중세/근대)와 장소(동양/서양)를 명확히 반영한 배경 묘사.
         - **[수정됨] 절제된 캐릭터 연기 묘사:**
@@ -905,7 +906,7 @@ with st.sidebar:
 캐릭터는 2D 실루엣이나 스틱맨이지만 시대에 맞는 의상(갑옷, 한복, 정장 등)을 착용.
 2D 스틱맨을 활용해 대본을 설명이 잘되게 설명하는 연출을 한다. 자막 스타일 연출은 하지 않는다.
 전쟁, 기근 등의 묘사는 상징적이고 은유적으로 표현. 너무 고어틱한 연출은 하지 않는다.
-배경 묘사에 디테일을 살려 시대적 분위기를 강조.무조건 2D 스틱맨 연출."""
+배경 묘사에 디테일을 살려 시대적 분위기를 강조.무조건 얼굴이 둥근 2D 스틱맨 연출."""
 
     PRESET_3D = """Unreal Engine 5 render style, Realistic 3D game cinematic screenshot.
 피사체: 매끈하고 하얀 이목구비 없는 마네킹 머리 (Smooth white featureless mannequin head). 눈코입 없음.
@@ -1769,6 +1770,7 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
+
 
 
 
