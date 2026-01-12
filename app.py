@@ -276,7 +276,7 @@ def make_filename(scene_num, text_chunk):
     if len(words) <= 1 or any(ord(c) > 12000 for c in clean_line[:10]): 
         if len(clean_line) > 16:
             # 앞 8자 ... 뒤 8자 (총 19자)
-            summary = f"{clean_line[:8]}...{clean_line[-8:]}"
+            summary = f"{clean_line[:10]}...{clean_line[-10:]}"
         else:
             summary = clean_line
     else:
@@ -1766,5 +1766,6 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
+
 
 
