@@ -418,6 +418,7 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
     [출력 형식]
     - **무조건 한국어(한글)**로만 작성하십시오.
     - 부가적인 설명 없이 **오직 프롬프트 텍스트만** 출력하십시오.
+    - 프롬프트에 '얼굴이 둥근 귀여운 2d 스틱맨' 무조건 들어간다.
         """
 
     # ---------------------------------------------------------
@@ -1768,5 +1769,6 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
+
 
 
