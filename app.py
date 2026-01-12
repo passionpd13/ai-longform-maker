@@ -117,7 +117,7 @@ def generate_structure(client, full_script):
     [Task]
     Analyze the provided transcript (script).
     Restructure the content into a highly detailed, list-style format suitable for a blog post or a new video plan.
-      
+       
     [Output Format]
     1. **Video Theme/Title**: (Extract or suggest a catchy title based on the whole script)
     2. **Intro**: (Hook and background, no music) Approve specific channel names, The intro hooks the overall topic (안녕하십니까 같은 인사 금지)
@@ -175,7 +175,7 @@ def generate_section(client, section_title, full_structure, duration_type="fixed
 
     [Task]
     전체 대본 구조 중 오직 **"{section_title}"** 부분만 작성하십시오.
-      
+       
     [Context (Overall Structure)]
     {full_structure}
     {user_guide_prompt}
@@ -185,7 +185,7 @@ def generate_section(client, section_title, full_structure, duration_type="fixed
 
     [Length Constraints]
     - **목표 분량: {target_chars}** - **작성 지침:** {detail_level}
-      
+       
     [Style Guidelines - 매우 중요]
     1. '습니다' 체를 사용하고, 다큐멘터리 특유의 진지하고 몰입감 있는 어조를 유지하세요.
     2. 앞뒤 문맥(이전 챕터, 다음 챕터)을 고려하되, 이 파트의 내용에만 집중하세요.
@@ -234,7 +234,7 @@ def split_script_by_time(script, chars_per_chunk=100):
                         .replace("\n", "\n|")  # 줄바꿈도 강제 분리 기준으로 추가
 
     temp_sentences = temp_script.split("|")
-                            
+                             
     chunks = []
     current_chunk = ""
     
@@ -437,10 +437,10 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
     [핵심 비주얼 스타일 가이드 - 절대 준수]
     1. **화풍 (Art Style):** "A realistic 3D game cinematic screenshot", "Unreal Engine 5 render style", "8k resolution", "Highly detailed texture".
     2. **캐릭터 디자인 (Character Design):** - 등장인물의 머리는 반드시 **"매끈하고 하얀, 이목구비가 없는 마네킹 머리 (Smooth white featureless mannequin head)"**여야 합니다.
-       - **얼굴 묘사 금지:** 눈, 코, 입이 절대 없어야 합니다 (Blank face, No eyes/nose/mouth).
-       - **의상:** 하지만 몸에는 **현실적인 의상(정장, 가디건, 청바지, 유니폼 등)**을 입혀서 기묘하고 현대적인 느낌을 줍니다.
+        - **얼굴 묘사 금지:** 눈, 코, 입이 절대 없어야 합니다 (Blank face, No eyes/nose/mouth).
+        - **의상:** 하지만 몸에는 **현실적인 의상(정장, 가디건, 청바지, 유니폼 등)**을 입혀서 기묘하고 현대적인 느낌을 줍니다.
     3. **조명 및 분위기 (Lighting & Mood):** - "Cinematic lighting", "Dim lighting", "Volumetric fog".
-       - 다소 어둡고, 밝기도 하며, 미스터리하며, 진지한 분위기를 연출하십시오.
+        - 다소 어둡고, 밝기도 하며, 미스터리하며, 진지한 분위기를 연출하십시오.
     4. **언어 (Text):** {lang_guide} {lang_example} (가능한 텍스트 묘사는 줄이고 상황 묘사에 집중)
 
     [임무]
@@ -1402,12 +1402,90 @@ if 'generated_results' not in st.session_state:
     st.session_state['generated_results'] = []
 if 'is_processing' not in st.session_state:
     st.session_state['is_processing'] = False
+if 'preview_audio_data' not in st.session_state: # [NEW] 미리듣기 오디오 데이터 저장용
+    st.session_state['preview_audio_data'] = None
 
 # [KEY FIX] 버튼 클릭 시 결과물 초기화 함수 추가
 def clear_generated_results():
     st.session_state['generated_results'] = []
 
-start_btn = st.button("🚀 이미지 생성 시작", type="primary", width="stretch", on_click=clear_generated_results)
+# ------------------------------------------------------------------
+# [NEW] 버튼 레이아웃 변경 (이미지 생성 vs Gemini TTS)
+# ------------------------------------------------------------------
+col_gen_action, col_tts_preview = st.columns([4, 1])
+
+# 1. 왼쪽: 이미지 생성 버튼
+with col_gen_action:
+    start_btn = st.button("🚀 이미지 생성 시작", type="primary", use_container_width=True, on_click=clear_generated_results)
+
+# 2. 오른쪽: Gemini TTS 생성 버튼
+with col_tts_preview:
+    tts_gemini_btn = st.button("🎙️ Gemini TTS 듣기", use_container_width=True, help="gemini-2.5-pro-preview-tts 모델로 대본을 읽습니다.")
+
+# ------------------------------------------------------------------
+# [NEW] Gemini TTS 실행 로직 (오디오 생성 + 다운로드)
+# ------------------------------------------------------------------
+if tts_gemini_btn:
+    if not api_key:
+        st.error("⚠️ 먼저 사이드바에서 Google API Key를 입력해주세요.")
+    elif not script_input:
+        st.warning("⚠️ 먼저 대본을 입력해주세요.")
+    else:
+        try:
+            client = genai.Client(api_key=api_key)
+            
+            with st.spinner("Gemini가 대본을 읽고 있습니다... (Audio Generating)"):
+                # [핵심] 사용자가 요청한 모델 사용
+                tts_model = "models/gemini-2.5-pro-preview-tts" 
+                
+                # Gemini에게 오디오 생성을 요청하는 프롬프트 구성
+                # (모델 특성에 따라 config에 response_mime_type을 지정하거나 프롬프트로 유도)
+                response = client.models.generate_content(
+                    model=tts_model,
+                    contents=f"Read the following text naturally and clearly in Korean:\n\n{script_input}",
+                    config=types.GenerateContentConfig(
+                        response_mime_type="audio/mp3" # 오디오 출력을 명시
+                    )
+                )
+                
+                # 바이너리 데이터 추출 (Gemini API 응답 구조에 따름)
+                audio_bytes = None
+                
+                if response.parts:
+                    for part in response.parts:
+                        if part.inline_data:
+                            audio_bytes = part.inline_data.data
+                            break
+                
+                if audio_bytes:
+                    st.session_state['preview_audio_data'] = audio_bytes
+                    st.success(f"✅ 오디오 생성 완료! ({tts_model})")
+                else:
+                    st.error("❌ 오디오 데이터를 받지 못했습니다. 모델이 오디오 출력을 지원하지 않거나 응답이 비어있습니다.")
+                    
+        except Exception as e:
+            st.error(f"❌ Gemini TTS 오류 발생: {e}")
+
+# ------------------------------------------------------------------
+# [NEW] 생성된 오디오 플레이어 및 다운로드 버튼 표시
+# ------------------------------------------------------------------
+if st.session_state['preview_audio_data']:
+    st.markdown("---")
+    st.subheader("🔊 미리듣기 및 다운로드")
+    
+    col_play, col_down = st.columns([3, 1])
+    with col_play:
+        st.audio(st.session_state['preview_audio_data'], format='audio/mp3')
+    
+    with col_down:
+        st.download_button(
+            label="💾 MP3 다운로드",
+            data=st.session_state['preview_audio_data'],
+            file_name="gemini_tts_preview.mp3",
+            mime="audio/mp3",
+            use_container_width=True
+        )
+    st.markdown("---")
 
 if start_btn:
     if not api_key:
@@ -1769,10 +1847,3 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
-
-
-
-
-
-
-
