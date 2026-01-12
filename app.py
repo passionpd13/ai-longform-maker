@@ -333,10 +333,10 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
     {style_instruction}
     
     [필수 연출 지침]
-    1. **조명(Lighting):** 무조건 **'밝고 화사한 조명(High Key Lighting)'**을 사용하십시오. 그림자가 짙거나 어두운 부분은 없어야 합니다.
+    1. **조명(Lighting):** 무조건 **'몰입감있는 조명(High Key Lighting)'**을 사용하십시오.
     2. **색감(Colors):** 선명한 색상을 사용하여 시인성을 높이십시오. (칙칙하거나 회색조 톤 금지)
     3. **구성(Composition):** 시청자가 상황을 한눈에 이해할 수 있도록 피사체를 화면 중앙에 명확하게 배치하십시오.
-    4. **분위기(Mood):** 교육적이고, 중립적이며, 분위기여야 합니다. **(절대 우울하거나, 무섭거나, 기괴한 느낌 금지)**
+    4. **분위기(Mood):** 교육적이지만 사실적, 중립적이며, 분위기여야 합니다. **(절대 우울하거나, 무섭거나, 기괴한 느낌 금지)**
     5. 분활화면으로 연출하지 말고 하나의 화면으로 연출한다.
     6. **[텍스트 언어]:** {lang_guide} {lang_example}
     - **[절대 금지]:** 화면의 네 모서리(Corners)나 가장자리(Edges)에 글자를 배치하지 마십시오. 글자는 반드시 중앙 피사체 주변에만 연출하십시오.
@@ -1766,6 +1766,7 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
+
 
 
 
