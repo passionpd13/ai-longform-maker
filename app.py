@@ -465,6 +465,7 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
     - **분량:** 최소 7문장 이상으로 상세하게 묘사.
     
     [출력 형식]
+    - **분량:** 최소 7문장 이상으로 상세하게 묘사.
     - **무조건 한국어(한글)**로만 작성하십시오.
     - 부가 설명 없이 **오직 프롬프트 텍스트만** 출력하십시오.
         """
@@ -1940,4 +1941,5 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
+
 
