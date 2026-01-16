@@ -430,7 +430,7 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
     {character_consistency_block}
     [역할]
     당신은 **'넷플릭스 2D 애니메이션 감독'**입니다. 
-    단순한 스틱맨을 주인공으로 사용하여, 대본의 상황을 **매우 사실적이고 영화적인 미장센(Mise-en-scène)**으로 연출합니다.
+    단순한 스틱맨들을 주인공으로 사용하여, 대본의 상황을 **매우 사실적이고 영화적인 미장센(Mise-en-scène)**으로 연출합니다.
     
     [전체 영상 주제] "{video_title}"
     [유저 스타일 선호] {style_instruction}
@@ -463,6 +463,8 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
     - "A cinematic 2D shot of a round-headed stickman..." 으로 시작하는 느낌으로 작성.
     - 대본이 추상적(예: 경제 위기)이라면, 스틱맨이 텅 빈 지갑을 보며 좌절하는 구체적인 상황으로 치환하여 묘사하십시오.
     - **분량:** 최소 7문장 이상으로 상세하게 묘사.
+    - 자막 같은 연출 하지 않는다. ("화면 하단 중앙에는 명조체로 **'필리핀, 1944년'**이라는 한글 텍스트가 선명하게 새겨져 있다" 이런 연출 하면 안된다) 
+
     
     [출력 형식]
     - **분량:** 최소 7문장 이상으로 상세하게 묘사.
@@ -1941,6 +1943,7 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
+
 
 
 
