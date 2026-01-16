@@ -297,35 +297,42 @@ def make_filename(scene_num, text_chunk):
     return filename
 
 # ==========================================
-# [NEW 함수] 캐릭터 참조 이미지 분석 (비전 AI 활용 - 수정됨)
+# [함수 수정] 캐릭터 참조 이미지 분석 (DNA 추출 버전)
 # ==========================================
 def analyze_character_image(api_key, image_bytes):
-    """업로드된 캐릭터 이미지를 분석하여 상세한 텍스트 묘사를 추출"""
+    """업로드된 캐릭터 이미지를 분석하여 '이미지 생성 전용 프롬프트(DNA)'를 추출"""
     client = genai.Client(api_key=api_key)
     
+    # [핵심 변경] 단순 묘사가 아니라, 이미지 생성 AI가 알아듣는 '키워드' 위주로 추출 요청
     prompt = """
-    [Task]
-    Analyze the character in this image in extreme detail. 
-    Your goal is to create a descriptive text that would allow another AI artist to recreate this exact character perfectly while maintaining visual consistency.
+    [Role]
+    You are an expert 'Reverse Prompt Engineer' for AI Image Generation (like Midjourney, Stable Diffusion).
 
-    [Focus Areas]
-    1. **Art Style:** (e.g., 2D stickman with shading, anime watercolor, 3D render style)
-    2. **Physical Appearance:** (Hair color/style, eye shape, distinct facial features, body type)
-    3. **Clothing & Accessories:** (Detailed description of outfit, colors, specific items like glasses or hats)
-    4. **Unique traits:** (Any scars, specific color palette used)
+    [Task]
+    Analyze the uploaded character image and extract its "Visual DNA".
+    Your output must be a strict set of keywords and descriptions that will force another AI to generate 99% identical character.
+
+    [Extraction Rules]
+    1. **Art Style (Crucial):** Define the exact medium (e.g., '2D flat vector', '3D Unreal Engine render', 'Oil painting', 'Sketch'). Mention line weight, shading style, and texture.
+    2. **Character Features:** Precise details (e.g., 'Silver messy hair', 'Sharp red cat-eyes', 'Scar on left cheek').
+    3. **Outfit & Colors:** Describe clothes specifically (e.g., 'Navy blue hoodie with white strings', 'Gold armor plate'). Mention key colors.
+    4. **Vibe & Lighting:** (e.g., 'Cyberpunk neon lighting', 'Soft pastel atmosphere').
 
     [Output Format]
-    - Provide a concise but very detailed paragraph describing the character. 
-    - Start with "The main character is...".
-    - Use English for better accuracy in image generation prompts later.
+    **Do not write sentences.** Output a structured Prompt Block like this:
+    
+    (Art Style Keywords), (Character Subject Description), (Outfit Details), (Color Palette & Lighting)
+    
+    Example:
+    "Flat 2D vector art, thick black outlines, cell shading, A cute robot with round glowing blue eyes, white sleek metal body, rusty joints, orange mechanical wings, bright studio lighting, white background"
     """
     
     try:
-        # [FIX] Part.from_bytes 대신 PIL Image로 직접 변환하여 전달 (API가 자동 처리)
+        # PIL Image로 변환하여 전송
         image = Image.open(BytesIO(image_bytes))
 
         response = client.models.generate_content(
-            model="gemini-2.5-pro", # 이미지를 인식할 수 있는 멀티모달 모델 사용
+            model="gemini-2.5-pro", # 분석은 똑똑한 2.5 Pro 모델이 수행
             contents=[prompt, image]
         )
         return response.text.strip()
@@ -1933,3 +1940,4 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
+
