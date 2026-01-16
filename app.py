@@ -1730,7 +1730,8 @@ if st.session_state['generated_results']:
                         future_to_idx[future] = i
                     
                     for future in as_completed(future_to_idx):
-                        idx = future_to_idx[future]<br>                        try:
+                        idx = future_to_idx[future]
+                        try:
                             result_path = future.result()
                             if "Error" not in str(result_path) and "VOICE_NOT_FOUND" not in str(result_path):
                                 st.session_state['generated_results'][idx]['audio_path'] = result_path
