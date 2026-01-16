@@ -297,9 +297,46 @@ def make_filename(scene_num, text_chunk):
     return filename
 
 # ==========================================
-# [함수] 프롬프트 생성 (문법 오류 수정 완료)
+# [NEW 함수] 캐릭터 참조 이미지 분석 (비전 AI 활용)
 # ==========================================
-def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, genre_mode="info", target_language="Korean"):
+def analyze_character_image(api_key, image_bytes):
+    """업로드된 캐릭터 이미지를 분석하여 상세한 텍스트 묘사를 추출"""
+    client = genai.Client(api_key=api_key)
+    
+    prompt = """
+    [Task]
+    Analyze the character in this image in extreme detail. 
+    Your goal is to create a descriptive text that would allow another AI artist to recreate this exact character perfectly while maintaining visual consistency.
+
+    [Focus Areas]
+    1. **Art Style:** (e.g., 2D stickman with shading, anime watercolor, 3D render style)
+    2. **Physical Appearance:** (Hair color/style, eye shape, distinct facial features, body type)
+    3. **Clothing & Accessories:** (Detailed description of outfit, colors, specific items like glasses or hats)
+    4. **Unique traits:** (Any scars, specific color palette used)
+
+    [Output Format]
+    - Provide a concise but very detailed paragraph describing the character. 
+    - Start with "The main character is...".
+    - Use English for better accuracy in image generation prompts later.
+    """
+    
+    try:
+        # 이미지 바이트 데이터를 Gemini가 이해할 수 있는 형태로 준비
+        image_part = types.Part.from_bytes(image_bytes, mime_type="image/jpeg") # jpeg/png 통용
+
+        response = client.models.generate_content(
+            model="gemini-2.5-pro", # 이미지를 인식할 수 있는 멀티모달 모델 사용
+            contents=[prompt, image_part]
+        )
+        return response.text.strip()
+    except Exception as e:
+        return f"Error analyzing image: {e}"
+
+# ==========================================
+# [함수] 프롬프트 생성 (수정됨: 캐릭터 일관성 추가)
+# ==========================================
+# 1. 파라미터에 character_desc="" 추가
+def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, genre_mode="info", target_language="Korean", character_desc=""):
     scene_num = index + 1
     url = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_TEXT_MODEL_NAME}:generateContent?key={api_key}"
     headers = {'Content-Type': 'application/json'}
@@ -318,11 +355,27 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
         lang_guide = f"화면 속 글씨는 **무조건 '{target_language}'로 표기**하십시오."
         lang_example = ""
 
+    # ------------------------------------------------------
+    # [NEW] 캐릭터 일관성 유지 지침 블록 생성
+    # ------------------------------------------------------
+    character_consistency_block = ""
+    if character_desc and "Error" not in character_desc:
+        character_consistency_block = f"""
+    [⭐⭐⭐ 비주얼 일관성 유지 핵심 지침 (최우선 순위) ⭐⭐⭐]
+    모든 장면에 등장하는 주인공 캐릭터는 반드시 아래의 상세 묘사와 시각적으로 일치해야 합니다.
+    절대로 이 캐릭터의 핵심적인 외형 특징을 바꾸지 마십시오.
+
+    **[Reference Character Visual Blueprint]:**
+    {character_desc}
+    ---------------------------------------------------------
+        """
+
     # ---------------------------------------------------------
     # [모드 1] 밝은 정보/이슈
     # ---------------------------------------------------------
     if genre_mode == "info":
         full_instruction = f"""
+    {character_consistency_block}
     [역할]
     당신은 복잡한 상황을 아주 쉽고 직관적인 그림으로 표현하는 '비주얼 커뮤니케이션 전문가'이자 '교육용 일러스트레이터'입니다.
 
@@ -363,10 +416,58 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
         """
 
     # ---------------------------------------------------------
+    # [모드 NEW] 스틱맨 사실적 연출 (Realistic Stickman Drama)
+    # ---------------------------------------------------------
+    elif genre_mode == "realistic_stickman":
+        full_instruction = f"""
+    {character_consistency_block}
+    [역할]
+    당신은 **'넷플릭스 2D 애니메이션 감독'**입니다. 
+    단순한 스틱맨을 주인공으로 사용하여, 대본의 상황을 **매우 사실적이고 영화적인 미장센(Mise-en-scène)**으로 연출합니다.
+    
+    [전체 영상 주제] "{video_title}"
+    [유저 스타일 선호] {style_instruction}
+
+    [핵심 비주얼 스타일 가이드 - 절대 준수]
+    1. **캐릭터(Character):** - **얼굴이 둥근 하얀색 스틱맨(Round-headed white stickman)**을 사용하십시오.
+       - 하지만 선은 굵고 부드러우며, **그림자(Shading)**가 들어가 입체감이 느껴져야 합니다.
+       - **의상:** 대본 상황에 맞는 현실적인 의상(정장, 군복, 잠옷, 작업복 등)을 스틱맨 위에 입혀 '캐릭터성'을 부여하십시오.
+       
+    2. **배경(Background) - 가장 중요:**
+       - 단순한 그라데이션이나 단색 배경을 **절대 금지**합니다.
+       - **고해상도 컨셉 아트(High-quality Concept Art)** 수준으로 배경을 그리십시오.
+       - 예: 사무실이라면 책상의 서류 더미, 창밖의 풍경, 커피잔의 김, 벽의 질감까지 묘사해야 합니다.
+       
+    3. **조명(Lighting):**
+       - 2D지만 **입체적인 조명(Volumetric Lighting)**과 그림자를 사용하여 깊이감을 만드십시오.
+       - 상황에 따라 따뜻한 햇살, 차가운 네온사, 어두운 방의 스탠드 조명 등을 명확히 구분하십시오.
+       
+    4. **연기(Acting):**
+       - 인포그래픽처럼 정보를 나열하지 말고, **캐릭터가 행동(Action)하는 장면**을 포착하십시오.
+       - 감정 표현: 얼굴 표정은 단순하게 가되, **어깨의 처짐, 주먹 쥔 손, 다급한 달리기, 무릎 꿇기 등 '몸짓(Body Language)'**으로 감정을 전달하십시오.
+
+    5. **언어(Text):** {lang_guide} {lang_example} (자막 연출보다는 배경 속 간판, 서류, 화면 등 자연스러운 텍스트 위주로)
+    6. **구도:** 분할 화면(Split Screen) 금지. 16:9 꽉 찬 시네마틱 구도 사용.
+
+    [임무]
+    제공된 대본 조각(Script Segment)을 읽고, 그 상황을 가장 잘 보여주는 **한 장면의 영화 스틸컷** 같은 프롬프트를 작성하십시오.
+    
+    [작성 팁]
+    - "A cinematic 2D shot of a round-headed stickman..." 으로 시작하는 느낌으로 작성.
+    - 대본이 추상적(예: 경제 위기)이라면, 스틱맨이 텅 빈 지갑을 보며 좌절하는 구체적인 상황으로 치환하여 묘사하십시오.
+    - **분량:** 최소 7문장 이상으로 상세하게 묘사.
+    
+    [출력 형식]
+    - **무조건 한국어(한글)**로만 작성하십시오.
+    - 부가 설명 없이 **오직 프롬프트 텍스트만** 출력하십시오.
+        """
+
+    # ---------------------------------------------------------
     # [모드 2] 역사/다큐 (수정됨: else -> elif)
     # ---------------------------------------------------------
     elif genre_mode == "history":
         full_instruction = f"""
+    {character_consistency_block}
     [역할]
     당신은 **세계사의 결정적인 순간들(한국사, 서양사, 동양사 등)**을 한국 시청자에게 전달하는 '시대극 애니메이션 감독'입니다.
     역사적 비극을 다루지만, 절대로 잔인하거나 혐오스럽거나 고어틱하게 묘사를 하지 않습니다.
@@ -429,6 +530,7 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
     # ---------------------------------------------------------
     elif genre_mode == "3d_docu":
         full_instruction = f"""
+    {character_consistency_block}
     [역할]
     당신은 'Unreal Engine 5'를 사용하는 3D 시네마틱 아티스트입니다.
     현대 사회의 이슈나 미스터리한 현상을 고퀄리티 3D 그래픽으로 시각화합니다.
@@ -463,6 +565,7 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
     # ---------------------------------------------------------
     elif genre_mode == "scifi":
         full_instruction = f"""
+    {character_consistency_block}
     [역할]
     당신은 'Fern', 'AiTelly', 'Blackfiles' 채널 스타일의 **깔끔하고 명확한 '3D 테크니컬 애니메이터'**입니다.
     복잡한 기계나 과학 원리를 설명하되, **엔지니어/과학자 캐릭터의 행동**을 통해 시청자의 이해를 돕습니다. (어둡고 과한 시네마틱 X, 밝고 명확한 교육용 O)
@@ -902,6 +1005,14 @@ with st.sidebar:
 글씨가 너무 많지 않게 핵심만. 2D 스틱맨을 활용해 대본을 설명이 잘되게 설명하는 연출을 한다. 자막 스타일 연출은 하지 않는다.
 글씨가 나올경우 핵심 키워드 중심으로만 나오게 너무 글이 많지 않도록 한다, 글자는 배경과 사물에 자연스럽게 연출, 전체 배경 연출은 2D로 디테일하게 입체적이고 몰입감 있게 연출해서 그려줘 (16:9).
 다양한 장소와 상황 연출로 배경을 디테일하게 한다. 무조건 2D 스틱맨 연출."""
+    
+    # [NEW] 스틱맨 사실적 연출 프리셋 (상황/감정/배경 디테일 강조)
+    PRESET_REALISTIC = """고퀄리티 2D 애니메이션 스타일, 사실적인 배경과 조명 연출.
+캐릭터: 얼굴이 둥근 하얀색 2D 스틱맨. 단순한 낙서가 아니라, 명암과 덩어리감이 느껴지는 '고급 스틱맨' 스타일.
+배경: 단순한 단색 배경 금지. 대본의 장소(사무실, 거리, 방 안, 전장 등)를 '사진'처럼 디테일하고 입체적으로 묘사.
+분위기: 정보 전달보다는 '상황극(Drama)'에 집중. 영화적인 조명(Cinematic Lighting)과 심도(Depth) 표현.
+연출: 스틱맨 캐릭터들이 대본 속 행동을 리얼하게 연기(Acting). 감정 표현은 표정보다는 역동적인 몸짓(Body Language)으로 극대화.
+절대 금지: 화면 분할(Split Screen), 텍스트 나열, 단순 인포그래픽 스타일."""
 
     PRESET_HISTORY = """역사적 사실을 기반으로 한 '2D 시네마틱 얼굴이 둥근 하얀색 스틱맨 애니메이션' 스타일.
 깊이 있는 색감(Dark & Rich Tone)과 극적인 조명 사용.
@@ -929,9 +1040,10 @@ with st.sidebar:
     
     # 옵션 리스트 정의
     OPT_INFO = "밝은 정보/이슈 (Bright & Flat)"
+    OPT_REALISTIC = "스틱맨 드라마/사실적 연출 (Realistic Storytelling)" # [NEW]
     OPT_HISTORY = "역사/다큐 (Cinematic & Immersive)"
     OPT_3D = "3D 다큐멘터리 (Realistic 3D Game Style)"
-    OPT_SCIFI = "과학/엔지니어링 (3D Tech & Character)" # [NEW] 이름 변경
+    OPT_SCIFI = "과학/엔지니어링 (3D Tech & Character)"
     OPT_CUSTOM = "직접 입력 (Custom Style)"
 
     # 3. 콜백 함수: 라디오 버튼 변경 시 -> 텍스트 업데이트
@@ -939,11 +1051,13 @@ with st.sidebar:
         selection = st.session_state.genre_radio_key
         if selection == OPT_INFO:
             st.session_state['style_prompt_area'] = PRESET_INFO
+        elif selection == OPT_REALISTIC: # [NEW]
+            st.session_state['style_prompt_area'] = PRESET_REALISTIC
         elif selection == OPT_HISTORY:
             st.session_state['style_prompt_area'] = PRESET_HISTORY
         elif selection == OPT_3D:
             st.session_state['style_prompt_area'] = PRESET_3D
-        elif selection == OPT_SCIFI: # [NEW]
+        elif selection == OPT_SCIFI: 
             st.session_state['style_prompt_area'] = PRESET_SCIFI
         # "직접 입력" 선택 시에는 텍스트를 변경하지 않음 (사용자 입력 유지)
 
@@ -954,7 +1068,7 @@ with st.sidebar:
     # 5. 라디오 버튼
     genre_select = st.radio(
         "콘텐츠 성격 선택:",
-        (OPT_INFO, OPT_HISTORY, OPT_3D, OPT_SCIFI, OPT_CUSTOM), # [NEW] 옵션 5개로 증가
+        (OPT_INFO, OPT_REALISTIC, OPT_HISTORY, OPT_3D, OPT_SCIFI, OPT_CUSTOM), # [NEW] 옵션 추가
         index=0,
         key="genre_radio_key",
         on_change=update_text_from_radio,
@@ -964,15 +1078,16 @@ with st.sidebar:
     # 내부 로직용 모드 변수 할당
     if genre_select == OPT_INFO:
         SELECTED_GENRE_MODE = "info"
+    elif genre_select == OPT_REALISTIC: # [NEW]
+        SELECTED_GENRE_MODE = "realistic_stickman"
     elif genre_select == OPT_HISTORY:
         SELECTED_GENRE_MODE = "history"
     elif genre_select == OPT_3D:
         SELECTED_GENRE_MODE = "3d_docu"
-    elif genre_select == OPT_SCIFI: # [NEW]
+    elif genre_select == OPT_SCIFI: 
         SELECTED_GENRE_MODE = "scifi"
     else:
         # 직접 입력일 경우, 텍스트 내용에 따라 3D인지 2D인지 대략 판단하거나 기본값 설정
-        # (여기서는 텍스트에 '3D'나 'Unreal'이 있으면 3D 모드로 처리하는 센스 추가)
         current_text = st.session_state.get('style_prompt_area', "")
         if "3D" in current_text or "Unreal" in current_text or "Realistic" in current_text:
             SELECTED_GENRE_MODE = "3d_docu"
@@ -1002,6 +1117,44 @@ with st.sidebar:
     )
     # ---------------------------------------------------------------------------
 
+    st.markdown("---")
+
+    # ==========================================
+    # [NEW] 사이드바: 캐릭터 이미지 업로더 추가
+    # ==========================================
+    st.subheader("🧑‍🎨 캐릭터 일관성 유지 (베타)")
+    st.caption("주인공 캐릭터 이미지를 올리면, AI가 그 특징을 분석하여 모든 장면에 동일하게 적용하려고 시도합니다.")
+    
+    if 'char_description' not in st.session_state:
+        st.session_state['char_description'] = ""
+
+    uploaded_char_img = st.file_uploader("참조 캐릭터 이미지 업로드 (PNG, JPG)", type=["png", "jpg", "jpeg"])
+    
+    if uploaded_char_img is not None:
+        # 이미지가 업로드 되면 분석 시작
+        if not api_key:
+            st.error("⚠️ API Key를 먼저 입력해주세요.")
+        else:
+            # 이미 분석된 적이 없거나, 다른 이미지를 올렸을 때만 재분석
+            # (간단하게 구현하기 위해 업로드시 매번 분석하도록 함)
+            with st.spinner("비전 AI가 캐릭터의 시각적 특징을 분석 중입니다..."):
+                img_bytes = uploaded_char_img.getvalue()
+                desc_result = analyze_character_image(api_key, img_bytes)
+                
+                if "Error" not in desc_result:
+                    st.session_state['char_description'] = desc_result
+                    st.success("✅ 분석 완료! 이제부터 생성되는 이미지에 이 캐릭터가 적용됩니다.")
+                    with st.expander("분석된 캐릭터 시각 설계도 확인 (영어)"):
+                        st.write(st.session_state['char_description'])
+                    st.image(uploaded_char_img, caption="참조 이미지", width=150)
+                else:
+                    st.error(f"분석 실패: {desc_result}")
+                    st.session_state['char_description'] = ""
+    else:
+        # 이미지 제거 시 설명도 초기화
+        if st.session_state['char_description']:
+             st.session_state['char_description'] = ""
+    
     st.markdown("---")
     
     # [NEW] Supertone TTS 설정
@@ -1445,6 +1598,9 @@ if start_btn:
         if not current_video_title:
             current_video_title = "전반적인 대본 분위기에 어울리는 배경 (Context based on the script)"
 
+        # [NEW] 현재 저장된 캐릭터 묘사 가져오기
+        current_char_desc = st.session_state.get('char_description', "")
+
         # 2. 프롬프트 생성 (병렬)
         status_box.write(f"📝 프롬프트 작성 중 ({GEMINI_TEXT_MODEL_NAME}) - 모드: {SELECTED_GENRE_MODE}...") # (선택) 로그 메시지에 모드 표시 추가
         prompts = []
@@ -1461,7 +1617,8 @@ if start_btn:
                     style_instruction, 
                     current_video_title, 
                     SELECTED_GENRE_MODE,
-                    target_language  # <--- [NEW] 추가됨
+                    target_language,
+                    current_char_desc # <--- [NEW] 캐릭터 묘사 주입
                 ))
             
             for i, future in enumerate(as_completed(futures)):
@@ -1573,8 +1730,7 @@ if st.session_state['generated_results']:
                         future_to_idx[future] = i
                     
                     for future in as_completed(future_to_idx):
-                        idx = future_to_idx[future]
-                        try:
+                        idx = future_to_idx[future]<br>                        try:
                             result_path = future.result()
                             if "Error" not in str(result_path) and "VOICE_NOT_FOUND" not in str(result_path):
                                 st.session_state['generated_results'][idx]['audio_path'] = result_path
@@ -1679,13 +1835,17 @@ if st.session_state['generated_results']:
                         with st.spinner(f"Scene {item['scene']} 다시 그리는 중..."):
                             client = genai.Client(api_key=api_key)
                             
+                            # [NEW] 현재 캐릭터 묘사 가져오기
+                            current_char_desc = st.session_state.get('char_description', "")
+
                             # 1. 프롬프트 다시 생성 (현재 대본과 스타일, 모드 반영)
                             current_title = st.session_state.get('video_title', '')
                             # 대본이 수정되었을 수도 있으므로 item['script'] 사용
                             _, new_prompt = generate_prompt(
                                 api_key, index, item['script'], style_instruction,
                                 current_title, SELECTED_GENRE_MODE,
-                                target_language # <--- [NEW] 추가됨
+                                target_language,
+                                current_char_desc # <--- [NEW] 캐릭터 묘사 주입
                             )
                             
                             # 2. 이미지 생성
@@ -1772,10 +1932,3 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
-
-
-
-
-
-
-
