@@ -297,7 +297,7 @@ def make_filename(scene_num, text_chunk):
     return filename
 
 # ==========================================
-# [NEW 함수] 캐릭터 참조 이미지 분석 (비전 AI 활용)
+# [NEW 함수] 캐릭터 참조 이미지 분석 (비전 AI 활용 - 수정됨)
 # ==========================================
 def analyze_character_image(api_key, image_bytes):
     """업로드된 캐릭터 이미지를 분석하여 상세한 텍스트 묘사를 추출"""
@@ -321,12 +321,12 @@ def analyze_character_image(api_key, image_bytes):
     """
     
     try:
-        # 이미지 바이트 데이터를 Gemini가 이해할 수 있는 형태로 준비
-        image_part = types.Part.from_bytes(image_bytes, mime_type="image/jpeg") # jpeg/png 통용
+        # [FIX] Part.from_bytes 대신 PIL Image로 직접 변환하여 전달 (API가 자동 처리)
+        image = Image.open(BytesIO(image_bytes))
 
         response = client.models.generate_content(
             model="gemini-2.5-pro", # 이미지를 인식할 수 있는 멀티모달 모델 사용
-            contents=[prompt, image_part]
+            contents=[prompt, image]
         )
         return response.text.strip()
     except Exception as e:
