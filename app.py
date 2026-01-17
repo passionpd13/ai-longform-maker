@@ -87,7 +87,7 @@ def num_to_kor(num_str):
         return num_str
 
 def normalize_text_for_tts(text):
-    """TTS 발음을 위해 특수문자와 숫자를 한글로 변환"""
+    """TTS 발음을 위해 특수문자와 숫자를 한글 발음으로 변환"""
     # [추가] 일본어 문자가 포함되어 있으면 정규화(숫자 한글 변환)를 건너뜀
     if any("\u3040" <= char <= "\u30ff" for char in text):
         return text
@@ -117,7 +117,7 @@ def generate_structure(client, full_script):
     [Task]
     Analyze the provided transcript (script).
     Restructure the content into a highly detailed, list-style format suitable for a blog post or a new video plan.
-       
+        
     [Output Format]
     1. **Video Theme/Title**: (Extract or suggest a catchy title based on the whole script)
     2. **Intro**: (Hook and background, no music) Approve specific channel names, The intro hooks the overall topic (안녕하십니까 같은 인사 금지)
@@ -175,7 +175,7 @@ def generate_section(client, section_title, full_structure, duration_type="fixed
 
     [Task]
     전체 대본 구조 중 오직 **"{section_title}"** 부분만 작성하십시오.
-       
+        
     [Context (Overall Structure)]
     {full_structure}
     {user_guide_prompt}
@@ -185,7 +185,7 @@ def generate_section(client, section_title, full_structure, duration_type="fixed
 
     [Length Constraints]
     - **목표 분량: {target_chars}** - **작성 지침:** {detail_level}
-       
+        
     [Style Guidelines - 매우 중요]
     1. '습니다' 체를 사용하고, 다큐멘터리 특유의 진지하고 몰입감 있는 어조를 유지하세요.
     2. 앞뒤 문맥(이전 챕터, 다음 챕터)을 고려하되, 이 파트의 내용에만 집중하세요.
@@ -609,8 +609,52 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
     - 부가 설명 없이 **오직 프롬프트 텍스트만** 출력하십시오.
         """
 
-    else: # genre_mode == "3d_docu"
-        # 위에서 3d_docu를 elif로 처리했으므로 이 else문은 실행되지 않겠지만 구조상 남겨둠 (혹은 Fallback)
+    # ---------------------------------------------------------
+    # [모드 5] The Paint Explainer (New Preset Added)
+    # ---------------------------------------------------------
+    elif genre_mode == "paint_explainer":
+        # [NEW] The Paint Explainer 스타일 (흰 배경 + 스틱맨 + 단순함 + 명확한 사물 표현)
+        full_instruction = f"""
+    {character_consistency_block}
+    [역할]
+    당신은 유튜브 'The Paint Explainer' 채널 스타일의 **'초심플 스틱맨 일러스트레이터'**입니다.
+    복잡한 세상의 이야기를 **'흰색 배경 위, 검은색 선으로 된 졸라맨(Stickman)'과 '직관적인 사물 그림'**으로 아주 단순하고 명쾌하게 설명해야 합니다.
+
+    [전체 영상 주제] "{video_title}"
+    [스타일 가이드] {style_instruction}
+
+    [필수 연출 지침]
+    1. **[핵심 - 배경] 배경은 무조건 '완전한 흰색(Pure White Background)'**입니다.
+        - 배경에 풍경, 하늘, 그라데이션, 종이 질감 등을 절대 넣지 마십시오. 그냥 하얀 여백입니다.
+    2. **[핵심 - 캐릭터] 완벽한 '졸라맨(Stick Figure)' 스타일:**
+        - 머리는 동그라미(Circle head).
+        - 몸통과 팔다리는 **단순한 검은 막대기 선(Stick limbs)**.
+        - 표정은 점 눈(. .)과 선 입(__)으로 단순하지만 상황(기쁨, 슬픔, 당황)을 명확히 전달해야 합니다.
+    3. **[핵심 - 소품 및 상황 연출 (Props & Context) - 강화됨]:**
+        - 대본 속 중요한 사물들을 **단순하지만 그 특징이 가장 잘 드러나게 과장하여** 그리십시오.
+        - **시각적 은유(Visual Metaphor)를 적극 활용하십시오.**
+          - (예: '엄청난 빚' -> 스틱맨을 짓누르는 건물만 한 바위 덩어리에 '빚(DEBT)'이라고 씀)
+          - (예: '돈을 벌다' -> 스틱맨 손으로 자석을 들고 돈다발을 끌어당기는 모습)
+        - 상황 설명력을 높이기 위해 **화살표(→), 물음표(?), 느낌표(!), 당황 표시(땀방울 💦), 반짝임(✨) 등의 기호**를 적극적으로 그림 옆에 추가하십시오.
+        - 사물끼리의 관계(원인->결과)를 화살표로 연결하여 보여주십시오.
+    4. **[작화 스타일] MS 그림판(MS Paint) 감성:**
+        - 고퀄리티 예술 작품이 아닙니다. 마우스로 대충 그린 듯한(Rough sketch, scribbles, crude drawing) 느낌을 살리십시오.
+        - 그림자는 그리지 않습니다(No shading). 완전한 평면(Flat)입니다.
+    5. **[색상 사용]:**
+        - 기본은 **흑백(Black lines on White)**입니다.
+        - 강조하고 싶은 핵심 사물(돈, 국기, 중요한 버튼 등)에만 **빨강, 파랑, 노랑 같은 원색(Primary Colors)**을 포인트로 사용하여 시선을 집중시키십시오.
+    6. **[텍스트 처리]:** {lang_guide} {lang_example}
+        - 삐뚤빼뚤한 마우스 손글씨 느낌으로 연출하십시오. 텍스트 박스보다는 그림 옆에 자연스럽게 쓰인 느낌이 좋습니다.
+    7. **[구도]:**
+        - 분할 화면 금지. 하나의 흰 화면 위에 캐릭터와 관련 사물들을 배치하여 하나의 상황극처럼 만드십시오.
+
+    [임무]
+    대본을 분석하여 AI가 그릴 수 있는 **'The Paint Explainer 스타일'의 프롬프트**를 작성하십시오.
+    - "Minimalist stick figure, crude ms paint style, pure white background, simple line drawing, visual metaphor, infographic elements (arrows, symbols)" 등의 키워드가 반영되도록 하십시오.
+    - **한글**로만 출력하십시오.
+        """
+
+    else: # Fallback
         full_instruction = f"스타일: {style_instruction}. 대본 내용: {text_chunk}. 이미지 프롬프트 작성."
 
     # 공통 실행 로직
@@ -1044,6 +1088,14 @@ with st.sidebar:
 인물: 엔지니어/과학자/교사/회사원/군인 등등 다양한 3d 캐릭터가 등장하여 기계를 조작하거나 설명하는 기능적 역할 수행.
 분위기: 깔끔하고, 교육적이며, 명확함(Clear & Educational). 과도한 그림자 배제."""
 
+    # [NEW] 페인트 익스플레이너 프리셋
+    PRESET_PAINT = """'The Paint Explainer' 유튜브 채널 스타일 (Minimalist Stickman).
+단색 느낌의 배경(Pure White Background). 배경 묘사 있음.
+검은색 선으로 이루어진 단순한 졸라맨(Stick Figure) 캐릭터. (둥근 머리, 막대기 팔다리).
+MS 그림판(MS Paint)으로 그린 듯한 키치하고 단순한 느낌.
+채색은 적당히 하고 특정 사물(국기, 돈 등)에만 원색 포인트 컬러 사용.
+복잡한 예술적 기교나 명암(Shading) 절대 금지. 단순하고 직관적인 설명화."""
+
     # 2. 세션 상태 초기화
     if 'style_prompt_area' not in st.session_state:
         st.session_state['style_prompt_area'] = PRESET_INFO
@@ -1054,6 +1106,7 @@ with st.sidebar:
     OPT_HISTORY = "역사/다큐 (Cinematic & Immersive)"
     OPT_3D = "3D 다큐멘터리 (Realistic 3D Game Style)"
     OPT_SCIFI = "과학/엔지니어링 (3D Tech & Character)"
+    OPT_PAINT = "심플 그림판/졸라맨 (The Paint Explainer Style)" # [NEW]
     OPT_CUSTOM = "직접 입력 (Custom Style)"
 
     # 3. 콜백 함수: 라디오 버튼 변경 시 -> 텍스트 업데이트
@@ -1069,6 +1122,8 @@ with st.sidebar:
             st.session_state['style_prompt_area'] = PRESET_3D
         elif selection == OPT_SCIFI: 
             st.session_state['style_prompt_area'] = PRESET_SCIFI
+        elif selection == OPT_PAINT: # [NEW]
+            st.session_state['style_prompt_area'] = PRESET_PAINT
         # "직접 입력" 선택 시에는 텍스트를 변경하지 않음 (사용자 입력 유지)
 
     # 4. 콜백 함수: 텍스트 직접 수정 시 -> 라디오 버튼을 '직접 입력'으로 변경
@@ -1078,7 +1133,7 @@ with st.sidebar:
     # 5. 라디오 버튼
     genre_select = st.radio(
         "콘텐츠 성격 선택:",
-        (OPT_INFO, OPT_REALISTIC, OPT_HISTORY, OPT_3D, OPT_SCIFI, OPT_CUSTOM), # [NEW] 옵션 추가
+        (OPT_INFO, OPT_REALISTIC, OPT_HISTORY, OPT_3D, OPT_SCIFI, OPT_PAINT, OPT_CUSTOM), # [NEW] 옵션 추가
         index=0,
         key="genre_radio_key",
         on_change=update_text_from_radio,
@@ -1096,6 +1151,8 @@ with st.sidebar:
         SELECTED_GENRE_MODE = "3d_docu"
     elif genre_select == OPT_SCIFI: 
         SELECTED_GENRE_MODE = "scifi"
+    elif genre_select == OPT_PAINT: # [NEW]
+        SELECTED_GENRE_MODE = "paint_explainer"
     else:
         # 직접 입력일 경우, 텍스트 내용에 따라 3D인지 2D인지 대략 판단하거나 기본값 설정
         current_text = st.session_state.get('style_prompt_area', "")
@@ -1853,7 +1910,7 @@ if st.session_state['generated_results']:
                             current_title = st.session_state.get('video_title', '')
                             # 대본이 수정되었을 수도 있으므로 item['script'] 사용
                             _, new_prompt = generate_prompt(
-                                api_key, index, item['script'], style_instruction,
+                                api_key, index, item['script'], style_instruction, 
                                 current_title, SELECTED_GENRE_MODE,
                                 target_language,
                                 current_char_desc # <--- [NEW] 캐릭터 묘사 주입
@@ -1943,7 +2000,3 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
-
-
-
-
