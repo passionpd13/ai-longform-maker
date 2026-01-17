@@ -623,8 +623,11 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
     [스타일 가이드] {style_instruction}
 
     [필수 연출 지침]
-    1. **[핵심 - 배경] 배경은 무조건 '완전한 흰색(Pure White Background)'**입니다.
-       - 배경에 풍경, 하늘, 그라데이션, 종이 질감 등을 절대 넣지 마십시오. 그냥 하얀 여백입니다.
+    1. **[핵심 - 배경] 배경을 비워두지 마십시오 (No Empty White Void).**
+        - 대본의 장소(사무실, 거리, 우주, 방 안 등)를 **'단순화된 2D 배경'**으로 반드시 그리십시오.
+        - **예시:** - 실외: 파란 하늘, 초록색 언덕, 회색 빌딩 숲.
+            - 실내: 베이지색 벽지, 갈색 바닥, 창문, 책상.
+        - **스타일:** 복잡한 텍스처나 그라데이션은 피하고, **'면으로 칠해진 플랫한 배경(Flat 2D Environment)'**을 구성하십시오.
     2. **[핵심 - 캐릭터] 완벽한 '2d 졸라맨(Stick Figure)' 스타일:**
        - 머리는 동그라미(Circle head).
        - 몸통과 팔다리는 **단순한 검은 막대기 선(Stick limbs)**.
@@ -1092,10 +1095,10 @@ with st.sidebar:
 
     # [NEW] 페인트 익스플레이너 프리셋
     PRESET_PAINT = """'The Paint Explainer' 유튜브 채널 스타일 (Minimalist Stickman).
-단색 느낌의 배경(Pure White Background). 배경 묘사 있음.
+배경: 완전한 흰색이 아님. 하늘, 벽, 바닥 등이 구분된 '단순한 2D 배경(Flat 2D Environment)'.
 검은색 선으로 이루어진 단순한 졸라맨(Stick Figure) 캐릭터. (둥근 머리, 막대기 팔다리).
 MS 그림판(MS Paint)으로 그린 듯한 키치하고 단순한 느낌.
-채색은 적당히 하고 특정 사물(국기, 돈 등)에만 원색 포인트 컬러 사용.
+채색: 흑백뿐만 아니라 다양한 '플랫 컬러(Flat Colors)'를 사용하여 사물과 배경을 다채롭게 표현.
 복잡한 예술적 기교나 명암(Shading) 절대 금지. 단순하고 직관적인 설명화."""
 
     # 2. 세션 상태 초기화
@@ -2002,6 +2005,7 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
+
 
 
 
