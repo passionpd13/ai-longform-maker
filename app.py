@@ -616,19 +616,16 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
         # [NEW] The Paint Explainer 스타일 (흰 배경 + 스틱맨 + 단순함 + 명확한 사물 표현)
         full_instruction = f"""
     [역할]
-    당신은 유튜브 'The Paint Explainer' 채널 스타일의 **'초심플 2d 스틱맨 일러스트레이터'**입니다.
+    당신은 유튜브 'The Paint Explainer' 채널 스타일의 **'초심플 스틱맨 일러스트레이터'**입니다.
     복잡한 세상의 이야기를 **'흰색 배경 위, 검은색 선으로 된 졸라맨(Stickman)'과 '직관적인 사물 그림'**으로 아주 단순하고 명쾌하게 설명해야 합니다.
 
     [전체 영상 주제] "{video_title}"
     [스타일 가이드] {style_instruction}
 
     [필수 연출 지침]
-    1. **[핵심 - 배경] 배경을 비워두지 마십시오 (No Empty White Void).**
-        - 대본의 장소(사무실, 거리, 우주, 방 안 등)를 **'단순화된 2D 배경'**으로 반드시 그리십시오.
-        - **예시:** - 실외: 파란 하늘, 초록색 언덕, 회색 빌딩 숲.
-            - 실내: 베이지색 벽지, 갈색 바닥, 창문, 책상.
-        - **스타일:** 복잡한 텍스처나 그라데이션은 피하고, **'면으로 칠해진 플랫한 배경(Flat 2D Environment)'**을 구성하십시오.
-    2. **[핵심 - 캐릭터] 완벽한 '2d 졸라맨(Stick Figure)' 스타일:**
+    1. **[핵심 - 배경] 배경은 '단순한 단색(Solid Color Background)'**으로 처리하십시오.
+        - 기본적으로는 '흰색'을 권장하지만, 상황에 따라 분위기를 나타내는 '단색(파랑, 노랑, 회색 등)'을 사용할 수 있습니다.
+    2. **[핵심 - 캐릭터] 완벽한 '졸라맨(Stick Figure)' 스타일:**
        - 머리는 동그라미(Circle head).
        - 몸통과 팔다리는 **단순한 검은 막대기 선(Stick limbs)**.
        - 표정은 점 눈(. .)과 선 입(__)으로 단순하지만 상황(기쁨, 슬픔, 당황)을 명확히 전달해야 합니다.
@@ -646,13 +643,9 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
        - 기본은 **흑백(Black lines on White)**입니다.
        - 강조하고 싶은 핵심 사물(돈, 국기, 중요한 버튼 등)에만 **빨강, 파랑, 노랑 같은 원색(Primary Colors)**을 포인트로 사용하여 시선을 집중시키십시오.
     6. **[텍스트 처리]:** {lang_guide} {lang_example}
-       - 텍스트는 배경 그림 위에 자연스럽게 어우러지도록 배치하십시오. (간판, 칠판, 말풍선 등).
-       - 손글씨 느낌으로 연출하십시오. 텍스트 박스보다는 그림 옆에 자연스럽게 크게 쓰인 느낌이 좋습니다.
+       - 삐뚤빼뚤한 마우스 손글씨 느낌으로 연출하십시오. 텍스트 박스보다는 그림 옆에 자연스럽게 쓰인 느낌이 좋습니다.
     7. **[구도]:**
        - 분할 화면 금지. 하나의 흰 화면 위에 캐릭터와 관련 사물들을 배치하여 하나의 상황극처럼 만드십시오.
-    8. **[핵심 - 채색] '다채로운 플랫 컬러(Colorful Flat Colors)' 사용:**
-        - 흑백 강박을 버리십시오. **사물, 배경, 의상에 다양한 색을 사용**하여 생동감을 주십시오.
-        - **채색 스타일:** 셀 애니메이션처럼 그림자가 없는 **'단색 채우기(Cell Shading/Flat Fill)'** 기법을 사용하십시오.
 
     [임무]
     대본을 분석하여 AI가 그릴 수 있는 **'The Paint Explainer 스타일'의 프롬프트**를 작성하십시오.
@@ -1097,7 +1090,7 @@ with st.sidebar:
     # [NEW] 페인트 익스플레이너 프리셋
     PRESET_PAINT = """'The Paint Explainer' 유튜브 채널 스타일 (Minimalist Stickman).
 배경: 완전한 흰색이 아님. 하늘, 벽, 바닥 등이 구분된 '단순한 2D 배경(Flat 2D Environment)'.
-검은색 선으로 이루어진 단순한 졸라맨(Stick Figure) 캐릭터. (둥근 머리, 막대기 팔다리).
+검은색 선으로 이루어진 단순한 졸라맨(Stick Figure) 캐릭터. (둥근 머리, 막대기 팔다리). 표정 연출 필수.
 MS 그림판(MS Paint)으로 그린 듯한 키치하고 단순한 느낌.
 채색: 흑백뿐만 아니라 다양한 '플랫 컬러(Flat Colors)'를 사용하여 사물과 배경을 다채롭게 표현.
 복잡한 예술적 기교나 명암(Shading) 절대 금지. 단순하고 직관적인 설명화."""
@@ -2006,6 +1999,7 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
+
 
 
 
