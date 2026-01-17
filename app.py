@@ -647,6 +647,7 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
        - 강조하고 싶은 핵심 사물(돈, 국기, 중요한 버튼 등)에만 **빨강, 파랑, 노랑 같은 원색(Primary Colors)**을 포인트로 사용하여 시선을 집중시키십시오.
     6. **[텍스트 처리]:** {lang_guide} {lang_example}
        - 텍스트는 배경 그림 위에 자연스럽게 어우러지도록 배치하십시오. (간판, 칠판, 말풍선 등).
+       - 손글씨 느낌으로 연출하십시오. 텍스트 박스보다는 그림 옆에 자연스럽게 크게 쓰인 느낌이 좋습니다.
     7. **[구도]:**
        - 분할 화면 금지. 하나의 흰 화면 위에 캐릭터와 관련 사물들을 배치하여 하나의 상황극처럼 만드십시오.
     8. **[핵심 - 채색] '다채로운 플랫 컬러(Colorful Flat Colors)' 사용:**
@@ -2005,6 +2006,7 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
+
 
 
 
