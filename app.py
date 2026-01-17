@@ -617,18 +617,22 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
         full_instruction = f"""
     [역할]
     당신은 유튜브 'The Paint Explainer' 채널 스타일의 **'초심플 스틱맨 일러스트레이터'**입니다.
-    복잡한 세상의 이야기를 **'흰색 배경 위, 검은색 선으로 된 졸라맨(Stickman)'과 '직관적인 사물 그림'**으로 아주 단순하고 명쾌하게 설명해야 합니다.
+    복잡한 세상의 이야기를 **'꽉 찬 화면 구성'과 '다채로운 색감'**으로 시청자의 눈을 사로잡아야 합니다.
 
     [전체 영상 주제] "{video_title}"
     [스타일 가이드] {style_instruction}
 
     [필수 연출 지침]
-    1. **[핵심 - 배경] 배경은 '단순한 단색(Solid Color Background)'**으로 처리하십시오.
-        - 기본적으로는 '흰색'을 권장하지만, 상황에 따라 분위기를 나타내는 '단색(파랑, 노랑, 회색 등)'을 사용할 수 있습니다.
+    1. **[핵심 - 배경] 배경을 비워두지 마십시오 (No Empty White Void).**
+        - 대본의 장소(사무실, 거리, 우주, 방 안 등)를 **'단순화된 2D 배경'**으로 반드시 그리십시오.
+        - **예시:** - 실외: 파란 하늘, 초록색 언덕, 회색 빌딩 숲.
+            - 실내: 베이지색 벽지, 갈색 바닥, 창문, 책상.
+        - **스타일:** 복잡한 텍스처나 그라데이션은 피하고, **'면으로 칠해진 플랫한 배경(Flat 2D Environment)'**을 구성하십시오.
     2. **[핵심 - 캐릭터] 완벽한 '졸라맨(Stick Figure)' 스타일:**
-       - 머리는 동그라미(Circle head).
+       - 머리는 표정이 있는 동그라미(Circle head).
        - 몸통과 팔다리는 **단순한 검은 막대기 선(Stick limbs)**.
        - 표정은 점 눈(. .)과 선 입(__)으로 단순하지만 상황(기쁨, 슬픔, 당황)을 명확히 전달해야 합니다.
+       - 하지만 배경과 사물이 다채로워졌으므로, 캐릭터가 묻히지 않도록 **굵은 외곽선(Bold Outline)**을 사용하거나 상황에 맞는 **'색깔 있는 의상'**을 입혀도 좋습니다.
     3. **[핵심 - 소품 및 상황 연출 (Props & Context) - 강화됨]:**
        - 대본 속 중요한 사물들을 **단순하지만 그 특징이 가장 잘 드러나게 과장하여** 그리십시오.
        - **시각적 은유(Visual Metaphor)를 적극 활용하십시오.**
@@ -643,7 +647,7 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
        - 기본은 **흑백(Black lines on White)**입니다.
        - 강조하고 싶은 핵심 사물(돈, 국기, 중요한 버튼 등)에만 **빨강, 파랑, 노랑 같은 원색(Primary Colors)**을 포인트로 사용하여 시선을 집중시키십시오.
     6. **[텍스트 처리]:** {lang_guide} {lang_example}
-       - 삐뚤빼뚤한 마우스 손글씨 느낌으로 연출하십시오. 텍스트 박스보다는 그림 옆에 자연스럽게 쓰인 느낌이 좋습니다.
+       - 손글씨 느낌으로 연출하십시오. 텍스트 박스보다는 그림 옆에 자연스럽게 쓰인 느낌이 좋습니다.
     7. **[구도]:**
        - 분할 화면 금지. 하나의 흰 화면 위에 캐릭터와 관련 사물들을 배치하여 하나의 상황극처럼 만드십시오.
 
@@ -1999,6 +2003,7 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
+
 
 
 
