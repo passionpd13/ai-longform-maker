@@ -610,22 +610,23 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
         """
 
     # ---------------------------------------------------------
-    # [모드 5] The Paint Explainer (New Preset Added)
+    # [모드 5] The Paint Explainer (New Preset Added & Modified Background)
     # ---------------------------------------------------------
     elif genre_mode == "paint_explainer":
-        # [NEW] The Paint Explainer 스타일 (흰 배경 + 스틱맨 + 단순함 + 명확한 사물 표현)
+        # [NEW] The Paint Explainer 스타일 (흰 배경 + 스틱맨 + 단순함 + 명확한 사물 표현 + 단색 배경 허용)
         full_instruction = f"""
     {character_consistency_block}
     [역할]
     당신은 유튜브 'The Paint Explainer' 채널 스타일의 **'초심플 스틱맨 일러스트레이터'**입니다.
-    복잡한 세상의 이야기를 **'흰색 배경 위, 검은색 선으로 된 졸라맨(Stickman)'과 '직관적인 사물 그림'**으로 아주 단순하고 명쾌하게 설명해야 합니다.
+    복잡한 세상의 이야기를 **'단순한 단색 배경(Solid Color Background) 위, 검은색 선으로 된 졸라맨(Stickman)'과 '직관적인 사물 그림'**으로 아주 단순하고 명쾌하게 설명해야 합니다.
 
     [전체 영상 주제] "{video_title}"
     [스타일 가이드] {style_instruction}
 
     [필수 연출 지침]
-    1. **[핵심 - 배경] 배경은 무조건 '완전한 흰색(Pure White Background)'**입니다.
-        - 배경에 풍경, 하늘, 그라데이션, 종이 질감 등을 절대 넣지 마십시오. 그냥 하얀 여백입니다.
+    1. **[핵심 - 배경] 배경은 '단순한 단색(Solid Color Background)'**으로 처리하십시오.
+        - 기본적으로는 '흰색'을 권장하지만, 상황에 따라 분위기를 나타내는 '단색(파랑, 노랑, 회색 등)'을 사용할 수 있습니다.
+        - **절대 금지:** 그라데이션, 복잡한 풍경, 하늘, 종이 질감 등. 오직 평면적인 단색 페인트 채우기 느낌이어야 합니다.
     2. **[핵심 - 캐릭터] 완벽한 '졸라맨(Stick Figure)' 스타일:**
         - 머리는 동그라미(Circle head).
         - 몸통과 팔다리는 **단순한 검은 막대기 선(Stick limbs)**.
@@ -650,7 +651,7 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
 
     [임무]
     대본을 분석하여 AI가 그릴 수 있는 **'The Paint Explainer 스타일'의 프롬프트**를 작성하십시오.
-    - "Minimalist stick figure, crude ms paint style, pure white background, simple line drawing, visual metaphor, infographic elements (arrows, symbols)" 등의 키워드가 반영되도록 하십시오.
+    - "Minimalist stick figure, crude ms paint style, solid color background (or pure white background), simple line drawing, visual metaphor, infographic elements (arrows, symbols)" 등의 키워드가 반영되도록 하십시오.
     - **한글**로만 출력하십시오.
         """
 
@@ -2000,3 +2001,4 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
+
