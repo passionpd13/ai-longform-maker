@@ -613,45 +613,46 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
     # [모드 5] The Paint Explainer (Modified: More Background & Color)
     # ---------------------------------------------------------
     elif genre_mode == "paint_explainer":
-        # [NEW] The Paint Explainer 스타일 (배경 묘사 + 다채로운 채색)
+        # [NEW] The Paint Explainer 스타일 (흰 배경 + 스틱맨 + 단순함 + 명확한 사물 표현)
         full_instruction = f"""
-    {character_consistency_block}
     [역할]
-    당신은 유튜브 'The Paint Explainer' 채널 스타일의 **'스틱맨 일러스트레이터'**입니다.
-    이전에는 단순함이 목표였지만, 이번에는 **'꽉 찬 화면 구성'과 '다채로운 색감'**으로 시청자의 눈을 사로잡아야 합니다.
+    당신은 유튜브 'The Paint Explainer' 채널 스타일의 **'초심플 2d 스틱맨 일러스트레이터'**입니다.
+    복잡한 세상의 이야기를 **'흰색 배경 위, 검은색 선으로 된 졸라맨(Stickman)'과 '직관적인 사물 그림'**으로 아주 단순하고 명쾌하게 설명해야 합니다.
 
     [전체 영상 주제] "{video_title}"
     [스타일 가이드] {style_instruction}
 
     [필수 연출 지침]
-    1. **[핵심 - 배경] 배경을 비워두지 마십시오 (No Empty White Void).**
-        - 대본의 장소(사무실, 거리, 우주, 방 안 등)를 **'단순화된 2D 배경'**으로 반드시 그리십시오.
-        - **예시:** - 실외: 파란 하늘, 초록색 언덕, 회색 빌딩 숲.
-            - 실내: 베이지색 벽지, 갈색 바닥, 창문, 책상.
-        - **스타일:** 복잡한 텍스처나 그라데이션은 피하고, **'면으로 칠해진 플랫한 배경(Flat 2D Environment)'**을 구성하십시오.
-    
-    2. **[핵심 - 채색] '다채로운 플랫 컬러(Colorful Flat Colors)' 사용:**
+    1. **[핵심 - 배경] 배경은 무조건 '완전한 흰색(Pure White Background)'**입니다.
+       - 배경에 풍경, 하늘, 그라데이션, 종이 질감 등을 절대 넣지 마십시오. 그냥 하얀 여백입니다.
+    2. **[핵심 - 캐릭터] 완벽한 '2d 졸라맨(Stick Figure)' 스타일:**
+       - 머리는 동그라미(Circle head).
+       - 몸통과 팔다리는 **단순한 검은 막대기 선(Stick limbs)**.
+       - 표정은 점 눈(. .)과 선 입(__)으로 단순하지만 상황(기쁨, 슬픔, 당황)을 명확히 전달해야 합니다.
+    3. **[핵심 - 소품 및 상황 연출 (Props & Context) - 강화됨]:**
+       - 대본 속 중요한 사물들을 **단순하지만 그 특징이 가장 잘 드러나게 과장하여** 그리십시오.
+       - **시각적 은유(Visual Metaphor)를 적극 활용하십시오.**
+         - (예: '엄청난 빚' -> 스틱맨을 짓누르는 건물만 한 바위 덩어리에 '빚(DEBT)'이라고 씀)
+         - (예: '돈을 벌다' -> 스틱맨 손으로 자석을 들고 돈다발을 끌어당기는 모습)
+       - 상황 설명력을 높이기 위해 **화살표(→), 물음표(?), 느낌표(!), 당황 표시(땀방울 💦), 반짝임(✨) 등의 기호**를 적극적으로 그림 옆에 추가하십시오.
+       - 사물끼리의 관계(원인->결과)를 화살표로 연결하여 보여주십시오.
+    4. **[작화 스타일] MS 그림판(MS Paint) 감성:**
+       - 고퀄리티 예술 작품이 아닙니다. 마우스로 대충 그린 듯한(Rough sketch, scribbles, crude drawing) 느낌을 살리십시오.
+       - 그림자는 그리지 않습니다(No shading). 완전한 평면(Flat)입니다.
+    5. **[색상 사용]:**
+       - 기본은 **흑백(Black lines on White)**입니다.
+       - 강조하고 싶은 핵심 사물(돈, 국기, 중요한 버튼 등)에만 **빨강, 파랑, 노랑 같은 원색(Primary Colors)**을 포인트로 사용하여 시선을 집중시키십시오.
+    6. **[텍스트 처리]:** {lang_guide} {lang_example}
+       - 삐뚤빼뚤한 마우스 손글씨 느낌으로 연출하십시오. 텍스트 박스보다는 그림 옆에 자연스럽게 쓰인 느낌이 좋습니다.
+    7. **[구도]:**
+       - 분할 화면 금지. 하나의 흰 화면 위에 캐릭터와 관련 사물들을 배치하여 하나의 상황극처럼 만드십시오.
+    8. **[핵심 - 채색] '다채로운 플랫 컬러(Colorful Flat Colors)' 사용:**
         - 흑백 강박을 버리십시오. **사물, 배경, 의상에 다양한 색을 사용**하여 생동감을 주십시오.
         - **채색 스타일:** 셀 애니메이션처럼 그림자가 없는 **'단색 채우기(Cell Shading/Flat Fill)'** 기법을 사용하십시오.
-    
-    3. **[핵심 - 캐릭터] '졸라맨(Stick Figure)'의 정체성 유지:**
-        - 캐릭터는 여전히 **검은 선(혹은 흰 선)으로 된 졸라맨**입니다. (머리는 동그라미, 몸은 막대기).
-        - 하지만 배경과 사물이 다채로워졌으므로, 캐릭터가 묻히지 않도록 **굵은 외곽선(Bold Outline)**을 사용하거나 상황에 맞는 **'색깔 있는 의상'**을 입혀도 좋습니다.
-
-    4. **[핵심 - 소품 및 상황 연출]:**
-        - 대본 속 핵심 키워드를 시각화하는 소품(돈다발, 그래프, 컴퓨터, 음식 등)을 **크고 명확하게** 배치하십시오.
-        - 만화적 기호(땀방울 💦, 화남 💢, 반짝임 ✨, 물음표 ❓)를 적극 사용하여 감정을 표현하십시오.
-
-    5. **[텍스트 처리]:** {lang_guide} {lang_example}
-        - 텍스트는 배경 그림 위에 자연스럽게 어우러지도록 배치하십시오. (간판, 칠판, 말풍선 등)
-
-    6. **[구도]:**
-        - 분할 화면 금지. 16:9 비율의 화면을 꽉 채우는 하나의 장면(Full Scene)으로 연출하십시오.
 
     [임무]
-    대본을 분석하여 AI가 그릴 수 있는 **'업그레이드된 Paint Explainer 스타일'의 프롬프트**를 작성하십시오.
-    - **키워드:** "Flat 2D cartoon style, Stick figure character, Colorful flat background, Simple environment drawing, Cell shading, Vibrantly colored props"
-    - **금지:** "Empty white background", "Sketchy doodle only", "Monochrome".
+    대본을 분석하여 AI가 그릴 수 있는 **'The Paint Explainer 스타일'의 프롬프트**를 작성하십시오.
+    - "Minimalist stick figure, crude ms paint style, pure white background, simple line drawing, visual metaphor, infographic elements (arrows, symbols)" 등의 키워드가 반영되도록 하십시오.
     - **한글**로만 출력하십시오.
         """
 
@@ -1093,7 +1094,7 @@ with st.sidebar:
     PRESET_PAINT = """'The Paint Explainer' 유튜브 채널 스타일 (Colorful Stickman).
 배경: 완전한 흰색이 아님. 하늘, 벽, 바닥 등이 구분된 '단순한 2D 배경(Flat 2D Environment)'.
 채색: 흑백뿐만 아니라 다양한 '플랫 컬러(Flat Colors)'를 사용하여 사물과 배경을 다채롭게 표현.
-캐릭터: 검은 선으로 된 단순한 졸라맨(Stick Figure).
+캐릭터: 검은 선으로 된 단순한 2d 스틱맨(Stick Figure). 얼굴 표정 연출.
 스타일: 셀 셰이딩(Cell Shading) 느낌의 깔끔하고 선명한 일러스트."""
 
     # 2. 세션 상태 초기화
@@ -2000,5 +2001,6 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
+
 
 
