@@ -143,6 +143,10 @@ st.markdown("""
         -webkit-text-fill-color: #B0B0B0 !important;
     }
 
+    .st-emotion-cache-1lsfsc6 {
+        background-color: #262730;
+    }
+
     /* [7] 드롭다운(Selectbox) */
     div[data-baseweb="select"] > div {
         background-color: #262730 !important;
@@ -2262,3 +2266,4 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
+
