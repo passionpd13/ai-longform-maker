@@ -1121,7 +1121,7 @@ with st.sidebar:
 다양한 장소와 상황 연출로 배경을 디테일하게 한다. 무조건 2D 스틱맨 연출."""
     
     # [NEW] 스틱맨 사실적 연출 프리셋 (상황/감정/배경 디테일 강조)
-    PRESET_REALISTIC = """고퀄리티 얼구이 둥근 2D 애니메이션 스타일, 사실적인 배경과 조명 연출.
+    PRESET_REALISTIC = """고퀄리티 얼굴이 둥근 2D 스틱맨 애니메이션 스타일, 사실적인 배경과 조명 연출.
 캐릭터: 얼굴이 둥근 하얀색 2D 스틱맨들. 단순한 낙서가 아니라, 명암과 덩어리감이 느껴지는 '고급 스틱맨' 스타일. 얼굴이 크게 잘보이게 연출.
 배경: 단순한 단색 배경 금지. 대본의 장소(사무실, 거리, 방 안, 전장 등)를 '사진'처럼 디테일하고 입체적으로 2d 묘사.
 분위기: 정보 전달보다는 '상황극(Drama)'에 집중. 영화적인 조명(Cinematic Lighting)과 심도(Depth) 표현.
@@ -1133,20 +1133,23 @@ with st.sidebar:
 캐릭터는 2D 실루엣이나 스틱맨이지만 시대에 맞는 의상과 헤어스타일을 착용.
 2D 스틱맨을 활용해 대본을 설명이 잘되게 설명하는 연출을 한다. 자막 스타일 연출은 하지 않는다.
 전쟁, 기근 등의 묘사는 상징적이고 은유적으로 표현. 너무 고어틱한 연출은 하지 않는다.
-배경 묘사에 디테일을 살려 시대적 분위기를 강조. 무조건 얼굴이 둥근 2D 스틱맨 연출."""
+배경 묘사에 디테일을 살려 시대적 분위기를 강조. 무조건 얼굴이 둥근 2D 스틱맨 연출.
+절대 금지: 화면 분할(Split Screen), 텍스트 나열, 단순 인포그래픽 스타일."""
 
     PRESET_3D = """Unreal Engine 5 render style, Realistic 3D game cinematic screenshot.
 피사체: 매끈하고 하얀 이목구비 없는 마네킹 머리 (Smooth white featureless mannequin head). 눈코입 없음.
 복장: 가디건, 청바지, 정장 등 현실적인 의상을 입혀 기묘한 느낌 강조.
 조명: 영화 같은 조명 (Cinematic lighting), 다소 어둡고 분위기 있는(Moody) 연출.
-배경: 낡은 소파, 어지러진 방 등 사실적인 텍스처와 디테일(8k resolution)."""
+배경: 낡은 소파, 어지러진 방 등 사실적인 텍스처와 디테일(8k resolution).
+절대 금지: 화면 분할(Split Screen), 텍스트 나열, 단순 인포그래픽 스타일."""
 
     # [NEW] 공상과학/엔지니어링 프리셋 수정 (Clean Technical + Characters)
     PRESET_SCIFI = """3D Technical Animation (Fern, AiTelly Style).
 화풍: Blender Cycles / Clean Rendering, 밝은 스튜디오 조명(Clean Studio Lighting).
 연출: 기계/건축물의 단면도(Cutaway) 및 작동 원리 시각화.
 인물: 엔지니어/과학자/교사/회사원/군인 등등 다양한 3d 캐릭터가 등장하여 기계를 조작하거나 설명하는 기능적 역할 수행.
-분위기: 깔끔하고, 교육적이며, 명확함(Clear & Educational). 과도한 그림자 배제."""
+분위기: 깔끔하고, 교육적이며, 명확함(Clear & Educational). 과도한 그림자 배제.
+절대 금지: 화면 분할(Split Screen), 텍스트 나열, 단순 인포그래픽 스타일."""
 
     # [NEW] 페인트 익스플레이너 프리셋 (업데이트: 깔끔한 선 + 다채로운 배경 + 감정/행동 연출 강화)
     PRESET_PAINT = """'The Paint Explainer' 유튜브 채널 스타일 (Expressive Clean Stickman).
@@ -1154,7 +1157,8 @@ with st.sidebar:
 배경: 흰색 여백 금지. 하늘, 땅, 벽, 바닥 등이 단순하게 면으로 구분된 '플랫한 2D 배경'.
 캐릭터: 하얀색 얼굴이 둥근 2d 스틱맨. **핵심은 과장된 표정과 역동적인 행동으로 감정을 극적으로 연출하는 것.** 캐릭터가 크게 잘 보이게 배치.
 채색: 명암 없는 '다채로운 플랫 컬러'를 사용하여 생동감 부여.
-연출: 직관적인 사물 표현과 만화적 기호 적극 활용."""
+연출: 직관적인 사물 표현과 만화적 기호 적극 활용.
+절대 금지: 화면 분할(Split Screen), 텍스트 나열, 단순 인포그래픽 스타일."""
 
     # 2. 세션 상태 초기화
     if 'style_prompt_area' not in st.session_state:
@@ -2082,3 +2086,4 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
+
