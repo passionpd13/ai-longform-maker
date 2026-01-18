@@ -39,7 +39,7 @@ st.set_page_config(
 )
 
 # ==========================================
-# [디자인] 다크모드 가독성 최종 수정 (CSS)
+# [디자인] 다크모드 & Expander 가독성 긴급 패치 (CSS)
 # ==========================================
 st.markdown("""
     <style>
@@ -50,7 +50,7 @@ st.markdown("""
         font-family: 'Pretendard', sans-serif;
     }
 
-    /* [2] 사이드바 텍스트 하얗게 */
+    /* [2] 사이드바 */
     section[data-testid="stSidebar"] {
         background-color: #12141C !important;
         border-right: 1px solid #2C2F38;
@@ -59,29 +59,88 @@ st.markdown("""
         color: #FFFFFF !important;
     }
 
-    /* [3] 파일 업로더 가독성 해결 */
+    /* [3] Expander (프롬프트 확인) 가독성 해결 - [핵심 수정] */
+    /* Expander 박스 자체 */
+    div[data-testid="stExpander"] {
+        background-color: #1F2128 !important;
+        border: 1px solid #4A4A4A !important;
+        border-radius: 8px !important;
+    }
+    /* Expander 헤더 (제목 부분) */
+    div[data-testid="stExpander"] > details > summary {
+        color: #FFFFFF !important;
+    }
+    div[data-testid="stExpander"] > details > summary:hover {
+        color: #FF4B2B !important;
+    }
+    div[data-testid="stExpander"] > details > summary span {
+        color: #FFFFFF !important;
+    }
+    div[data-testid="stExpander"] svg {
+        fill: #FFFFFF !important;
+    }
+    
+    /* Expander 내부 콘텐츠 (펼쳤을 때 나오는 내용) 강제 흰색 */
+    div[data-testid="stExpander"] > details > div {
+        color: #FFFFFF !important;
+        background-color: #1F2128 !important;
+    }
+    /* 내부의 p태그, span태그 등 모든 자식 요소 흰색 강제 */
+    div[data-testid="stExpander"] > details > div * {
+        color: #FFFFFF !important;
+        opacity: 1 !important; /* 흐릿함 제거 */
+    }
+
+    /* [4] 파일 업로더 가독성 해결 */
     [data-testid="stFileUploader"] {
         background-color: #262730 !important;
         border-radius: 10px;
         padding: 15px;
     }
     [data-testid="stFileUploader"] section {
-        background-color: #262730 !important; /* 드롭존 배경 어둡게 */
+        background-color: #262730 !important; 
     }
-    /* 업로더 내부 설명 글씨(Drag and drop items here) */
     [data-testid="stFileUploader"] div, 
     [data-testid="stFileUploader"] span, 
     [data-testid="stFileUploader"] small {
         color: #FFFFFF !important;
     }
-    /* 'Browse files' 버튼 */
     [data-testid="stFileUploader"] button {
         background-color: #0E1117 !important;
         color: #FFFFFF !important;
         border: 1px solid #555 !important;
     }
 
-    /* [4] 드롭다운(Selectbox) 가독성 해결 */
+    /* [5] 모든 버튼 스타일 (제목 추천 포함) */
+    .stButton > button {
+        background: linear-gradient(135deg, #FF416C 0%, #FF4B2B 100%) !important;
+        border: none !important;
+        border-radius: 8px !important;
+        transition: transform 0.2s;
+    }
+    .stButton > button:hover {
+        transform: scale(1.02);
+        box-shadow: 0 4px 12px rgba(255, 75, 43, 0.4);
+    }
+    /* 버튼 내부 텍스트 강제 흰색 */
+    .stButton > button * {
+        color: #FFFFFF !important;
+    }
+
+    /* [6] 입력창 스타일 */
+    .stTextInput input, .stTextArea textarea {
+        background-color: #262730 !important; 
+        color: #FFFFFF !important; 
+        -webkit-text-fill-color: #FFFFFF !important;
+        border: 1px solid #4A4A4A !important;
+        caret-color: #FF4B2B !important;
+    }
+    .stTextInput input::placeholder, .stTextArea textarea::placeholder {
+        color: #B0B0B0 !important;
+        -webkit-text-fill-color: #B0B0B0 !important;
+    }
+
+    /* [7] 드롭다운(Selectbox) */
     div[data-baseweb="select"] > div {
         background-color: #262730 !important;
         color: #FFFFFF !important;
@@ -99,74 +158,18 @@ st.markdown("""
         color: #FFFFFF !important;
     }
 
-    /* [5] 모든 버튼 스타일 (제목 추천 포함) - 여기가 문제였음 */
-    .stButton > button {
-        /* 배경색을 흰색이 아닌 그라데이션으로 강제 고정 */
-        background: linear-gradient(135deg, #FF416C 0%, #FF4B2B 100%) !important;
-        border: none !important;
-        border-radius: 8px !important;
-        transition: transform 0.2s;
-        color: #FFFFFF !important;
-    }
-    .stButton > button:hover {
-        transform: scale(1.02);
-        box-shadow: 0 4px 12px rgba(255, 75, 43, 0.4);
-    }
-    /* 버튼 내부 텍스트(p태그) 강제 흰색 */
-    .stButton > button p {
-        color: #FFFFFF !important;
-    }
-
-    /* [6] Expander (프롬프트 확인) 스타일 수정 - 여기가 문제였음 */
-    div[data-testid="stExpander"] {
-        background-color: #1F2128 !important; /* 배경 어둡게 */
-        border: 1px solid #4A4A4A !important;
-        border-radius: 8px !important;
-        color: #FFFFFF !important;
-    }
-    /* 헤더(클릭하는 부분) 글씨색 */
-    div[data-testid="stExpander"] > details > summary {
-        color: #FFFFFF !important; 
-    }
-    /* 헤더 내부의 p태그 */
-    div[data-testid="stExpander"] > details > summary p {
-        color: #FFFFFF !important;
-    }
-    /* 화살표 아이콘 */
-    div[data-testid="stExpander"] > details > summary svg {
-        fill: #FFFFFF !important;
-        color: #FFFFFF !important;
-    }
-    /* 펼쳤을 때 나오는 내용 */
-    div[data-testid="stExpander"] > details > div {
-        color: #DDDDDD !important;
-    }
-
-    /* [7] 입력창 스타일 */
-    .stTextInput input, .stTextArea textarea {
-        background-color: #262730 !important; 
-        color: #FFFFFF !important; 
-        -webkit-text-fill-color: #FFFFFF !important;
-        border: 1px solid #4A4A4A !important;
-        caret-color: #FF4B2B !important;
-    }
-    .stTextInput input::placeholder, .stTextArea textarea::placeholder {
-        color: #B0B0B0 !important;
-        -webkit-text-fill-color: #B0B0B0 !important;
-    }
-
     /* [8] 다운로드 버튼 */
     [data-testid="stDownloadButton"] button {
         background-color: #2C2F38 !important;
         border: 1px solid #555 !important;
     }
-    [data-testid="stDownloadButton"] button p {
+    [data-testid="stDownloadButton"] button * {
         color: #FFFFFF !important;
     }
     [data-testid="stDownloadButton"] button:hover {
         border-color: #FF4B2B !important;
     }
-    [data-testid="stDownloadButton"] button:hover p {
+    [data-testid="stDownloadButton"] button:hover * {
         color: #FF4B2B !important;
     }
 
