@@ -39,7 +39,7 @@ st.set_page_config(
 )
 
 # ==========================================
-# [디자인] 다크모드 가독성 완벽 패치 (CSS 수정됨)
+# [디자인] 다크모드 가독성 최종 수정 (CSS)
 # ==========================================
 st.markdown("""
     <style>
@@ -81,45 +81,68 @@ st.markdown("""
         border: 1px solid #555 !important;
     }
 
-    /* [4] 드롭다운(Selectbox) 가독성 해결 - 가장 중요 */
-    /* 선택된 박스 자체 */
+    /* [4] 드롭다운(Selectbox) 가독성 해결 */
     div[data-baseweb="select"] > div {
         background-color: #262730 !important;
         color: #FFFFFF !important;
         border-color: #4A4A4A !important;
     }
-    /* 드롭다운 펼쳤을 때 나오는 메뉴 리스트 창 */
     div[data-baseweb="popover"], div[data-baseweb="menu"], ul[role="listbox"] {
         background-color: #262730 !important;
     }
-    /* 리스트 내부의 옵션 글씨들 */
     div[data-baseweb="option"], li[role="option"] {
         color: #FFFFFF !important;
         background-color: #262730 !important;
     }
-    /* 마우스 올렸을 때 하이라이트 */
     li[role="option"]:hover, li[aria-selected="true"] {
         background-color: #FF4B2B !important;
         color: #FFFFFF !important;
     }
 
-    /* [5] 버튼 글씨 (제목 추천 등 모든 버튼) */
+    /* [5] 모든 버튼 스타일 (제목 추천 포함) - 여기가 문제였음 */
     .stButton > button {
+        /* 배경색을 흰색이 아닌 그라데이션으로 강제 고정 */
         background: linear-gradient(135deg, #FF416C 0%, #FF4B2B 100%) !important;
         border: none !important;
         border-radius: 8px !important;
         transition: transform 0.2s;
+        color: #FFFFFF !important;
     }
     .stButton > button:hover {
         transform: scale(1.02);
         box-shadow: 0 4px 12px rgba(255, 75, 43, 0.4);
     }
-    /* 버튼 내부 텍스트(p태그) 강제 흰색 - 이게 핵심 */
+    /* 버튼 내부 텍스트(p태그) 강제 흰색 */
     .stButton > button p {
         color: #FFFFFF !important;
     }
 
-    /* [6] 입력창 스타일 */
+    /* [6] Expander (프롬프트 확인) 스타일 수정 - 여기가 문제였음 */
+    div[data-testid="stExpander"] {
+        background-color: #1F2128 !important; /* 배경 어둡게 */
+        border: 1px solid #4A4A4A !important;
+        border-radius: 8px !important;
+        color: #FFFFFF !important;
+    }
+    /* 헤더(클릭하는 부분) 글씨색 */
+    div[data-testid="stExpander"] > details > summary {
+        color: #FFFFFF !important; 
+    }
+    /* 헤더 내부의 p태그 */
+    div[data-testid="stExpander"] > details > summary p {
+        color: #FFFFFF !important;
+    }
+    /* 화살표 아이콘 */
+    div[data-testid="stExpander"] > details > summary svg {
+        fill: #FFFFFF !important;
+        color: #FFFFFF !important;
+    }
+    /* 펼쳤을 때 나오는 내용 */
+    div[data-testid="stExpander"] > details > div {
+        color: #DDDDDD !important;
+    }
+
+    /* [7] 입력창 스타일 */
     .stTextInput input, .stTextArea textarea {
         background-color: #262730 !important; 
         color: #FFFFFF !important; 
@@ -132,7 +155,7 @@ st.markdown("""
         -webkit-text-fill-color: #B0B0B0 !important;
     }
 
-    /* [7] 다운로드 버튼 */
+    /* [8] 다운로드 버튼 */
     [data-testid="stDownloadButton"] button {
         background-color: #2C2F38 !important;
         border: 1px solid #555 !important;
@@ -147,7 +170,7 @@ st.markdown("""
         color: #FF4B2B !important;
     }
 
-    /* [8] 기타 텍스트 */
+    /* [9] 기타 텍스트 */
     h1, h2, h3, h4, p, label, li {
         color: #FFFFFF !important;
     }
