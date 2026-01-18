@@ -916,6 +916,8 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
     4. **조명 및 분위기:** - 조명은 **매우 진지하고 웅장하게(Cinematic & Epic)** 연출하여, 우스꽝스러운 얼굴과 대비를 극대화하십시오.
     
     5. **[텍스트]:** {lang_guide} {lang_example}
+        - 텍스트는 간판 이런게 아닌이상 거의 연출하지 않는다. 특히 그래픽 같이 자연스럽지 않게 텍스트는 절대 나오지 않는다.
+
 
     [임무]
     대본을 분석하여 위 스타일이 적용된 프롬프트를 작성하십시오.
@@ -1400,7 +1402,8 @@ with st.sidebar:
 사람 얼굴: 몸은 실사지만 얼굴만 '릭 앤 모티(Rick and Morty) 애니메이션 스타일'의 2D 카툰으로 합성. (참조: 큰 흰색 눈, 검은 점 눈동자, 굵은 눈썹, 단순한 입).
 - **표정:** 당황, 공포, 혼란, 술에 취한 듯한 '병맛' 표정 강조.
 동물 눈: 털과 몸은 다큐멘터리급 실사지만, 눈만 '흰색 흰자와 검은 점 눈동자'로 된 2D 만화 눈으로 연출.
-분위기: 고퀄리티 다큐멘터리인 척하는 병맛 코미디. 진지한 상황일수록 표정을 더 단순하고 멍청하게(Derp) 연출."""
+분위기: 고퀄리티 다큐멘터리인 척하는 병맛 코미디. 진지한 상황일수록 표정을 더 단순하고 멍청하게(Derp) 연출.
+글씨 연출 전혀 하지 않는다."""
 
     # 2. 세션 상태 초기화
     if 'style_prompt_area' not in st.session_state:
@@ -2334,5 +2337,6 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
+
 
 
