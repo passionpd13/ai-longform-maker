@@ -39,7 +39,7 @@ st.set_page_config(
 )
 
 # ==========================================
-# [디자인] 다크모드 & 가독성 완벽 해결 CSS (수정됨)
+# [디자인] 다크모드 가독성 완벽 패치 (CSS 수정됨)
 # ==========================================
 st.markdown("""
     <style>
@@ -50,64 +50,76 @@ st.markdown("""
         font-family: 'Pretendard', sans-serif;
     }
 
-    /* [2] 사이드바 */
+    /* [2] 사이드바 텍스트 하얗게 */
     section[data-testid="stSidebar"] {
         background-color: #12141C !important;
         border-right: 1px solid #2C2F38;
     }
-    section[data-testid="stSidebar"] p, 
-    section[data-testid="stSidebar"] span, 
-    section[data-testid="stSidebar"] label, 
-    section[data-testid="stSidebar"] h1, 
-    section[data-testid="stSidebar"] h2, 
-    section[data-testid="stSidebar"] h3 {
+    section[data-testid="stSidebar"] * {
         color: #FFFFFF !important;
     }
 
-    /* [3] 파일 업로더 (글씨 안 보이는 문제 해결) */
+    /* [3] 파일 업로더 가독성 해결 */
     [data-testid="stFileUploader"] {
         background-color: #262730 !important;
         border-radius: 10px;
-        padding: 10px;
+        padding: 15px;
     }
-    /* 업로더 내부 드롭존 영역 강제 어둡게 */
     [data-testid="stFileUploader"] section {
-        background-color: #262730 !important;
-        color: #FFFFFF !important;
+        background-color: #262730 !important; /* 드롭존 배경 어둡게 */
     }
-    /* 업로더 내부 텍스트(Drag and drop..., Limit...) 강제 흰색 */
+    /* 업로더 내부 설명 글씨(Drag and drop items here) */
+    [data-testid="stFileUploader"] div, 
     [data-testid="stFileUploader"] span, 
-    [data-testid="stFileUploader"] small, 
-    [data-testid="stFileUploader"] div {
+    [data-testid="stFileUploader"] small {
         color: #FFFFFF !important;
     }
-    /* Browse files 버튼 */
+    /* 'Browse files' 버튼 */
     [data-testid="stFileUploader"] button {
         background-color: #0E1117 !important;
         color: #FFFFFF !important;
         border: 1px solid #555 !important;
     }
 
-    /* [4] 버튼 스타일 (제목 추천 버튼 포함 모든 버튼) */
+    /* [4] 드롭다운(Selectbox) 가독성 해결 - 가장 중요 */
+    /* 선택된 박스 자체 */
+    div[data-baseweb="select"] > div {
+        background-color: #262730 !important;
+        color: #FFFFFF !important;
+        border-color: #4A4A4A !important;
+    }
+    /* 드롭다운 펼쳤을 때 나오는 메뉴 리스트 창 */
+    div[data-baseweb="popover"], div[data-baseweb="menu"], ul[role="listbox"] {
+        background-color: #262730 !important;
+    }
+    /* 리스트 내부의 옵션 글씨들 */
+    div[data-baseweb="option"], li[role="option"] {
+        color: #FFFFFF !important;
+        background-color: #262730 !important;
+    }
+    /* 마우스 올렸을 때 하이라이트 */
+    li[role="option"]:hover, li[aria-selected="true"] {
+        background-color: #FF4B2B !important;
+        color: #FFFFFF !important;
+    }
+
+    /* [5] 버튼 글씨 (제목 추천 등 모든 버튼) */
     .stButton > button {
         background: linear-gradient(135deg, #FF416C 0%, #FF4B2B 100%) !important;
-        color: #FFFFFF !important;
         border: none !important;
-        font-weight: bold !important;
         border-radius: 8px !important;
         transition: transform 0.2s;
     }
     .stButton > button:hover {
         transform: scale(1.02);
         box-shadow: 0 4px 12px rgba(255, 75, 43, 0.4);
-        color: #FFFFFF !important; /* 호버 시에도 흰색 유지 */
     }
-    /* 버튼 안의 텍스트 요소(p태그) 강제 흰색 */
+    /* 버튼 내부 텍스트(p태그) 강제 흰색 - 이게 핵심 */
     .stButton > button p {
         color: #FFFFFF !important;
     }
 
-    /* [5] 입력창 (Input Text, Text Area) */
+    /* [6] 입력창 스타일 */
     .stTextInput input, .stTextArea textarea {
         background-color: #262730 !important; 
         color: #FFFFFF !important; 
@@ -120,41 +132,28 @@ st.markdown("""
         -webkit-text-fill-color: #B0B0B0 !important;
     }
 
-    /* [6] Selectbox & Dropdown */
-    div[data-baseweb="select"] > div {
-        background-color: #262730 !important;
-        color: #FFFFFF !important;
-        border-color: #4A4A4A !important;
-    }
-    div[data-baseweb="popover"], div[data-baseweb="menu"] {
-        background-color: #262730 !important;
-    }
-    div[data-baseweb="option"] {
-        color: #FFFFFF !important;
-    }
-
-    /* [7] 다운로드 버튼 (회색 배경 유지) */
+    /* [7] 다운로드 버튼 */
     [data-testid="stDownloadButton"] button {
-        background: #2C2F38 !important;
+        background-color: #2C2F38 !important;
         border: 1px solid #555 !important;
-        color: #FFFFFF !important;
-    }
-    [data-testid="stDownloadButton"] button:hover {
-        border-color: #FF4B2B !important;
-        color: #FF4B2B !important;
     }
     [data-testid="stDownloadButton"] button p {
         color: #FFFFFF !important;
     }
+    [data-testid="stDownloadButton"] button:hover {
+        border-color: #FF4B2B !important;
+    }
+    [data-testid="stDownloadButton"] button:hover p {
+        color: #FF4B2B !important;
+    }
 
-    /* [8] 기본 텍스트들 */
-    h1, h2, h3, h4, p, li, label {
+    /* [8] 기타 텍스트 */
+    h1, h2, h3, h4, p, label, li {
         color: #FFFFFF !important;
     }
     .stCaption {
         color: #AAAAAA !important;
     }
-    /* 헤더바 투명/어둡게 */
     header[data-testid="stHeader"] {
         background-color: #0E1117 !important;
     }
@@ -1257,16 +1256,14 @@ with st.sidebar:
 배경: 단순한 단색 배경 금지. 대본의 장소(사무실, 거리, 방 안, 전장 등)를 '사진'처럼 디테일하고 입체적으로 2d 묘사.
 분위기: 정보 전달보다는 '상황극(Drama)'에 집중. 영화적인 조명(Cinematic Lighting)과 심도(Depth) 표현.
 연출: 스틱맨 여러 캐릭터들이 대본 속 행동을 리얼하게 연기(Acting). 감정 표현은 표정보다는 역동적인 몸짓(Body Language)으로 극대화.
-절대 금지: 화면 분할(Split Screen), 텍스트 나열, 단순 인포그래픽 스타일.
-분활화면으로 연출하지 말고 하나의 화면으로 연출한다."""
+절대 금지: 화면 분할(Split Screen), 텍스트 나열, 단순 인포그래픽 스타일."""
 
     PRESET_HISTORY = """역사적 사실을 기반으로 한 '2D 시네마틱 얼굴이 둥근 하얀색 스틱맨 애니메이션' 스타일.
 깊이 있는 색감(Dark & Rich Tone)과 극적인 조명 사용.
 캐릭터는 2D 실루엣이나 스틱맨이지만 시대에 맞는 의상과 헤어스타일을 착용.
 2D 스틱맨을 활용해 대본을 설명이 잘되게 설명하는 연출을 한다. 자막 스타일 연출은 하지 않는다.
 전쟁, 기근 등의 묘사는 상징적이고 은유적으로 표현. 너무 고어틱한 연출은 하지 않는다.
-배경 묘사에 디테일을 살려 시대적 분위기를 강조. 무조건 얼굴이 둥근 2D 스틱맨 연출
-분활화면으로 연출하지 말고 하나의 화면으로 연출한다.."""
+배경 묘사에 디테일을 살려 시대적 분위기를 강조. 무조건 얼굴이 둥근 2D 스틱맨 연출."""
 
     PRESET_3D = """Unreal Engine 5 render style, Realistic 3D game cinematic screenshot.
 피사체: 매끈하고 하얀 이목구비 없는 마네킹 머리 (Smooth white featureless mannequin head). 눈코입 없음.
@@ -1279,8 +1276,7 @@ with st.sidebar:
 화풍: Blender Cycles / Clean Rendering, 밝은 스튜디오 조명(Clean Studio Lighting).
 연출: 기계/건축물의 단면도(Cutaway) 및 작동 원리 시각화.
 인물: 엔지니어/과학자/교사/회사원/군인 등등 다양한 3d 캐릭터가 등장하여 기계를 조작하거나 설명하는 기능적 역할 수행.
-분위기: 깔끔하고, 교육적이며, 명확함(Clear & Educational). 과도한 그림자 배제.
-분활화면으로 연출하지 말고 하나의 화면으로 연출한다."""
+분위기: 깔끔하고, 교육적이며, 명확함(Clear & Educational). 과도한 그림자 배제."""
 
     # [NEW] 페인트 익스플레이너 프리셋 (업데이트: 깔끔한 선 + 다채로운 배경 + 감정/행동 연출 강화)
     PRESET_PAINT = """'The Paint Explainer' 유튜브 채널 스타일 (Expressive Clean Stickman).
@@ -1288,8 +1284,7 @@ with st.sidebar:
 배경: 흰색 여백 금지. 하늘, 땅, 벽, 바닥 등이 단순하게 면으로 구분된 '플랫한 2D 배경'.
 캐릭터: 하얀색 얼굴이 둥근 2d 스틱맨. **핵심은 과장된 표정과 역동적인 행동으로 감정을 극적으로 연출하는 것.** 캐릭터가 크게 잘 보이게 배치.
 채색: 명암 없는 '다채로운 플랫 컬러'를 사용하여 생동감 부여.
-연출: 직관적인 사물 표현과 만화적 기호 적극 활용.
-분활화면으로 연출하지 말고 하나의 화면으로 연출한다."""
+연출: 직관적인 사물 표현과 만화적 기호 적극 활용."""
 
     # 2. 세션 상태 초기화
     if 'style_prompt_area' not in st.session_state:
@@ -2217,4 +2212,3 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
-
