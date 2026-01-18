@@ -143,10 +143,6 @@ st.markdown("""
         -webkit-text-fill-color: #B0B0B0 !important;
     }
 
-    .st-emotion-cache-1lsfsc6 {
-        background-color: #262730;
-    }
-
     /* [7] 드롭다운(Selectbox) */
     div[data-baseweb="select"] > div {
         background-color: #262730 !important;
@@ -1733,7 +1729,8 @@ col_title_input, col_title_btn = st.columns([4, 1])
 with col_title_btn:
     st.write("") 
     st.write("") 
-    if st.button("💡 제목 5개 추천", help="입력한 키워드나 대본을 바탕으로 제목을 추천합니다.", use_container_width=True):
+    # [수정됨] 버튼을 primary 타입으로 변경 (CSS에 의해 빨간색 그라데이션 적용됨)
+    if st.button("💡 제목 5개 추천", type="primary", help="입력한 키워드나 대본을 바탕으로 제목을 추천합니다.", use_container_width=True):
         # 현재 입력된 제목(주제) 가져오기
         current_user_title = st.session_state.get('video_title', "").strip()
         has_structure = st.session_state.get('structured_content')
@@ -2266,4 +2263,3 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
-
