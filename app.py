@@ -942,13 +942,14 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
     
     5. **[텍스트]:** {lang_guide} {lang_example}
         - [필수] 텍스트는 간판 이런게 아닌이상 거의 연출하지 않는다. 특히 그래픽 같이 자연스럽지 않게 텍스트는 절대 나오지 않는다.
+        - 말풍선선 연출하지 않는다.
 
     [🚨 9:16 세로 모드 필수 지침 (Vertical Layout) 🚨]
     - **환경(Environment)보다 캐릭터(Character)가 우선입니다.**
     - 광활한 초원을 멀리서 찍지 마십시오. (캐릭터가 점으로 보이면 실패입니다.)
     - **구도:** 카메라 렌즈를 캐릭터 코앞까지 가져오십시오 (Extreme Close-up / Selfie angle).
-    - **치타/동물:** 동물이 화면 밖으로 튀어나올 듯이 **정면으로 달려오는 구도**나, **얼굴이 화면에 꽉 차는 구도**를 묘사하십시오.
-    - 배경은 캐릭터 뒤로 흐릿하게 날아가거나(Depth of field), 위아래로 뻗은 나무/건물 등을 이용해 수직감을 주십시오.
+    - **치타/동물:** 동물이 화면 밖으로 튀어나올 듯이 **정면으로 달려오는 구도**나, **얼굴이 화면에 적당히 차는 구도**를 묘사하십시오.
+    - 배경은 캐릭터 뒤로 흐릿하게 날아가거나(Depth of field), 위아래로 뻗은 나무/건물/빙하/우주/눈/도시 등을 이용해 수직감을 주십시오.
 
     [임무]
     대본을 분석하여 위 스타일이 적용된 프롬프트를 작성하십시오.
@@ -2376,5 +2377,6 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
+
 
 
