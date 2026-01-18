@@ -1397,7 +1397,8 @@ with st.sidebar:
     # [NEW] 코믹 실사 합성 프리셋 (요청하신 스타일)
     PRESET_COMIC_REAL = """Hyper-Realistic Environment with Comic Elements.
 배경과 사물, 사람/동물의 몸체: '언리얼 엔진 5' 수준의 8K 실사(Photorealistic). 털, 피부 질감, 조명 완벽 구현.
-사람 얼굴: 몸은 실사지만 얼굴만 '단순한 2D 만화'로 합성. (참조: 큰 흰색 눈, 검은 점 눈동자, 굵은 눈썹, 단순한 입).
+사람 얼굴: 몸은 실사지만 얼굴만 '릭 앤 모티(Rick and Morty) 애니메이션 스타일'의 2D 카툰으로 합성. (참조: 큰 흰색 눈, 검은 점 눈동자, 굵은 눈썹, 단순한 입).
+- **표정:** 당황, 공포, 혼란, 술에 취한 듯한 '병맛' 표정 강조.
 동물 눈: 털과 몸은 다큐멘터리급 실사지만, 눈만 '흰색 흰자와 검은 점 눈동자'로 된 2D 만화 눈으로 연출.
 분위기: 고퀄리티 다큐멘터리인 척하는 병맛 코미디. 진지한 상황일수록 표정을 더 단순하고 멍청하게(Derp) 연출."""
 
@@ -2333,4 +2334,5 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
+
 
