@@ -39,66 +39,53 @@ st.set_page_config(
 )
 
 # ==========================================
-# [디자인] 강력한 다크모드 강제 적용 CSS (수정됨)
+# [디자인] 다크모드 & 버튼 가독성 완벽 해결 (CSS)
 # ==========================================
 st.markdown("""
     <style>
-    /* [1] 전체 배경 및 폰트 강제 설정 (라이트모드 덮어쓰기) */
+    /* [1] 전체 배경 및 폰트 강제 설정 */
     .stApp {
         background-color: #0E1117 !important;
         color: #FFFFFF !important;
+        font-family: 'Pretendard', sans-serif;
     }
     
-    /* [2] 사이드바 배경 강제 설정 */
+    /* [2] 사이드바 스타일 */
     section[data-testid="stSidebar"] {
         background-color: #12141C !important;
         border-right: 1px solid #2C2F38;
     }
-    /* 사이드바 안의 모든 텍스트 하얗게 */
-    section[data-testid="stSidebar"] h1, 
-    section[data-testid="stSidebar"] h2, 
-    section[data-testid="stSidebar"] h3, 
-    section[data-testid="stSidebar"] label, 
-    section[data-testid="stSidebar"] span, 
-    section[data-testid="stSidebar"] p {
+    section[data-testid="stSidebar"] * {
         color: #FFFFFF !important;
     }
 
-    /* [3] 입력창 (Text Input, Text Area) 스타일 수정 */
-    /* 입력창 배경을 어둡게, 글씨를 하얗게 */
+    /* [3] 입력창 스타일 (글씨 잘 보이게) */
     .stTextInput input, .stTextArea textarea {
         background-color: #262730 !important;
         color: #FFFFFF !important;
-        -webkit-text-fill-color: #FFFFFF !important; /* 크롬 강제 적용 */
+        -webkit-text-fill-color: #FFFFFF !important;
         border: 1px solid #4A4A4A !important;
     }
-    /* 입력창 포커스 시 테두리 색상 */
     .stTextInput input:focus, .stTextArea textarea:focus {
         border-color: #FF4B2B !important;
         box-shadow: 0 0 0 1px #FF4B2B !important;
     }
-    /* 플레이스홀더(힌트 텍스트) 색상 */
     .stTextInput input::placeholder, .stTextArea textarea::placeholder {
         color: #B0B0B0 !important;
         -webkit-text-fill-color: #B0B0B0 !important;
     }
 
-    /* [4] 파일 업로더 (흰색 박스 문제 해결) */
+    /* [4] 파일 업로더 스타일 */
     [data-testid="stFileUploader"] {
         background-color: #262730 !important;
         border-radius: 10px;
         padding: 10px;
     }
-    [data-testid="stFileUploader"] section {
-        background-color: #262730 !important;
-    }
-    /* 업로더 내부 텍스트 */
     [data-testid="stFileUploader"] div, 
     [data-testid="stFileUploader"] span, 
     [data-testid="stFileUploader"] small {
         color: #FFFFFF !important;
     }
-    /* 'Browse files' 버튼 스타일 */
     [data-testid="stFileUploader"] button {
         background-color: #0E1117 !important;
         color: #FFFFFF !important;
@@ -111,21 +98,14 @@ st.markdown("""
         color: #FFFFFF !important;
         border-color: #4A4A4A !important;
     }
-    div[data-baseweb="popover"] {
+    div[data-baseweb="popover"], div[data-baseweb="menu"] {
         background-color: #262730 !important;
     }
-    div[data-baseweb="menu"] {
-        background-color: #262730 !important;
-    }
-    /* 드롭다운 옵션 텍스트 */
     div[data-baseweb="option"] {
         color: #FFFFFF !important;
     }
-    ul[role="listbox"] li {
-        color: #FFFFFF !important;
-    }
 
-    /* [6] 메인 버튼 (그라데이션) */
+    /* [6] 메인 실행 버튼 (그라데이션) */
     .stButton > button {
         background: linear-gradient(135deg, #FF416C 0%, #FF4B2B 100%) !important;
         color: white !important;
@@ -137,25 +117,38 @@ st.markdown("""
         transform: scale(1.02);
         box-shadow: 0 4px 15px rgba(255, 75, 43, 0.4);
     }
-    /* 버튼 내부 텍스트 강제 흰색 */
     .stButton > button p {
         color: #FFFFFF !important;
     }
 
-    /* [7] 라디오 버튼 & 체크박스 */
-    .stRadio label, .stCheckbox label {
+    /* [7] 다운로드 버튼 (ZIP, 이미지 저장) 가독성 해결 */
+    [data-testid="stDownloadButton"] button {
+        background-color: #2C2F38 !important; /* 어두운 회색 배경 */
+        border: 1px solid #555 !important;
+        color: #FFFFFF !important; /* 흰색 글씨 강제 */
+        transition: all 0.3s ease;
+    }
+    /* 다운로드 버튼 내부 텍스트 강제 흰색 */
+    [data-testid="stDownloadButton"] button * {
         color: #FFFFFF !important;
     }
-    
-    /* [8] 일반 텍스트 가독성 확보 */
-    h1, h2, h3, h4, h5, h6, p, li, label {
+    /* 다운로드 버튼 호버 효과 */
+    [data-testid="stDownloadButton"] button:hover {
+        border-color: #FF4B2B !important;
+        color: #FF4B2B !important;
+        background-color: #1F2128 !important;
+    }
+    [data-testid="stDownloadButton"] button:hover * {
+        color: #FF4B2B !important;
+    }
+
+    /* [8] 기타 텍스트 및 헤더 */
+    h1, h2, h3, h4, h5, h6, p, li, label, span {
         color: #FFFFFF !important;
     }
     .stCaption {
         color: #AAAAAA !important;
     }
-    
-    /* 헤더바 투명/어둡게 처리 */
     header[data-testid="stHeader"] {
         background-color: #0E1117 !important;
     }
