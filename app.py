@@ -1958,19 +1958,23 @@ if st.session_state['generated_results']:
     # ------------------------------------------------
     for index, item in enumerate(st.session_state['generated_results']):
         with st.container(border=True):
-            # [수정됨] 컬럼 비율 조정 (이미지 공간을 조금 더 줄임 1:2 -> 1:3 등, 여기서는 width로 제어하므로 유지해도 무방)
-            cols = st.columns([1, 2])
+            cols = st.columns([1, 2]) # 전체를 1:2로 분할
             
             # [왼쪽] 이미지 및 재생성 버튼
             with cols[0]:
                 try: 
-                    # [수정됨] use_container_width=True 를 제거하고 width=300 으로 고정
-                    # 이렇게 하면 화면 해상도와 상관없이 적절한 크기로 미리보기가 나옵니다.
-                    st.image(item['path'], width=300) 
+                    # [핵심 수정] 이미지를 가운데 정렬하기 위해 내부 컬럼 사용
+                    # left(여백), center(이미지), right(여백) -> 1:2:1 비율
+                    # 이렇게 하면 이미지가 너무 커지지 않으면서 가운데에 예쁘게 배치됩니다.
+                    left_col, center_col, right_col = st.columns([1, 2, 1])
+                    
+                    with center_col:
+                        st.image(item['path'], use_container_width=True)
+                        
                 except: 
                     st.error("이미지 없음")
                 
-                # [NEW] 이미지 개별 재생성 버튼
+                # [NEW] 이미지 개별 재생성 버튼 (버튼은 전체 너비 사용)
                 if st.button(f"🔄 이 장면만 이미지 다시 생성", key=f"regen_img_{index}", use_container_width=True):
                     if not api_key:
                         st.error("API Key가 필요합니다.")
