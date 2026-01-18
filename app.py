@@ -39,7 +39,7 @@ st.set_page_config(
 )
 
 # ==========================================
-# [디자인] 다크모드 & Expander 가독성 긴급 패치 (CSS)
+# [디자인] 다크모드 & Expander/버튼 가독성 최종 수정 (CSS)
 # ==========================================
 st.markdown("""
     <style>
@@ -50,7 +50,7 @@ st.markdown("""
         font-family: 'Pretendard', sans-serif;
     }
 
-    /* [2] 사이드바 */
+    /* [2] 사이드바 텍스트 하얗게 */
     section[data-testid="stSidebar"] {
         background-color: #12141C !important;
         border-right: 1px solid #2C2F38;
@@ -59,36 +59,39 @@ st.markdown("""
         color: #FFFFFF !important;
     }
 
-    /* [3] Expander (프롬프트 확인) 가독성 해결 - [핵심 수정] */
-    /* Expander 박스 자체 */
-    div[data-testid="stExpander"] {
+    /* [3] Expander (프롬프트 확인) 가독성 완벽 해결 */
+    /* Expander 전체 박스 테두리 및 배경 */
+    [data-testid="stExpander"] {
         background-color: #1F2128 !important;
         border: 1px solid #4A4A4A !important;
         border-radius: 8px !important;
-    }
-    /* Expander 헤더 (제목 부분) */
-    div[data-testid="stExpander"] > details > summary {
         color: #FFFFFF !important;
-    }
-    div[data-testid="stExpander"] > details > summary:hover {
-        color: #FF4B2B !important;
-    }
-    div[data-testid="stExpander"] > details > summary span {
-        color: #FFFFFF !important;
-    }
-    div[data-testid="stExpander"] svg {
-        fill: #FFFFFF !important;
     }
     
-    /* Expander 내부 콘텐츠 (펼쳤을 때 나오는 내용) 강제 흰색 */
-    div[data-testid="stExpander"] > details > div {
+    /* Expander 헤더 (클릭하는 부분) */
+    [data-testid="stExpander"] summary {
         color: #FFFFFF !important;
-        background-color: #1F2128 !important;
     }
-    /* 내부의 p태그, span태그 등 모든 자식 요소 흰색 강제 */
-    div[data-testid="stExpander"] > details > div * {
+    [data-testid="stExpander"] summary:hover {
+        color: #FF4B2B !important; /* 호버 시 주황색 포인트 */
+    }
+    [data-testid="stExpander"] summary svg {
+        fill: #FFFFFF !important;
+    }
+
+    /* [중요] Expander 내부 콘텐츠 영역 (펼쳐진 부분) */
+    [data-testid="stExpander"] details > div {
+        background-color: #1F2128 !important; /* 배경을 어둡게 강제! */
+        color: #FFFFFF !important;             /* 글씨는 하얗게! */
+    }
+    
+    /* 내부의 모든 텍스트 요소 강제 흰색 */
+    [data-testid="stExpander"] p, 
+    [data-testid="stExpander"] span, 
+    [data-testid="stExpander"] div,
+    [data-testid="stExpander"] code {
         color: #FFFFFF !important;
-        opacity: 1 !important; /* 흐릿함 제거 */
+        background-color: transparent !important; /* 코드 블록 배경 투명화 */
     }
 
     /* [4] 파일 업로더 가독성 해결 */
@@ -587,12 +590,10 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
         - **배경:** 상황을 설명하는 소품이나 장소를 몰입감 있고 깊이감 있게 2d로 구성. 
         - **시각적 은유:** 추상적인 내용일 경우, 이를 설명할 수 있는 시각적 아이디어 (예: 돈이 날아가는 모습, 그래프가 하락하는 모습 등).
           한글 뒤에 (영어)를 넣어서 프롬프트에 쓰지 않는다. ex) 색감(Colors) x ,구성(Composition) x
-          프롬프트에 (지문), (효과음) 같은 연출하지 않는다.
 
     
     [출력 형식]
-    - **무조건 한국어로만 작성하십시오.
-    - 프롬프트에 (지문), (효과음) 같은 연출하지 않는다.
+    - **무조건 한국어(한글)**로만 작성하십시오.
     - 부가적인 설명 없이 **오직 프롬프트 텍스트만** 출력하십시오.
         """
 
@@ -649,9 +650,8 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
     
     [출력 형식]
     - **분량:** 최소 7문장 이상으로 상세하게 묘사.
-    - **무조건 한국어로만 작성하십시오.
-    - 프롬프트에 (지문), (효과음) 같은 연출하지 않는다.
-    - 부가적인 설명 없이 **오직 프롬프트 텍스트만** 출력하십시오.
+    - **무조건 한국어(한글)**로만 작성하십시오.
+    - 부가 설명 없이 **오직 프롬프트 텍스트만** 출력하십시오.
         """
 
     # ---------------------------------------------------------
@@ -712,10 +712,9 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
     대본 내용이 비극적이거나 폭력적일 경우, 반드시 아래의 **부드러운 상징물**로 대체하여 묘사하십시오.
     
     [출력 형식]
+    - **무조건 한국어(한글)**로만 작성하십시오.
     - 부가적인 설명 없이 **오직 프롬프트 텍스트만** 출력하십시오.
     - 프롬프트에 '얼굴이 둥근 2d 스틱맨' 무조건 들어간다.
-    - **무조건 한국어로만 작성하십시오.
-    - 프롬프트에 (지문), (효과음) 같은 연출하지 않는다.
         """
 
     # ---------------------------------------------------------
@@ -749,9 +748,8 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
     - **분량:** 최소 7문장 이상으로 상세하게 묘사.
 
     [출력 형식]
-    - **무조건 한국어**로만 작성하십시오. (단, Unreal Engine 5 같은 핵심 영단어는 혼용 가능)
-    - 프롬프트에 (지문), (효과음) 같은 연출하지 않는다.
-    - 부가적인 설명 없이 **오직 프롬프트 텍스트만** 출력하십시오.
+    - **무조건 한국어(한글)**로만 작성하십시오. (단, Unreal Engine 5 같은 핵심 영단어는 혼용 가능)
+    - 부가 설명 없이 **오직 프롬프트 텍스트만** 출력하십시오.
         """
         
     # ---------------------------------------------------------
@@ -789,8 +787,7 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
     - **분량:** 최소 7문장 이상으로 상세하게 묘사.
 
     [출력 형식]
-    - **무조건 한국어**로만 작성하십시오. (단, Cutaway, X-ray view 같은 핵심 영단어는 혼용 가능)
-    - 프롬프트에 (지문), (효과음) 같은 연출하지 않는다.
+    - **무조건 한국어(한글)**로만 작성하십시오. (단, Cutaway, X-ray view 같은 핵심 영단어는 혼용 가능)
     - 부가 설명 없이 **오직 프롬프트 텍스트만** 출력하십시오.
         """
 
@@ -851,7 +848,6 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
     - **필수 키워드 반영:** "Clean digital line art, smooth lines, minimal vector style, flat design aesthetic, colorful flat background, no shading, bold outlines, infographic elements (arrows, symbols), visual metaphor"
     - **금지 키워드:** "crude drawing, rough sketch, ms paint style, wobbly lines, sketchy"
     - **한글**로만 출력하십시오.
-    - 프롬프트에 (지문) 같은 연출하지 않는다.
         """
 
     else: # Fallback
@@ -2245,4 +2241,3 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
-
