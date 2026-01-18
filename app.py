@@ -1958,19 +1958,20 @@ if st.session_state['generated_results']:
     # ------------------------------------------------
     for index, item in enumerate(st.session_state['generated_results']):
         with st.container(border=True):
-            cols = st.columns([1, 2]) # 전체를 1:2로 분할
+            cols = st.columns([1, 2])
             
             # [왼쪽] 이미지 및 재생성 버튼
             with cols[0]:
                 try: 
-                    # [핵심 수정] 이미지를 가운데 정렬하기 위해 내부 컬럼 사용
-                    # left(여백), center(이미지), right(여백) -> 1:2:1 비율
-                    # 이렇게 하면 이미지가 너무 커지지 않으면서 가운데에 예쁘게 배치됩니다.
-                    left_col, center_col, right_col = st.columns([1, 2, 1])
-                    
-                    with center_col:
+                    # [핵심 수정] 비율에 따라 이미지 표시 방식 변경
+                    if TARGET_RATIO == "16:9":
+                        # 16:9 (가로형)일 때는 use_container_width=True로 꽉 채움
                         st.image(item['path'], use_container_width=True)
-                        
+                    else:
+                        # 9:16 (세로형)일 때는 가운데 정렬 및 크기 고정
+                        sub_c1, sub_c2, sub_c3 = st.columns([1, 2, 1]) # 가운데 정렬용
+                        with sub_c2:
+                            st.image(item['path'], use_container_width=True)
                 except: 
                     st.error("이미지 없음")
                 
@@ -2081,4 +2082,3 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
-
