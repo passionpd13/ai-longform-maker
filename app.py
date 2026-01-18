@@ -587,10 +587,12 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
         - **배경:** 상황을 설명하는 소품이나 장소를 몰입감 있고 깊이감 있게 2d로 구성. 
         - **시각적 은유:** 추상적인 내용일 경우, 이를 설명할 수 있는 시각적 아이디어 (예: 돈이 날아가는 모습, 그래프가 하락하는 모습 등).
           한글 뒤에 (영어)를 넣어서 프롬프트에 쓰지 않는다. ex) 색감(Colors) x ,구성(Composition) x
+          프롬프트에 (지문), (효과음) 같은 연출하지 않는다.
 
     
     [출력 형식]
-    - **무조건 한국어(한글)**로만 작성하십시오.
+    - **무조건 한국어로만 작성하십시오.
+    - 프롬프트에 (지문), (효과음) 같은 연출하지 않는다.
     - 부가적인 설명 없이 **오직 프롬프트 텍스트만** 출력하십시오.
         """
 
@@ -647,8 +649,9 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
     
     [출력 형식]
     - **분량:** 최소 7문장 이상으로 상세하게 묘사.
-    - **무조건 한국어(한글)**로만 작성하십시오.
-    - 부가 설명 없이 **오직 프롬프트 텍스트만** 출력하십시오.
+    - **무조건 한국어로만 작성하십시오.
+    - 프롬프트에 (지문), (효과음) 같은 연출하지 않는다.
+    - 부가적인 설명 없이 **오직 프롬프트 텍스트만** 출력하십시오.
         """
 
     # ---------------------------------------------------------
@@ -709,9 +712,10 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
     대본 내용이 비극적이거나 폭력적일 경우, 반드시 아래의 **부드러운 상징물**로 대체하여 묘사하십시오.
     
     [출력 형식]
-    - **무조건 한국어(한글)**로만 작성하십시오.
     - 부가적인 설명 없이 **오직 프롬프트 텍스트만** 출력하십시오.
     - 프롬프트에 '얼굴이 둥근 2d 스틱맨' 무조건 들어간다.
+    - **무조건 한국어로만 작성하십시오.
+    - 프롬프트에 (지문), (효과음) 같은 연출하지 않는다.
         """
 
     # ---------------------------------------------------------
@@ -745,8 +749,9 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
     - **분량:** 최소 7문장 이상으로 상세하게 묘사.
 
     [출력 형식]
-    - **무조건 한국어(한글)**로만 작성하십시오. (단, Unreal Engine 5 같은 핵심 영단어는 혼용 가능)
-    - 부가 설명 없이 **오직 프롬프트 텍스트만** 출력하십시오.
+    - **무조건 한국어**로만 작성하십시오. (단, Unreal Engine 5 같은 핵심 영단어는 혼용 가능)
+    - 프롬프트에 (지문), (효과음) 같은 연출하지 않는다.
+    - 부가적인 설명 없이 **오직 프롬프트 텍스트만** 출력하십시오.
         """
         
     # ---------------------------------------------------------
@@ -784,7 +789,8 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
     - **분량:** 최소 7문장 이상으로 상세하게 묘사.
 
     [출력 형식]
-    - **무조건 한국어(한글)**로만 작성하십시오. (단, Cutaway, X-ray view 같은 핵심 영단어는 혼용 가능)
+    - **무조건 한국어**로만 작성하십시오. (단, Cutaway, X-ray view 같은 핵심 영단어는 혼용 가능)
+    - 프롬프트에 (지문), (효과음) 같은 연출하지 않는다.
     - 부가 설명 없이 **오직 프롬프트 텍스트만** 출력하십시오.
         """
 
@@ -845,6 +851,7 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
     - **필수 키워드 반영:** "Clean digital line art, smooth lines, minimal vector style, flat design aesthetic, colorful flat background, no shading, bold outlines, infographic elements (arrows, symbols), visual metaphor"
     - **금지 키워드:** "crude drawing, rough sketch, ms paint style, wobbly lines, sketchy"
     - **한글**로만 출력하십시오.
+    - 프롬프트에 (지문) 같은 연출하지 않는다.
         """
 
     else: # Fallback
@@ -2238,3 +2245,4 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
+
