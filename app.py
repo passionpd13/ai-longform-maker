@@ -430,7 +430,7 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
     {character_consistency_block}
     [역할]
     당신은 **'넷플릭스 2D 애니메이션 감독'**입니다. 
-    단순한 스틱맨들을 주인공으로 사용하여, 대본의 상황을 **매우 사실적이고 영화적인 미장센(Mise-en-scène)**으로 연출합니다.
+    단순한 얼굴이 둥근 스틱맨들을 주인공으로 사용하여, 대본의 상황을 **매우 사실적이고 영화적인 미장센(Mise-en-scène)**으로 연출합니다.
     
     [전체 영상 주제] "{video_title}"
     [유저 스타일 선호] {style_instruction}
@@ -439,7 +439,7 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
     1. **캐릭터(Character):** - **얼굴이 둥근 하얀색 스틱맨(Round-headed white stickman)**을 사용하십시오.
        - 하지만 선은 굵고 부드러우며, **그림자(Shading)**가 들어가 입체감이 느껴져야 합니다.
        - **의상:** 대본 상황에 맞는 현실적인 의상(정장, 군복, 잠옷, 작업복 등)을 스틱맨 위에 입혀 '캐릭터성'을 부여하십시오.
-       - 얼굴이 크게 잘 보이게 연출.
+       - 얼굴이 크게 잘 보이게 연출. 장면도 잘 드러나게.
        
     2. **배경(Background) - 가장 중요:**
        - 단순한 그라데이션이나 단색 배경을 **절대 금지**합니다.
@@ -1077,7 +1077,7 @@ with st.sidebar:
 다양한 장소와 상황 연출로 배경을 디테일하게 한다. 무조건 2D 스틱맨 연출."""
     
     # [NEW] 스틱맨 사실적 연출 프리셋 (상황/감정/배경 디테일 강조)
-    PRESET_REALISTIC = """고퀄리티 2D 애니메이션 스타일, 사실적인 배경과 조명 연출.
+    PRESET_REALISTIC = """고퀄리티 얼구이 둥근 2D 애니메이션 스타일, 사실적인 배경과 조명 연출.
 캐릭터: 얼굴이 둥근 하얀색 2D 스틱맨들. 단순한 낙서가 아니라, 명암과 덩어리감이 느껴지는 '고급 스틱맨' 스타일. 얼굴이 크게 잘보이게 연출.
 배경: 단순한 단색 배경 금지. 대본의 장소(사무실, 거리, 방 안, 전장 등)를 '사진'처럼 디테일하고 입체적으로 2d 묘사.
 분위기: 정보 전달보다는 '상황극(Drama)'에 집중. 영화적인 조명(Cinematic Lighting)과 심도(Depth) 표현.
@@ -2016,6 +2016,7 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
+
 
 
 
