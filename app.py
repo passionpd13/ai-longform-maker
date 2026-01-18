@@ -14,8 +14,11 @@ from google import genai
 from google.genai import types
 
 # [NEW] 오디오 처리를 위한 라이브러리 추가
-from pydub import AudioSegment
-from pydub.silence import detect_silence
+try:
+    from pydub import AudioSegment
+    from pydub.silence import detect_silence
+except ImportError:
+    pass # pydub가 없어도 실행은 되도록 처리 (함수 내부에서 에러 처리)
 
 # [NEW] 동영상 생성을 위한 라이브러리 및 효과 추가
 try:
@@ -29,7 +32,105 @@ except ImportError:
 # ==========================================
 # [설정] 페이지 기본 설정
 # ==========================================
-st.set_page_config(page_title="열정피디 AI 유튜브 대본 구조 분석기 (Pro)", layout="wide", page_icon="🎬")
+st.set_page_config(
+    page_title="열정피디 AI 유튜브 대본 구조 분석기 (Pro)", 
+    layout="wide", 
+    page_icon="🎬",
+    initial_sidebar_state="expanded"
+)
+
+# ==========================================
+# [디자인] 다크모드 & 버튼 그라데이션 CSS 적용
+# ==========================================
+st.markdown("""
+    <style>
+    /* 1. 전체 폰트 및 배경 강제 (Config가 실패할 경우 대비) */
+    .stApp {
+        background-color: #0E1117;
+        color: #FFFFFF;
+        font-family: 'Pretendard', sans-serif;
+    }
+
+    /* 2. 상단 헤더 숨김 혹은 다크처리 */
+    header[data-testid="stHeader"] {
+        background-color: #0E1117 !important;
+        z-index: 1 !important;
+    }
+
+    /* 3. 사이드바 스타일 */
+    [data-testid="stSidebar"] {
+        background-color: #12141C;
+        border-right: 1px solid #2C2F38;
+    }
+
+    /* 4. 입력창 스타일 (Input, Selectbox, Textarea) */
+    .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"] > div {
+        background-color: #1F2128 !important;
+        color: #FFFFFF !important;
+        border: 1px solid #4A4A4A !important;
+        border-radius: 8px !important;
+    }
+    .stTextInput input:focus, .stTextArea textarea:focus {
+        border-color: #FF4B2B !important;
+        box-shadow: 0 0 5px rgba(255, 75, 43, 0.5);
+    }
+    
+    /* 5. 버튼 스타일 (열정피디 시그니처 그라데이션) */
+    .stButton > button {
+        width: 100%;
+        background: linear-gradient(135deg, #FF416C 0%, #FF4B2B 100%);
+        color: white !important;
+        border: none;
+        padding: 12px 20px;
+        font-weight: bold;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+    }
+    .stButton > button:hover {
+        transform: scale(1.02);
+        box-shadow: 0 5px 15px rgba(255, 75, 43, 0.4);
+    }
+    .stButton > button:active {
+        transform: scale(0.98);
+    }
+
+    /* 다운로드 버튼은 약간 다르게 (구분감) */
+    [data-testid="stDownloadButton"] button {
+        background: #2C2F38 !important;
+        border: 1px solid #555 !important;
+    }
+    [data-testid="stDownloadButton"] button:hover {
+        border-color: #FF4B2B !important;
+        color: #FF4B2B !important;
+    }
+
+    /* 6. Expander 스타일 */
+    div[data-testid="stExpander"] details {
+        background-color: #1F2128 !important;
+        border: 1px solid #4A4A4A !important;
+        border-radius: 8px !important;
+        color: #FFFFFF !important;
+    }
+    div[data-testid="stExpander"] details > summary:hover {
+        color: #FF4B2B !important;
+    }
+
+    /* 7. Status Widget (진행상황) */
+    div[data-testid="stStatusWidget"] {
+        background-color: #1F2128 !important;
+        border: 1px solid #4A4A4A !important;
+    }
+    
+    /* 텍스트 가독성 */
+    h1, h2, h3, h4, p, span, label, div {
+        color: #FFFFFF !important;
+    }
+    .stCaption {
+        color: #AAAAAA !important;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
 
 # 파일 저장 경로 설정
 BASE_PATH = "./web_result_files"
@@ -651,7 +752,7 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
         - 배경을 하얗게 비워두지 마십시오.
         - 대본 장소에 맞춰 하늘, 땅, 벽, 바닥 등을 단순한 면으로 분할하여 칠하십시오. (예: 파란 하늘과 초록 땅 / 베이지색 벽과 갈색 바닥)
         - 복잡한 질감이나 그라데이션 없이 **깔끔한 단색 채우기(Flat Color Fill)**로 표현하십시오.
-        
+         
     2. **[핵심 - 작화 스타일] '깔끔하고 매끄러운 선(Clean & Smooth Lines)':**
         - **절대 금지:** 마우스로 대충 그린 듯한 삐뚤빼뚤한 선, 거친 스케치 느낌을 배제하십시오.
         - **지향점:** 벡터 이미지처럼 **선이 매끄럽고 정돈되어 있어야 하며**, 두께가 일정하고 깔끔해야 합니다.
@@ -706,8 +807,8 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
                 prompt = response.json()['candidates'][0]['content']['parts'][0]['text'].strip()
                 # 9:16일 경우 프롬프트 앞단에 강제 주입 (AI가 실수하지 않도록)
                 if "9:16" in target_layout:
-                     prompt = "Vertical 9:16 smartphone wallpaper composition, " + prompt
-                     
+                      prompt = "Vertical 9:16 smartphone wallpaper composition, " + prompt
+                      
                 # 금지어 후처리
                 banned_words = ["피가", "피를", "시체", "절단", "학살", "살해", "Blood", "Kill", "Dead"]
                 for bad in banned_words:
