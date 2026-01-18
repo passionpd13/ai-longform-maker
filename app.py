@@ -340,10 +340,9 @@ def analyze_character_image(api_key, image_bytes):
         return f"Error analyzing image: {e}"
 
 # ==========================================
-# [함수] 프롬프트 생성 (수정됨: 캐릭터 일관성 추가)
+# [함수] 프롬프트 생성 (수정됨: 캐릭터 일관성 + 비율 구도 추가)
 # ==========================================
-# 1. 파라미터에 character_desc="" 추가
-def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, genre_mode="info", target_language="Korean", character_desc=""):
+def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, genre_mode="info", target_language="Korean", character_desc="", target_layout="16:9 와이드 시네마틱 비율"):
     scene_num = index + 1
     url = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_TEXT_MODEL_NAME}:generateContent?key={api_key}"
     headers = {'Content-Type': 'application/json'}
@@ -351,13 +350,13 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
     # [언어 설정 로직] 선택된 언어에 따라 지침 자동 변경
     if target_language == "Korean":
         lang_guide = "화면 속 글씨는 **무조건 '한글(Korean)'로 표기**하십시오. (다른 언어 절대 금지)"
-        lang_example = "(예: 'New York' -> '뉴욕', 'Tokyo' -> '도쿄')"
+        lang_example = "(예: '뉴욕', '도쿄')"
     elif target_language == "English":
         lang_guide = "화면 속 글씨는 **무조건 '영어(English)'로 표기**하십시오."
-        lang_example = "(예: '서울' -> 'Seoul', '독도' -> 'Dokdo')"
+        lang_example = "(예: 'Seoul', 'Dokdo')"
     elif target_language == "Japanese":
         lang_guide = "화면 속 글씨는 **무조건 '일본어(Japanese)'로 표기**하십시오."
-        lang_example = "(예: '서울' -> 'ソウル', 'New York' -> 'ニューヨーク')"
+        lang_example = "(예: 'ソウル', 'ニューヨーク')"
     else:
         lang_guide = f"화면 속 글씨는 **무조건 '{target_language}'로 표기**하십시오."
         lang_example = ""
@@ -377,12 +376,29 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
     ---------------------------------------------------------
         """
 
+    # ------------------------------------------------------
+    # [NEW] 화면 구도(비율) 지침 블록 생성
+    # ------------------------------------------------------
+    layout_prompt_block = f"""
+    [화면 구도(Composition) 지침 - 매우 중요]
+    - **목표 비율:** {target_layout}
+    - **배치:** 이 비율에 맞춰서 피사체를 배치하십시오. 
+      (9:16인 경우: 위아래로 긴 구도이므로 캐릭터나 중요 사물이 중앙에 오되 잘리지 않게 묘사)
+      (16:9인 경우: 좌우로 넓은 시네마틱 구도 활용)
+    """
+
+    # 공통 헤더 (모든 모드에 주입)
+    common_header = f"""
+    {character_consistency_block}
+    {layout_prompt_block}
+    """
+
     # ---------------------------------------------------------
     # [모드 1] 밝은 정보/이슈
     # ---------------------------------------------------------
     if genre_mode == "info":
         full_instruction = f"""
-    {character_consistency_block}
+    {common_header}
     [역할]
     당신은 복잡한 상황을 아주 쉽고 직관적인 그림으로 표현하는 '비주얼 커뮤니케이션 전문가'이자 '교육용 일러스트레이터'입니다.
 
@@ -427,7 +443,7 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
     # ---------------------------------------------------------
     elif genre_mode == "realistic_stickman":
         full_instruction = f"""
-    {character_consistency_block}
+    {common_header}
     [역할]
     당신은 **'넷플릭스 2D 애니메이션 감독'**입니다. 
     **반드시 '2D 그림(Digital Art)' 스타일**이어야 하며, **실사(Photorealism)나 3D 렌더링 느낌이 나면 절대 안 됩니다.**
@@ -461,7 +477,7 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
        - 감정 표현: 얼굴 표정은 단순하게 가되, **어깨의 처짐, 주먹 쥔 손, 다급한 달리기, 무릎 꿇기 등 '몸짓(Body Language)'**으로 감정을 전달하십시오.
 
     5. **언어(Text):** {lang_guide} {lang_example} (자막 연출보다는 배경 속 간판, 서류, 화면 등 자연스러운 텍스트 위주로)
-    6. **구도:** 분할 화면(Split Screen) 금지. 16:9 꽉 찬 시네마틱 구도 사용.
+    6. **구도:** 분할 화면(Split Screen) 금지. **{target_layout}** 꽉 찬 시네마틱 구도 사용.
 
     [임무]
     제공된 대본 조각(Script Segment)을 읽고, 그 상황을 가장 잘 보여주는 **한 장면의 영화 스틸컷** 같은 프롬프트를 작성하십시오.
@@ -484,7 +500,7 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
     # ---------------------------------------------------------
     elif genre_mode == "history":
         full_instruction = f"""
-    {character_consistency_block}
+    {common_header}
     [역할]
     당신은 **세계사의 결정적인 순간들(한국사, 서양사, 동양사 등)**을 한국 시청자에게 전달하는 '시대극 애니메이션 감독'입니다.
     역사적 비극을 다루지만, 절대로 잔인하거나 혐오스럽거나 고어틱하게 묘사를 하지 않습니다.
@@ -547,7 +563,7 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
     # ---------------------------------------------------------
     elif genre_mode == "3d_docu":
         full_instruction = f"""
-    {character_consistency_block}
+    {common_header}
     [역할]
     당신은 'Unreal Engine 5'를 사용하는 3D 시네마틱 아티스트입니다.
     현대 사회의 이슈나 미스터리한 현상을 고퀄리티 3D 그래픽으로 시각화합니다.
@@ -582,7 +598,7 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
     # ---------------------------------------------------------
     elif genre_mode == "scifi":
         full_instruction = f"""
-    {character_consistency_block}
+    {common_header}
     [역할]
     당신은 'Fern', 'AiTelly', 'Blackfiles' 채널 스타일의 **깔끔하고 명확한 '3D 테크니컬 애니메이터'**입니다.
     복잡한 기계나 과학 원리를 설명하되, **엔지니어/과학자 캐릭터의 행동**을 통해 시청자의 이해를 돕습니다. (어둡고 과한 시네마틱 X, 밝고 명확한 교육용 O)
@@ -622,7 +638,7 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
     elif genre_mode == "paint_explainer":
         # [NEW] The Paint Explainer 스타일 (깔끔한 선 + 스틱맨 + 단순함 + 명확한 사물 표현)
         full_instruction = f"""
-    {character_consistency_block}
+    {common_header}
     [역할]
     당신은 유튜브 'The Paint Explainer' 채널 스타일의 **'깔끔하고 직관적인 스틱맨 디지털 일러스트레이터'**입니다.
     복잡한 이야기를 **'정돈된 선과 다채로운 플랫 컬러'**를 사용하여 시청자가 직관적으로 이해할 수 있도록 그려야 합니다.
@@ -666,8 +682,7 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
         - **[절대 금지]:** 화면의 네 모서리(Corners)나 가장자리(Edges)에 글자를 배치하지 마십시오. 글자는 반드시 중앙 피사체 주변에만 연출하십시오.
 
 
-    7. **[구도]:**
-        - 분할 화면 금지. 16:9 비율의 화면을 꽉 채우는 하나의 완결된 장면(Full Scene Illustration)으로 연출하십시오.
+    7. **[구도]:** 분할 화면 금지. **{target_layout}** 비율의 화면을 꽉 채우는 하나의 완결된 장면(Full Scene Illustration)으로 연출하십시오.
 
     [임무]
     대본을 분석하여 AI가 그릴 수 있는 **'깔끔한 The Paint Explainer 스타일'의 프롬프트**를 작성하십시오.
@@ -677,7 +692,7 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
         """
 
     else: # Fallback
-        full_instruction = f"스타일: {style_instruction}. 대본 내용: {text_chunk}. 이미지 프롬프트 작성."
+        full_instruction = f"스타일: {style_instruction}. 비율: {target_layout}. 대본 내용: {text_chunk}. 이미지 프롬프트 작성."
 
     # 공통 실행 로직
     payload = {
@@ -689,6 +704,10 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
         if response.status_code == 200:
             try:
                 prompt = response.json()['candidates'][0]['content']['parts'][0]['text'].strip()
+                # 9:16일 경우 프롬프트 앞단에 강제 주입 (AI가 실수하지 않도록)
+                if "9:16" in target_layout:
+                     prompt = "Vertical 9:16 smartphone wallpaper composition, " + prompt
+                     
                 # 금지어 후처리
                 banned_words = ["피가", "피를", "시체", "절단", "학살", "살해", "Blood", "Kill", "Dead"]
                 for bad in banned_words:
@@ -705,9 +724,9 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
         return (scene_num, f"Error: {e}")
 
 # ==========================================
-# [수정됨] generate_image: API 제한(429) 완벽 대응 + 재시도 강화 + 에러 반환
+# [수정됨] generate_image: API 제한(429) 완벽 대응 + 재시도 강화 + 비율 설정
 # ==========================================
-def generate_image(client, prompt, filename, output_dir, selected_model_name):
+def generate_image(client, prompt, filename, output_dir, selected_model_name, target_ratio="16:9"):
     full_path = os.path.join(output_dir, filename)
     
     # 재시도 설정 (최대 5회, 대기 시간 점증)
@@ -738,12 +757,12 @@ def generate_image(client, prompt, filename, output_dir, selected_model_name):
 
     for attempt in range(1, max_retries + 1):
         try:
-            # 이미지 생성 요청
+            # 이미지 생성 요청 (비율 동적 적용)
             response = client.models.generate_content(
                 model=selected_model_name,
                 contents=[prompt],
                 config=types.GenerateContentConfig(
-                    image_config=types.ImageConfig(aspect_ratio="16:9"),
+                    image_config=types.ImageConfig(aspect_ratio=target_ratio), # 여기서 비율 결정
                     safety_settings=safety_settings 
                 )
             )
@@ -1064,6 +1083,25 @@ with st.sidebar:
 
     st.info(f"✅ 선택 모델: `{SELECTED_IMAGE_MODEL}`")
     
+    # ==========================================
+    # [NEW] 비율 선택 기능 추가 (쇼츠 대응)
+    # ==========================================
+    st.markdown("---")
+    st.subheader("📐 화면 비율 선택")
+    ratio_selection = st.radio(
+        "영상 화면 비율:",
+        ("16:9 (유튜브 가로형)", "9:16 (쇼츠/릴스 세로형)"),
+        index=0
+    )
+
+    # 선택된 값에 따라 변수 설정
+    if "9:16" in ratio_selection:
+        TARGET_RATIO = "9:16"
+        LAYOUT_KOREAN = "9:16 세로 비율, 스마트폰 꽉 찬 화면, 위아래로 긴 구도. 피사체가 잘리지 않게 중앙 배치."
+    else:
+        TARGET_RATIO = "16:9"
+        LAYOUT_KOREAN = "16:9 와이드 시네마틱 비율, 영화 스크린 구도."
+
     st.markdown("---")
     st.subheader("⏱️ 장면 분할 설정")
     chunk_duration = st.slider("한 장면당 지속 시간 (초)", 5, 60, 20, 5)
@@ -1691,7 +1729,7 @@ if start_btn:
         current_char_desc = st.session_state.get('char_description', "")
 
         # 2. 프롬프트 생성 (병렬)
-        status_box.write(f"📝 프롬프트 작성 중 ({GEMINI_TEXT_MODEL_NAME}) - 모드: {SELECTED_GENRE_MODE}...") # (선택) 로그 메시지에 모드 표시 추가
+        status_box.write(f"📝 프롬프트 작성 중 ({GEMINI_TEXT_MODEL_NAME}) - 모드: {SELECTED_GENRE_MODE} / 비율: {TARGET_RATIO}...") # (선택) 로그 메시지에 모드 표시 추가
         prompts = []
         with ThreadPoolExecutor(max_workers=10) as executor:
             futures = []
@@ -1707,7 +1745,8 @@ if start_btn:
                     current_video_title, 
                     SELECTED_GENRE_MODE,
                     target_language,
-                    current_char_desc # <--- [NEW] 캐릭터 묘사 주입
+                    current_char_desc, # <--- [NEW] 캐릭터 묘사 주입
+                    LAYOUT_KOREAN      # <--- [NEW] 비율 구도 주입
                 ))
             
             for i, future in enumerate(as_completed(futures)):
@@ -1731,7 +1770,16 @@ if start_btn:
                 # [수정] 3초 대기 삭제 -> 0.1초 미세 지연만 줌 (순서 꼬임 방지용)
                 time.sleep(0.1) 
                 
-                future = executor.submit(generate_image, client, prompt_text, fname, IMAGE_OUTPUT_DIR, SELECTED_IMAGE_MODEL)
+                # [NEW] 비율 정보 TARGET_RATIO 전달
+                future = executor.submit(
+                    generate_image, 
+                    client, 
+                    prompt_text, 
+                    fname, 
+                    IMAGE_OUTPUT_DIR, 
+                    SELECTED_IMAGE_MODEL,
+                    TARGET_RATIO 
+                )
                 future_to_meta[future] = (s_num, fname, orig_text, prompt_text)
             
             # 결과 수집
@@ -1935,13 +1983,15 @@ if st.session_state['generated_results']:
                                 api_key, index, item['script'], style_instruction, 
                                 current_title, SELECTED_GENRE_MODE,
                                 target_language,
-                                current_char_desc # <--- [NEW] 캐릭터 묘사 주입
+                                current_char_desc, # <--- [NEW] 캐릭터 묘사 주입
+                                LAYOUT_KOREAN      # <--- [NEW] 비율 구도 주입
                             )
                             
                             # 2. 이미지 생성
                             new_path = generate_image(
                                 client, new_prompt, item['filename'], 
-                                IMAGE_OUTPUT_DIR, SELECTED_IMAGE_MODEL
+                                IMAGE_OUTPUT_DIR, SELECTED_IMAGE_MODEL,
+                                TARGET_RATIO # <--- [NEW] 비율 정보 전달
                             )
                             
                             # [수정] 개별 생성에서도 에러 체크
@@ -2022,22 +2072,3 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
