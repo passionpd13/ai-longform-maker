@@ -414,7 +414,7 @@ def split_script_by_time(script, chars_per_chunk=100):
                         .replace("\n", "\n|")  # 줄바꿈도 강제 분리 기준으로 추가
 
     temp_sentences = temp_script.split("|")
-                             
+                              
     chunks = []
     current_chunk = ""
     
@@ -520,7 +520,7 @@ def analyze_character_image(api_key, image_bytes):
         return f"Error analyzing image: {e}"
 
 # ==========================================
-# [함수] 프롬프트 생성 (수정됨: 캐릭터 일관성 + 비율 구도 추가)
+# [함수] 프롬프트 생성 (수정됨: 9:16 세로 최적화 강화)
 # ==========================================
 def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, genre_mode="info", target_language="Korean", character_desc="", target_layout="16:9 와이드 시네마틱 비율"):
     scene_num = index + 1
@@ -557,20 +557,25 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
         """
 
     # ------------------------------------------------------
-    # [NEW] 화면 구도(비율) 지침 블록 생성
+    # [수정됨] 9:16 강력 보정 로직 (Vertical Layout Injection)
     # ------------------------------------------------------
-    layout_prompt_block = f"""
-    [화면 구도(Composition) 지침 - 매우 중요]
-    - **목표 비율:** {target_layout}
-    - **배치:** 이 비율에 맞춰서 피사체를 배치하십시오. 
-      (9:16인 경우: 위아래로 긴 구도이므로 캐릭터나 중요 사물이 중앙에 오되 잘리지 않게 묘사)
-      (16:9인 경우: 좌우로 넓은 시네마틱 구도 활용)
-    """
+    vertical_force_prompt = ""
+    if "9:16" in target_layout:
+        vertical_force_prompt = """
+    [❗❗ 9:16 세로 화면 필수 지침 (Vertical Mode) ❗❗]
+    1. **구도(Composition):** 가로로 넓은 풍경(Landscape)을 절대 그리지 마십시오.
+    2. **배치(Placement):** 피사체는 화면 중앙에 수직으로 배치되어야 합니다. (위아래로 길게)
+    3. **거리(Distance):** 카메라를 피사체에 가까이 가져가십시오(Close-up / Medium Shot). 
+       - 전신(Full body)을 그릴 경우 캐릭터가 너무 작아집니다. **무릎 위(Knee-up)나 허리 위(Waist-up)**로 잘라서 캐릭터가 화면에 꽉 차게 그리십시오.
+    4. **치타/동물 예시:** 동물이 달리는 장면이라면, 옆모습(Side view) 대신 **정면에서 달려오는 모습(Front view)**이나 대각선 구도를 사용하여 세로 화면을 채우십시오.
+        """
 
     # 공통 헤더 (모든 모드에 주입)
     common_header = f"""
     {character_consistency_block}
-    {layout_prompt_block}
+    [화면 구도 지침]
+    {target_layout}
+    {vertical_force_prompt}
     """
 
     # ---------------------------------------------------------
@@ -606,6 +611,7 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
     
     [작성 요구사항]
     - **분량:** 최소 7문장 이상으로 상세하게 묘사.
+    - **세로 모드 시:** 캐릭터나 사물이 작아 보이지 않게 줌인(Zoom-in)하여 묘사하십시오.
     - **포함 요소:**
         - **캐릭터 행동:** 대본의 상황을 연기하는 캐릭터의 구체적인 동작.
         - **배경:** 상황을 설명하는 소품이나 장소를 몰입감 있고 깊이감 있게 2d로 구성. 
@@ -639,22 +645,22 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
 
     [핵심 비주얼 스타일 가이드 - 절대 준수]
     1. **캐릭터(Character):** - **얼굴이 둥근 하얀색 스틱맨(Round-headed white stickman)**을 사용하십시오.
-       - 하지만 선은 굵고 부드러우며, **그림자(Shading)**가 들어가 입체감이 느껴져야 합니다.
-       - **의상:** 대본 상황에 맞는 현실적인 의상(정장, 군복, 잠옷, 작업복 등)을 스틱맨 위에 입혀 '캐릭터성'을 부여하십시오.
-       - 얼굴이 크게 잘 보이게 연출. 장면도 잘 드러나게.
-       
+        - 하지만 선은 굵고 부드러우며, **그림자(Shading)**가 들어가 입체감이 느껴져야 합니다.
+        - **의상:** 대본 상황에 맞는 현실적인 의상(정장, 군복, 잠옷, 작업복 등)을 스틱맨 위에 입혀 '캐릭터성'을 부여하십시오.
+        - 얼굴이 크게 잘 보이게 연출. 장면도 잘 드러나게.
+        
     2. **배경(Background) - 가장 중요:**
-       - 단순한 그라데이션이나 단색 배경을 **절대 금지**합니다.
-       - **고해상도 컨셉 아트(High-quality Concept Art)** 수준으로 배경을 그리십시오.
-       - 예: 사무실이라면 책상의 서류 더미, 창밖의 풍경, 커피잔의 김, 벽의 질감까지 묘사해야 합니다.
-       
+        - 단순한 그라데이션이나 단색 배경을 **절대 금지**합니다.
+        - **고해상도 컨셉 아트(High-quality Concept Art)** 수준으로 배경을 그리십시오.
+        - 예: 사무실이라면 책상의 서류 더미, 창밖의 풍경, 커피잔의 김, 벽의 질감까지 묘사해야 합니다.
+        
     3. **조명(Lighting):**
-       - 2D지만 **입체적인 조명(Volumetric Lighting)**과 그림자를 사용하여 깊이감을 만드십시오.
-       - 상황에 따라 따뜻한 햇살, 차가운 네온사, 어두운 방의 스탠드 조명 등을 명확히 구분하십시오.
-       
+        - 2D지만 **입체적인 조명(Volumetric Lighting)**과 그림자를 사용하여 깊이감을 만드십시오.
+        - 상황에 따라 따뜻한 햇살, 차가운 네온사, 어두운 방의 스탠드 조명 등을 명확히 구분하십시오.
+        
     4. **연기(Acting):**
-       - 인포그래픽처럼 정보를 나열하지 말고, **캐릭터가 행동(Action)하는 장면**을 포착하십시오.
-       - 감정 표현: 얼굴 표정은 단순하게 가되, **어깨의 처짐, 주먹 쥔 손, 다급한 달리기, 무릎 꿇기 등 '몸짓(Body Language)'**으로 감정을 전달하십시오.
+        - 인포그래픽처럼 정보를 나열하지 말고, **캐릭터가 행동(Action)하는 장면**을 포착하십시오.
+        - 감정 표현: 얼굴 표정은 단순하게 가되, **어깨의 처짐, 주먹 쥔 손, 다급한 달리기, 무릎 꿇기 등 '몸짓(Body Language)'**으로 감정을 전달하십시오.
 
     5. **언어(Text):** {lang_guide} {lang_example} (자막 연출보다는 배경 속 간판, 서류, 화면 등 자연스러운 텍스트 위주로)
     6. **구도:** 분할 화면(Split Screen) 금지. **{target_layout}** 꽉 찬 시네마틱 구도 사용.
@@ -668,7 +674,10 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
     - **분량:** 최소 7문장 이상으로 상세하게 묘사.
     - 자막 같은 연출 하지 않는다. ("화면 하단 중앙에는 명조체로 **'필리핀, 1944년'**이라는 한글 텍스트가 선명하게 새겨져 있다" 이런 연출 하면 안된다) 
 
-    
+    [9:16 세로 모드 팁]
+    - 스틱맨이 화면의 50% 이상을 차지하도록 가까이서 잡으십시오.
+    - 배경 위주가 아니라 **캐릭터의 연기 위주**로 프레임을 구성하십시오.
+
     [출력 형식]
     - **분량:** 최소 7문장 이상으로 상세하게 묘사.
     - **무조건 한국어(한글)**로만 작성하십시오.
@@ -710,6 +719,7 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
     
     [작성 요구사항]
     - **분량:** 최소 7문장 이상으로 상세하게 묘사.
+    - 9:16 비율일 경우, 역사적 인물(스틱맨)의 **상반신 위주**로 묘사하여 표정(눈매)이나 손짓이 잘 보이게 하십시오.
     - **포함 요소:**
         - **텍스트 지시:** (중요) 이미지에 들어갈 텍스트를 반드시 **'{target_language}'**로 명시하십시오.
             - 텍스트는 그래픽 연출이 아니라 화면의 사물에 자연스럽게 연출되게 한다.
@@ -747,10 +757,10 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
         if "9:16" in target_layout:
             vertical_zoom_guide = """
     5. **[9:16 세로 모드 필수 지침 - 인물 확대]:**
-       - 스마트폰 화면(세로) 특성상 인물이 멀리 있으면 시인성이 떨어집니다.
-       - **카메라를 피사체(마네킹) 가까이(Close-up, Medium Shot) 배치하여, 머리와 상반신이 화면의 50% 이상을 차지하도록 꽉 차게 연출하십시오.**
-       - 다양한 장소 표현을 디테일 하게, 그리고 사물 묘사도 디테일하게.
-       - 전신 샷(Full Shot)과 클로즈업 위주로 묘사하십시오.
+        - 스마트폰 화면(세로) 특성상 인물이 멀리 있으면 시인성이 떨어집니다.
+        - **카메라를 피사체(마네킹) 가까이(Close-up, Medium Shot) 배치하여, 머리와 상반신이 화면의 50% 이상을 차지하도록 꽉 차게 연출하십시오.**
+        - 다양한 장소 표현을 디테일 하게, 그리고 사물 묘사도 디테일하게.
+        - 전신 샷(Full Shot)과 클로즈업 위주로 묘사하십시오.
             """
 
         full_instruction = f"""
@@ -771,6 +781,10 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
         - 다소 어둡고, 밝기도 하며, 미스터리하며, 진지한 분위기를 연출하십시오.
     4. **언어 (Text):** {lang_guide} {lang_example} (가능한 텍스트 묘사는 줄이고 상황 묘사에 집중)
     {vertical_zoom_guide}
+
+    [9:16 세로 모드 필수 지침]
+    - 마네킹 캐릭터를 **'포트레이트 샷(Portrait Shot)'**으로 잡으십시오.
+    - 전신보다는 **상반신 클로즈업**이 훨씬 효과적입니다.
 
     [임무]
     제공된 대본 조각(Script Segment)을 바탕으로, 위 스타일이 적용된 이미지 생성 프롬프트를 작성하십시오.
@@ -810,6 +824,10 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
             - **행동:** 단순히 서 있는 것이 아니라, **기계를 조작하거나, 특정 부위를 가리키며 설명하거나, 단면을 관찰하는 등 '기능적인 행동'**을 취해야 합니다.
     4. **카메라 (Camera):** "Clear view", "Isometric view"(선택적), "Slight zoom"(디테일 강조). 과도한 아웃포커싱(심도)은 자제하고 전체적으로 쨍하게 보여주십시오.
     5. **언어 (Text):** {lang_guide} {lang_example} (화살표와 함께 부품 명칭을 지시할 때만 최소한으로 사용)
+
+    [9:16 세로 모드 지침]
+    - 기계 전체를 보여주려 하지 말고, **작동하는 핵심 부품을 확대(Zoom-in)**하여 세로 화면에 꽉 차게 보여주십시오.
+    - 위아래 공간을 활용하여 부품이 분해되는 모습(Exploded view)을 수직으로 배치하십시오.
 
     [임무]
     제공된 대본 조각(Script Segment)을 바탕으로, 마치 공학 교육 영상의 한 장면 같은 3D 프롬프트를 작성하십시오.
@@ -876,6 +894,10 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
 
     7. **[구도]:** 분할 화면 금지. **{target_layout}** 비율의 화면을 꽉 채우는 하나의 완결된 장면(Full Scene Illustration)으로 연출하십시오.
 
+    [9:16 세로 모드 지침]
+    - **스틱맨을 매우 크게 그리십시오.** 화면의 2/3를 차지해도 좋습니다.
+    - 말풍선이나 기호(?, !)를 캐릭터 머리 위(수직 방향)에 배치하여 세로 공간을 활용하십시오.
+
     [임무]
     대본을 분석하여 AI가 그릴 수 있는 **'깔끔한 The Paint Explainer 스타일'의 프롬프트**를 작성하십시오.
     - **필수 키워드 반영:** "Clean digital line art, smooth lines, minimal vector style, flat design aesthetic, colorful flat background, no shading, bold outlines, infographic elements (arrows, symbols), visual metaphor"
@@ -918,10 +940,16 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
     5. **[텍스트]:** {lang_guide} {lang_example}
         - 텍스트는 간판 이런게 아닌이상 거의 연출하지 않는다. 특히 그래픽 같이 자연스럽지 않게 텍스트는 절대 나오지 않는다.
 
+    [🚨 9:16 세로 모드 필수 지침 (Vertical Layout) 🚨]
+    - **환경(Environment)보다 캐릭터(Character)가 우선입니다.**
+    - 광활한 초원을 멀리서 찍지 마십시오. (캐릭터가 점으로 보이면 실패입니다.)
+    - **구도:** 카메라 렌즈를 캐릭터 코앞까지 가져오십시오 (Extreme Close-up / Selfie angle).
+    - **치타/동물:** 동물이 화면 밖으로 튀어나올 듯이 **정면으로 달려오는 구도**나, **얼굴이 화면에 꽉 차는 구도**를 묘사하십시오.
+    - 배경은 캐릭터 뒤로 흐릿하게 날아가거나(Depth of field), 위아래로 뻗은 나무/건물 등을 이용해 수직감을 주십시오.
 
     [임무]
     대본을 분석하여 위 스타일이 적용된 프롬프트를 작성하십시오.
-    - **필수 키워드 포함:** "Photorealistic 8k render, Unreal Engine 5, Cinematic lighting, Funny 2D cartoon face on realistic body, 2D cartoon eyes (white sclera, black dot pupil) on animal, Visual comedy, Meme style collage"
+    - **필수 키워드 포함:** "Photorealistic 8k render, Unreal Engine 5, Cinematic lighting, Funny 2D cartoon face on realistic body, 2D cartoon eyes (white sclera, black dot pupil) on animal, Visual comedy, Meme style collage, Vertical Portrait Composition, Close-up"
     - **상황 연출:** 대본의 심각한 상황(예: 멸종, 전쟁)을 묘사하되, 캐릭터들의 표정은 멍청하거나(Derp) 과장되게 묘사하십시오.
     - **한글**로만 작성하십시오.
         """
@@ -939,9 +967,10 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
         if response.status_code == 200:
             try:
                 prompt = response.json()['candidates'][0]['content']['parts'][0]['text'].strip()
-                # 9:16일 경우 프롬프트 앞단에 강제 주입 (AI가 실수하지 않도록)
+                
+                # [안전장치] 9:16일 경우 프롬프트 앞단에 강제 주입 (AI가 실수하지 않도록)
                 if "9:16" in target_layout:
-                      prompt = "Vertical 9:16 smartphone wallpaper composition, " + prompt
+                      prompt = "Vertical 9:16 smartphone wallpaper composition, Close-up shot, Portrait mode, (세로 화면 꽉 찬 구도), " + prompt
                       
                 # 금지어 후처리
                 banned_words = ["피가", "피를", "시체", "절단", "학살", "살해", "Blood", "Kill", "Dead"]
@@ -1329,10 +1358,16 @@ with st.sidebar:
         index=0
     )
 
-    # 선택된 값에 따라 변수 설정
+    # [수정됨] 9:16 선택 시 '포트레이트', '클로즈업' 강제 키워드 추가
     if "9:16" in ratio_selection:
         TARGET_RATIO = "9:16"
-        LAYOUT_KOREAN = "9:16 세로 비율, 스마트폰 꽉 찬 화면, 위아래로 긴 구도. 피사체가 잘리지 않게 중앙 배치."
+        LAYOUT_KOREAN = """
+        [9:16 Vertical Portrait Mode]
+        - 이 이미지는 세로로 긴 스마트폰 배경화면 비율입니다.
+        - 절대 가로로 넓은 광각(Wide angle) 구도를 잡지 마십시오.
+        - **세로형 포트레이트(Vertical Portrait)** 구도를 사용하여, 피사체(인물/동물)가 화면의 좌우를 꽉 채우도록 '클로즈업(Close-up)' 하십시오.
+        - 머리부터 허리까지 보여주는 '미디엄 샷' 또는 얼굴이 꽉 차는 '클로즈업'을 사용하십시오.
+        """
     else:
         TARGET_RATIO = "16:9"
         LAYOUT_KOREAN = "16:9 와이드 시네마틱 비율, 영화 스크린 구도."
@@ -2337,6 +2372,3 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
-
-
-
