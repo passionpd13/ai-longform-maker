@@ -1106,7 +1106,7 @@ with st.sidebar:
     # [NEW] 페인트 익스플레이너 프리셋 (업데이트: 깔끔한 선 + 다채로운 배경 + 감정/행동 연출 강화)
     PRESET_PAINT = """'The Paint Explainer' 유튜브 채널 스타일 (Expressive Clean Stickman).
 화풍: '깔끔하고 매끄러운 디지털 선화(Clean Smooth Lines)'와 '굵은 손글씨(Bold Handwriting)' 텍스트.
-배경: 흰색 여백 금지. 하늘, 땅, 벽, 바닥 등이 매우 단순하게 면으로 구분된 '플랫한 2D 배경'.
+배경: 흰색 여백 금지. 하늘, 땅, 벽, 바닥 등이 단순하게 면으로 구분된 '플랫한 2D 배경'.
 캐릭터: 얼굴이 둥근 2d 스틱맨. **핵심은 과장된 표정과 역동적인 행동으로 감정을 극적으로 연출하는 것.** 캐릭터가 잘 보이게 배치.
 채색: 명암 없는 '다채로운 플랫 컬러'를 사용하여 생동감 부여.
 연출: 직관적인 사물 표현과 만화적 기호 적극 활용."""
@@ -2015,6 +2015,7 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
+
 
 
 
