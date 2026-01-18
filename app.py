@@ -742,6 +742,16 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
     # [모드 3] 3D 다큐멘터리 (현대/미스터리)
     # ---------------------------------------------------------
     elif genre_mode == "3d_docu":
+        # 9:16일 경우 인물 확대 지침 정의
+        vertical_zoom_guide = ""
+        if "9:16" in target_layout:
+            vertical_zoom_guide = """
+    5. **[9:16 세로 모드 필수 지침 - 인물 확대]:**
+       - 스마트폰 화면(세로) 특성상 인물이 멀리 있으면 시인성이 떨어집니다.
+       - **카메라를 피사체(마네킹) 가까이(Close-up, Medium Shot) 배치하여, 머리와 상반신이 화면의 60% 이상을 차지하도록 꽉 차게 연출하십시오.**
+       - 전신 샷(Full Shot)보다는 클로즈업 위주로 묘사하십시오.
+            """
+
         full_instruction = f"""
     {common_header}
     [역할]
@@ -759,6 +769,7 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
     3. **조명 및 분위기 (Lighting & Mood):** - "Cinematic lighting", "Dim lighting", "Volumetric fog".
         - 다소 어둡고, 밝기도 하며, 미스터리하며, 진지한 분위기를 연출하십시오.
     4. **언어 (Text):** {lang_guide} {lang_example} (가능한 텍스트 묘사는 줄이고 상황 묘사에 집중)
+    {vertical_zoom_guide}
 
     [임무]
     제공된 대본 조각(Script Segment)을 바탕으로, 위 스타일이 적용된 이미지 생성 프롬프트를 작성하십시오.
