@@ -610,50 +610,56 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
         """
 
     # ---------------------------------------------------------
-    # [모드 5] The Paint Explainer (Modified: More Background & Color)
+    # [모드 5] The Paint Explainer (Modified: Clean Lines & Flat Color)
     # ---------------------------------------------------------
     elif genre_mode == "paint_explainer":
-        # [NEW] The Paint Explainer 스타일 (흰 배경 + 스틱맨 + 단순함 + 명확한 사물 표현)
+        # [NEW] The Paint Explainer 스타일 (깔끔한 선 + 스틱맨 + 단순함 + 명확한 사물 표현)
         full_instruction = f"""
+    {character_consistency_block}
     [역할]
-    당신은 유튜브 'The Paint Explainer' 채널 스타일의 **'초심플 스틱맨 일러스트레이터'**입니다.
-    복잡한 세상의 이야기를 **'꽉 찬 화면 구성'과 '다채로운 색감'**으로 시청자의 눈을 사로잡아야 합니다.
+    당신은 유튜브 'The Paint Explainer' 채널 스타일의 **'깔끔하고 직관적인 스틱맨 디지털 일러스트레이터'**입니다.
+    복잡한 이야기를 **'정돈된 선과 다채로운 플랫 컬러'**를 사용하여 시청자가 직관적으로 이해할 수 있도록 그려야 합니다.
 
     [전체 영상 주제] "{video_title}"
     [스타일 가이드] {style_instruction}
 
     [필수 연출 지침]
-    1. **[핵심 - 배경] 배경을 비워두지 마십시오 (No Empty White Void).**
-        - 대본의 장소(사무실, 거리, 우주, 방 안 등)를 **'단순화된 2D 배경'**으로 반드시 그리십시오.
-        - **예시:** - 실외: 파란 하늘, 초록색 언덕, 회색 빌딩 숲.
-            - 실내: 베이지색 벽지, 갈색 바닥, 창문, 책상.
-        - **스타일:** 복잡한 텍스처나 그라데이션은 피하고, **'면으로 칠해진 플랫한 배경(Flat 2D Environment)'**을 구성하십시오.
-    2. **[핵심 - 캐릭터] 완벽한 '졸라맨(Stick Figure)' 스타일:**
-       - 머리는 표정이 있는 동그라미(Circle head).
-       - 몸통과 팔다리는 **단순한 검은 막대기 선(Stick limbs)**.
-       - 표정은 점 눈(. .)과 선 입(__)으로 단순하지만 상황(기쁨, 슬픔, 당황)을 명확히 전달해야 합니다.
-       - 하지만 배경과 사물이 다채로워졌으므로, 캐릭터가 묻히지 않도록 **굵은 외곽선(Bold Outline)**을 사용하거나 상황에 맞는 **'색깔 있는 의상'**을 입혀도 좋습니다.
-    3. **[핵심 - 소품 및 상황 연출 (Props & Context) - 강화됨]:**
-       - 대본 속 중요한 사물들을 **단순하지만 그 특징이 가장 잘 드러나게 과장하여** 그리십시오.
-       - **시각적 은유(Visual Metaphor)를 적극 활용하십시오.**
-         - (예: '엄청난 빚' -> 스틱맨을 짓누르는 건물만 한 바위 덩어리에 '빚(DEBT)'이라고 씀)
-         - (예: '돈을 벌다' -> 스틱맨 손으로 자석을 들고 돈다발을 끌어당기는 모습)
-       - 상황 설명력을 높이기 위해 **화살표(→), 물음표(?), 느낌표(!), 당황 표시(땀방울 💦), 반짝임(✨) 등의 기호**를 적극적으로 그림 옆에 추가하십시오.
-       - 사물끼리의 관계(원인->결과)를 화살표로 연결하여 보여주십시오.
-    4. **[작화 스타일] MS 그림판(MS Paint) 감성:**
-       - 고퀄리티 예술 작품이 아닙니다. 마우스로 대충 그린 듯한(Rough sketch, scribbles, crude drawing) 느낌을 살리십시오.
-       - 그림자는 그리지 않습니다(No shading). 완전한 평면(Flat)입니다.
+    1. **[핵심 - 배경] '단순화된 2D 플랫 배경(Simple 2D Flat Background)'으로 채우십시오.**
+        - 배경을 하얗게 비워두지 마십시오.
+        - 대본 장소에 맞춰 하늘, 땅, 벽, 바닥 등을 단순한 면으로 분할하여 칠하십시오. (예: 파란 하늘과 초록 땅 / 베이지색 벽과 갈색 바닥)
+        - 복잡한 질감이나 그라데이션 없이 **깔끔한 단색 채우기(Flat Color Fill)**로 표현하십시오.
+        
+    2. **[핵심 - 작화 스타일] '깔끔하고 매끄러운 선(Clean & Smooth Lines)':**
+        - **절대 금지:** 마우스로 대충 그린 듯한 삐뚤빼뚤한 선, 거친 스케치 느낌을 배제하십시오.
+        - **지향점:** 벡터 이미지처럼 **선이 매끄럽고 정돈되어 있어야 하며**, 두께가 일정하고 깔끔해야 합니다.
+        - 그림자와 명암을 그리지 않는 **완전한 평면(Flat Design)** 스타일을 유지하십시오.
+
+    3. **[핵심 - 캐릭터] '깔끔한 졸라맨(Clean Stick Figure)':**
+        - 머리는 동그라미, 몸통과 팔다리는 선으로 이루어진 단순한 구조입니다.
+        - 하지만 선이 매우 깔끔해야 합니다.
+        - 배경에 묻히지 않도록 **굵고 선명한 검은색 외곽선(Bold Black Outline)**을 사용하십시오.
+        - 상황에 따라 캐릭터에게 색깔 있는 단순한 의상을 입혀 가시성을 높여도 좋습니다.
+
+    4. **[핵심 - 소품 및 시각적 은유 (Visual Metaphor) - 강화됨]:**
+        - 대본의 핵심 사물을 아이콘처럼 단순하고 명확하게 과장하여 그리십시오.
+        - 추상적인 개념을 시각화하는 **은유(Metaphor)**를 적극 활용하십시오.
+            - (예: '압박감' -> 스틱맨 머리 위에 거대한 쇳덩이 추가)
+        - 만화적 기호(화살표 →, 물음표 ?, 느낌표 !, 땀방울 💦, 반짝임 ✨, 스피드 선)를 그림 옆에 적극적으로 추가하여 상황 전달력을 극대화하십시오.
+    
     5. **[색상 사용]:**
-       - 기본은 **흑백(Black lines on White)**입니다.
-       - 강조하고 싶은 핵심 사물(돈, 국기, 중요한 버튼 등)에만 **빨강, 파랑, 노랑 같은 원색(Primary Colors)**을 포인트로 사용하여 시선을 집중시키십시오.
+        - 전체적으로 밝고 선명한 플랫 컬러를 다양하게 사용하되, 복잡해 보이지 않게 정돈된 색감을 유지하십시오.
+        - 핵심적인 사물이나 강조점에는 채도가 높은 원색(빨강, 노랑, 파랑)을 사용하여 시선을 집중시키십시오.
+
     6. **[텍스트 처리]:** {lang_guide} {lang_example}
-       - 손글씨 느낌으로 연출하십시오. 텍스트 박스보다는 그림 옆에 자연스럽게 쓰인 느낌이 좋습니다.
+        - 텍스트 역시 깔끔한 디지털 폰트 느낌으로 그림 옆에 자연스럽게 배치하십시오.
+
     7. **[구도]:**
-       - 분할 화면 금지. 하나의 흰 화면 위에 캐릭터와 관련 사물들을 배치하여 하나의 상황극처럼 만드십시오.
+        - 분할 화면 금지. 16:9 비율의 화면을 꽉 채우는 하나의 완결된 장면(Full Scene Illustration)으로 연출하십시오.
 
     [임무]
-    대본을 분석하여 AI가 그릴 수 있는 **'The Paint Explainer 스타일'의 프롬프트**를 작성하십시오.
-    - "Minimalist stick figure, crude ms paint style, pure white background, simple line drawing, visual metaphor, infographic elements (arrows, symbols)" 등의 키워드가 반영되도록 하십시오.
+    대본을 분석하여 AI가 그릴 수 있는 **'깔끔한 The Paint Explainer 스타일'의 프롬프트**를 작성하십시오.
+    - **필수 키워드 반영:** "Clean digital line art, smooth lines, minimal vector style, flat design aesthetic, colorful flat background, no shading, bold outlines, infographic elements (arrows, symbols), visual metaphor"
+    - **금지 키워드:** "crude drawing, rough sketch, ms paint style, wobbly lines, sketchy"
     - **한글**로만 출력하십시오.
         """
 
@@ -2003,6 +2009,7 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
+
 
 
 
