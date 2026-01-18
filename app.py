@@ -634,8 +634,8 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
         - **지향점:** 벡터 이미지처럼 **선이 매끄럽고 정돈되어 있어야 하며**, 두께가 일정하고 깔끔해야 합니다.
         - 그림자와 명암을 그리지 않는 **완전한 평면(Flat Design)** 스타일을 유지하십시오.
 
-    3. **[핵심 - 캐릭터] '깔끔한 졸라맨(Clean Stick Figure)':**
-        - 머리는 동그라미, 몸통과 팔다리는 선으로 이루어진 단순한 구조입니다.
+    3. **[핵심 - 캐릭터] '스틱맨':**
+        - 머리는 하얀색 동그라미, 몸통과 팔다리는 선으로 이루어진 단순한 구조입니다.
         - 배경에 묻히지 않도록 **굵고 선명한 검은색 외곽선(Bold Black Outline)**을 사용하십시오.
         - 상황에 따라 캐릭터에게 색깔 있는 단순한 의상을 입혀 가시성을 높여도 좋습니다.
         - **행동(Body Language):** 정적인 자세를 피하십시오. **온몸을 사용한 역동적인 포즈**로 상황을 설명하십시오.
@@ -656,6 +656,8 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
         - 상황에 따라 **귀여운 글씨, 거친 글씨, 흘려 쓴 글씨** 등 다양한 스타일을 적용하여 단조로움을 피하십시오.
         - 텍스트는 배경 그림의 일부처럼 자연스럽게 어우러져야 합니다.
         - 텍스트 역시 깔끔한 디지털 폰트 느낌으로 그림 옆에 자연스럽게 배치하십시오.
+        - **[절대 금지]:** 화면의 네 모서리(Corners)나 가장자리(Edges)에 글자를 배치하지 마십시오. 글자는 반드시 중앙 피사체 주변에만 연출하십시오.
+
 
     7. **[구도]:**
         - 분할 화면 금지. 16:9 비율의 화면을 꽉 채우는 하나의 완결된 장면(Full Scene Illustration)으로 연출하십시오.
@@ -1105,7 +1107,7 @@ with st.sidebar:
     PRESET_PAINT = """'The Paint Explainer' 유튜브 채널 스타일 (Expressive Clean Stickman).
 화풍: '깔끔하고 매끄러운 디지털 선화(Clean Smooth Lines)'와 '굵은 손글씨(Bold Handwriting)' 텍스트.
 배경: 흰색 여백 금지. 하늘, 땅, 벽, 바닥 등이 매우 단순하게 면으로 구분된 '플랫한 2D 배경'.
-캐릭터: 검은색 선으로 된 단순한 졸라맨. **핵심은 과장된 표정과 역동적인 행동으로 감정을 극적으로 연출하는 것.** 캐릭터가 잘 보이게 배치.
+캐릭터: 얼굴이 둥근 2d 스틱맨. **핵심은 과장된 표정과 역동적인 행동으로 감정을 극적으로 연출하는 것.** 캐릭터가 잘 보이게 배치.
 채색: 명암 없는 '다채로운 플랫 컬러'를 사용하여 생동감 부여.
 연출: 직관적인 사물 표현과 만화적 기호 적극 활용."""
 
@@ -2013,6 +2015,7 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
+
 
 
 
