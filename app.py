@@ -650,7 +650,10 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
         - 전체적으로 밝고 선명한 플랫 컬러를 다양하게 사용하되, 복잡해 보이지 않게 정돈된 색감을 유지하십시오.
         - 핵심적인 사물이나 강조점에는 채도가 높은 원색(빨강, 노랑, 파랑)을 사용하여 시선을 집중시키십시오.
 
-    6. **[텍스트 처리]:** {lang_guide} {lang_example}
+    6. **[텍스트 처리] - '굵고 다양한 손글씨(Bold & Varied Handwriting)':** {lang_guide} {lang_example}
+        - 딱딱한 디지털 폰트 대신, **사람이 마카펜이나 붓으로 꾹꾹 눌러 쓴 듯한 '굵은 손글씨 느낌'**으로 연출하십시오.
+        - 상황에 따라 **귀여운 글씨, 거친 글씨, 흘려 쓴 글씨** 등 다양한 스타일을 적용하여 단조로움을 피하십시오.
+        - 텍스트는 배경 그림의 일부처럼 자연스럽게 어우러져야 합니다.
         - 텍스트 역시 깔끔한 디지털 폰트 느낌으로 그림 옆에 자연스럽게 배치하십시오.
 
     7. **[구도]:**
@@ -1101,7 +1104,7 @@ with st.sidebar:
     PRESET_PAINT = """'The Paint Explainer' 유튜브 채널 스타일 (Minimalist Stickman).
 배경: 완전한 흰색이 아님. 하늘, 벽, 바닥 등이 구분된 '단순한 2D 배경(Flat 2D Environment)'.
 검은색 선으로 이루어진 단순한 졸라맨(Stick Figure) 캐릭터. (둥근 머리, 막대기 팔다리). 표정 연출 필수.
-MS 그림판(MS Paint)으로 그린 듯한 키치하고 단순한 느낌.
+'깔끔하고 매끄러운 선'
 채색: 흑백뿐만 아니라 다양한 '플랫 컬러(Flat Colors)'를 사용하여 사물과 배경을 다채롭게 표현.
 복잡한 예술적 기교나 명암(Shading) 절대 금지. 단순하고 직관적인 설명화."""
 
@@ -2009,6 +2012,7 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
+
 
 
 
