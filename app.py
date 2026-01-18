@@ -743,8 +743,10 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
     대본 내용이 비극적이거나 폭력적일 경우, 반드시 아래의 **부드러운 상징물**로 대체하여 묘사하십시오.
     
     [출력 형식]
-    - **무조건 한국어(한글)**로만 작성하십시오.
+    - **무조건 한국어**로만 작성하십시오.
     - 부가적인 설명 없이 **오직 프롬프트 텍스트만** 출력하십시오.
+    - (지문) 같은 부연설명 연출 지시어는 제외한다.
+
     - 프롬프트에 '얼굴이 둥근 2d 스틱맨' 무조건 들어간다.
         """
 
@@ -797,6 +799,7 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
     [출력 형식]
     - **무조건 한국어(한글)**로만 작성하십시오. (단, Unreal Engine 5 같은 핵심 영단어는 혼용 가능)
     - 부가 설명 없이 **오직 프롬프트 텍스트만** 출력하십시오.
+    - (지문) 같은 부연설명 연출 지시어는 제외한다.
         """
         
     # ---------------------------------------------------------
@@ -938,7 +941,7 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
     4. **조명 및 분위기:** - 조명은 **매우 진지하고 웅장하게(Cinematic & Epic)** 연출하여, 우스꽝스러운 얼굴과 대비를 극대화하십시오.
     
     5. **[텍스트]:** {lang_guide} {lang_example}
-        - 텍스트는 간판 이런게 아닌이상 거의 연출하지 않는다. 특히 그래픽 같이 자연스럽지 않게 텍스트는 절대 나오지 않는다.
+        - [필수] 텍스트는 간판 이런게 아닌이상 거의 연출하지 않는다. 특히 그래픽 같이 자연스럽지 않게 텍스트는 절대 나오지 않는다.
 
     [🚨 9:16 세로 모드 필수 지침 (Vertical Layout) 🚨]
     - **환경(Environment)보다 캐릭터(Character)가 우선입니다.**
@@ -951,6 +954,7 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
     대본을 분석하여 위 스타일이 적용된 프롬프트를 작성하십시오.
     - **필수 키워드 포함:** "Photorealistic 8k render, Unreal Engine 5, Cinematic lighting, Funny 2D cartoon face on realistic body, 2D cartoon eyes (white sclera, black dot pupil) on animal, Visual comedy, Meme style collage, Vertical Portrait Composition, Close-up"
     - **상황 연출:** 대본의 심각한 상황(예: 멸종, 전쟁)을 묘사하되, 캐릭터들의 표정은 멍청하거나(Derp) 과장되게 묘사하십시오.
+    - (지문) 같은 부연설명 연출 지시어는 제외한다.
     - **한글**로만 작성하십시오.
         """
 
@@ -1438,7 +1442,7 @@ with st.sidebar:
 - **표정:** 당황, 공포, 혼란, 술에 취한 듯한 '병맛' 표정 강조.
 동물 눈: 털과 몸은 다큐멘터리급 실사지만, 눈만 '흰색 흰자와 검은 점 눈동자'로 된 2D 만화 눈으로 연출.
 분위기: 고퀄리티 다큐멘터리인 척하는 병맛 코미디. 진지한 상황일수록 표정을 더 단순하고 멍청하게(Derp) 연출.
-글씨 연출 전혀 하지 않는다."""
+절대 이미지에 글씨 연출 전혀 하지 않는다."""
 
     # 2. 세션 상태 초기화
     if 'style_prompt_area' not in st.session_state:
@@ -2372,3 +2376,4 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
+
