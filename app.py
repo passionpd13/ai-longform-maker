@@ -39,7 +39,7 @@ st.set_page_config(
 )
 
 # ==========================================
-# [디자인] 다크모드 & Expander/버튼 가독성 최종 수정 (CSS)
+# [디자인] 다크모드 & Expander/버튼/Status 가독성 최종 수정 (CSS)
 # ==========================================
 st.markdown("""
     <style>
@@ -185,6 +185,27 @@ st.markdown("""
     }
     header[data-testid="stHeader"] {
         background-color: #0E1117 !important;
+    }
+
+    /* [10] st.status (작업 진행 상태창) 가독성 해결 (NEW FIX) */
+    [data-testid="stStatusWidget"] {
+        background-color: #1F2128 !important;
+        border: 1px solid #4A4A4A !important;
+    }
+    [data-testid="stStatusWidget"] > div {
+        background-color: #1F2128 !important;
+        color: #FFFFFF !important;
+    }
+    [data-testid="stStatusWidget"] header {
+        background-color: #1F2128 !important;
+    }
+    [data-testid="stStatusWidget"] svg {
+        fill: #FFFFFF !important;
+    }
+    [data-testid="stStatusWidget"] p, 
+    [data-testid="stStatusWidget"] span,
+    [data-testid="stStatusWidget"] summary {
+        color: #FFFFFF !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -810,7 +831,7 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
         - 배경을 하얗게 비워두지 마십시오.
         - 대본 장소에 맞춰 하늘, 땅, 벽, 바닥 등을 단순한 면으로 분할하여 칠하십시오. (예: 파란 하늘과 초록 땅 / 베이지색 벽과 갈색 바닥)
         - 복잡한 질감이나 그라데이션 없이 **깔끔한 단색 채우기(Flat Color Fill)**로 표현하십시오.
-         
+          
     2. **[핵심 - 작화 스타일] '깔끔하고 매끄러운 선(Clean & Smooth Lines)':**
         - **절대 금지:** 마우스로 대충 그린 듯한 삐뚤빼뚤한 선, 거친 스케치 느낌을 배제하십시오.
         - **지향점:** 벡터 이미지처럼 **선이 매끄럽고 정돈되어 있어야 하며**, 두께가 일정하고 깔끔해야 합니다.
