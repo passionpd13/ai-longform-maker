@@ -884,7 +884,7 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
         """
 
     # ---------------------------------------------------------
-    # [모드 6] 실사 + 코믹 페이스 (Hyper Realism + Comic Face) - [NEW!]
+    # [모드 6] 실사 + 코믹 페이스 (Hyper Realism + Comic Face) - [NEW! 수정됨]
     # ---------------------------------------------------------
     elif genre_mode == "comic_realism":
         full_instruction = f"""
@@ -901,15 +901,15 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
         - **배경(Background) & 몸체(Body):** 무조건 **'Unreal Engine 5 Render', '8K Photograph', 'Cinematic Lighting'** 스타일이어야 합니다.
         - 동물의 털, 사람의 옷 주름, 피부 질감, 주변 환경(숲, 도시 등)은 사진처럼 리얼해야 합니다.
 
-    2. **[반전 포인트 1: 사람 (Humans)]:**
+    2. **[반전 포인트 1: 사람 얼굴 (Human Face)]:**
         - 몸과 행동은 진지하고 사실적이지만, **얼굴(Face)만 이질적인 '만화/밈(Meme)' 스타일**이어야 합니다.
-        - **Face Style Keywords:** "2D cartoon face pasted on real body", "Wojak meme face", "Round simplistic emoji face", "Exaggerated shocked expression sketch".
-        - 얼굴이 몸의 퀄리티와 어울리지 않게 단순할수록 좋습니다. (부조화의 미학)
+        - **Face Style Keywords:** "Simple 2D cartoon face pasted on real body", "Meme face", "Round simplistic emoji style", "Exaggerated expression with bold lines".
+        - **큰 흰색 눈, 단순한 검은색 점 눈동자, 단순한 입 모양**의 2D 얼굴을 합성하십시오.
 
-    3. **[반전 포인트 2: 동물 (Animals)]:**
-        - 맘모스, 사자, 공룡 등 위협적인 동물이라도 **눈(Eyes)은 반드시 '우스꽝스러운 만화 눈'**이어야 합니다.
-        - **Eye Style Keywords:** "Googly eyes", "Big round cartoon eyes", "Cross-eyed", "Silly expression".
-        - 몸은 웅장하고 무섭지만, 눈 때문에 하찮아 보여야 합니다.
+    3. **[반전 포인트 2: 동물 눈 (Animal Eyes)]:**
+        - 맘모스, 사자, 공룡 등 위협적인 동물이라도 **눈(Eyes)은 반드시 '단순한 2D 만화 눈'**이어야 합니다.
+        - **Eye Style Keywords:** "2D cartoon eyes", "Simple white sclera with black dot pupils", "Silly expression".
+        - **[참조 스타일]** 제공된 매머드 이미지처럼, 실사 눈 대신 **흰색 흰자와 검은색 점 눈동자로 된 단순한 만화 눈**을 적용하십시오.
 
     4. **조명 및 분위기:** - 조명은 **매우 진지하고 웅장하게(Cinematic & Epic)** 연출하여, 우스꽝스러운 얼굴과 대비를 극대화하십시오.
     
@@ -917,7 +917,7 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
 
     [임무]
     대본을 분석하여 위 스타일이 적용된 프롬프트를 작성하십시오.
-    - **필수 키워드 포함:** "Photorealistic 8k render, Unreal Engine 5, Cinematic lighting, Funny cartoon face on realistic body, Googly eyes on animal, Visual comedy, Meme style collage"
+    - **필수 키워드 포함:** "Photorealistic 8k render, Unreal Engine 5, Cinematic lighting, Funny 2D cartoon face on realistic body, 2D cartoon eyes (white sclera, black dot pupil) on animal, Visual comedy, Meme style collage"
     - **상황 연출:** 대본의 심각한 상황(예: 멸종, 전쟁)을 묘사하되, 캐릭터들의 표정은 멍청하거나(Derp) 과장되게 묘사하십시오.
     - **한글**로만 작성하십시오.
         """
@@ -1395,9 +1395,9 @@ with st.sidebar:
     # [NEW] 코믹 실사 합성 프리셋 (요청하신 스타일)
     PRESET_COMIC_REAL = """Hyper-Realistic Environment with Comic Elements.
 배경과 사물, 사람/동물의 몸체: '언리얼 엔진 5' 수준의 8K 실사(Photorealistic). 털, 피부 질감, 조명 완벽 구현.
-사람 얼굴: 몸은 실사지만 얼굴만 '단순한 만화/밈(Meme) 스타일' 혹은 '이모지'로 합성한 느낌. (우스꽝스러운 표정)
-동물: 털과 몸은 다큐멘터리급 실사지만, 눈만 '구글리 아이즈(Googly Eyes)' 혹은 '만화 눈'으로 연출.
-분위기: 고퀄리티 다큐멘터리인 척하는 병맛 코미디. 진지한 상황일수록 얼굴을 더 웃기게 연출."""
+사람 얼굴: 몸은 실사지만 얼굴만 '단순한 2D 만화'로 합성. (참조: 큰 흰색 눈, 검은 점 눈동자, 굵은 눈썹, 단순한 입).
+동물 눈: 털과 몸은 다큐멘터리급 실사지만, 눈만 '흰색 흰자와 검은 점 눈동자'로 된 2D 만화 눈으로 연출.
+분위기: 고퀄리티 다큐멘터리인 척하는 병맛 코미디. 진지한 상황일수록 표정을 더 단순하고 멍청하게(Derp) 연출."""
 
     # 2. 세션 상태 초기화
     if 'style_prompt_area' not in st.session_state:
