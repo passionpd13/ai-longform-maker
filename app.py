@@ -902,10 +902,12 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
         - 동물의 털, 사람의 옷 주름, 피부 질감, 주변 환경(숲, 도시 등)은 사진처럼 리얼해야 합니다.
 
     2. **[반전 포인트 1: 사람 얼굴 (Human Face)]:**
-        - 몸과 행동은 진지하고 사실적이지만, **얼굴(Face)만 이질적인 '만화/밈(Meme)' 스타일**이어야 합니다.
-        - **Face Style Keywords:** "Simple 2D cartoon face pasted on real body", "Meme face", "Round simplistic emoji style", "Exaggerated expression with bold lines".
-        - **큰 흰색 눈, 단순한 검은색 점 눈동자, 단순한 입 모양**의 2D 얼굴을 합성하십시오.
-
+        - 눈 (Eyes): 완벽한 원형의 흰자위에 작은 점으로 표현된 눈동자(Dot pupils)가 특징입니다. 이는 **'릭 앤 모티(Rick and Morty)'**와 같은 서양 애니메이션에서 당황하거나 멍청해 보이는 표정을 연출할 때 자주 쓰는 기법입니다.
+        - 몸과 행동은 진지하고 사실적이다.
+        - **Face Style Keywords:** "Simple 2D cartoon face pasted on real body", "Exaggerated expression with bold lines".
+        - 윤곽선 (Outlines): 굵기가 일정한 검은색 라인으로 단순하게 처리되었습니다. 명암이나 질감 묘사가 전혀 없는 전형적인 2D 드로잉 방식입니다.
+        - 채색 (Coloring): 그라데이션이나 그림자 없이 단색(Flat color)으로 채워져 있다.
+        
     3. **[반전 포인트 2: 동물 눈 (Animal Eyes)]:**
         - 맘모스, 사자, 공룡 등 위협적인 동물이라도 **눈(Eyes)은 반드시 '단순한 2D 만화 눈'**이어야 합니다.
         - **Eye Style Keywords:** "2D cartoon eyes", "Simple white sclera with black dot pupils", "Silly expression".
@@ -2331,3 +2333,4 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
+
