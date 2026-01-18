@@ -883,6 +883,45 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
     - **한글**로만 출력하십시오.
         """
 
+    # ---------------------------------------------------------
+    # [모드 6] 실사 + 코믹 페이스 (Hyper Realism + Comic Face) - [NEW!]
+    # ---------------------------------------------------------
+    elif genre_mode == "comic_realism":
+        full_instruction = f"""
+    {common_header}
+    [역할]
+    당신은 **'고퀄리티 실사 배경에 우스꽝스러운 합성을 하는 초현실주의 아티스트'**입니다.
+    마치 내셔널 지오그래픽 다큐멘터리 장면에 유머러스한 스티커를 붙인 듯한 '병맛(Bizarre Humor)' 이미지를 만듭니다.
+
+    [전체 영상 주제] "{video_title}"
+    [스타일 가이드] {style_instruction}
+
+    [핵심 비주얼 스타일 가이드 - 절대 준수]
+    1. **[베이스: 극도로 사실적인 실사 (Hyper-Realism)]:**
+        - **배경(Background) & 몸체(Body):** 무조건 **'Unreal Engine 5 Render', '8K Photograph', 'Cinematic Lighting'** 스타일이어야 합니다.
+        - 동물의 털, 사람의 옷 주름, 피부 질감, 주변 환경(숲, 도시 등)은 사진처럼 리얼해야 합니다.
+
+    2. **[반전 포인트 1: 사람 (Humans)]:**
+        - 몸과 행동은 진지하고 사실적이지만, **얼굴(Face)만 이질적인 '만화/밈(Meme)' 스타일**이어야 합니다.
+        - **Face Style Keywords:** "2D cartoon face pasted on real body", "Wojak meme face", "Round simplistic emoji face", "Exaggerated shocked expression sketch".
+        - 얼굴이 몸의 퀄리티와 어울리지 않게 단순할수록 좋습니다. (부조화의 미학)
+
+    3. **[반전 포인트 2: 동물 (Animals)]:**
+        - 맘모스, 사자, 공룡 등 위협적인 동물이라도 **눈(Eyes)은 반드시 '우스꽝스러운 만화 눈'**이어야 합니다.
+        - **Eye Style Keywords:** "Googly eyes", "Big round cartoon eyes", "Cross-eyed", "Silly expression".
+        - 몸은 웅장하고 무섭지만, 눈 때문에 하찮아 보여야 합니다.
+
+    4. **조명 및 분위기:** - 조명은 **매우 진지하고 웅장하게(Cinematic & Epic)** 연출하여, 우스꽝스러운 얼굴과 대비를 극대화하십시오.
+    
+    5. **[텍스트]:** {lang_guide} {lang_example}
+
+    [임무]
+    대본을 분석하여 위 스타일이 적용된 프롬프트를 작성하십시오.
+    - **필수 키워드 포함:** "Photorealistic 8k render, Unreal Engine 5, Cinematic lighting, Funny cartoon face on realistic body, Googly eyes on animal, Visual comedy, Meme style collage"
+    - **상황 연출:** 대본의 심각한 상황(예: 멸종, 전쟁)을 묘사하되, 캐릭터들의 표정은 멍청하거나(Derp) 과장되게 묘사하십시오.
+    - **한글**로만 작성하십시오.
+        """
+
     else: # Fallback
         full_instruction = f"스타일: {style_instruction}. 비율: {target_layout}. 대본 내용: {text_chunk}. 이미지 프롬프트 작성."
 
@@ -1353,6 +1392,13 @@ with st.sidebar:
 연출: 직관적인 사물 표현과 만화적 기호 적극 활용.
 대본의 상황을 잘 나타내게 분활화면으로 말고 하나의 장면으로 연출."""
 
+    # [NEW] 코믹 실사 합성 프리셋 (요청하신 스타일)
+    PRESET_COMIC_REAL = """Hyper-Realistic Environment with Comic Elements.
+배경과 사물, 사람/동물의 몸체: '언리얼 엔진 5' 수준의 8K 실사(Photorealistic). 털, 피부 질감, 조명 완벽 구현.
+사람 얼굴: 몸은 실사지만 얼굴만 '단순한 만화/밈(Meme) 스타일' 혹은 '이모지'로 합성한 느낌. (우스꽝스러운 표정)
+동물: 털과 몸은 다큐멘터리급 실사지만, 눈만 '구글리 아이즈(Googly Eyes)' 혹은 '만화 눈'으로 연출.
+분위기: 고퀄리티 다큐멘터리인 척하는 병맛 코미디. 진지한 상황일수록 얼굴을 더 웃기게 연출."""
+
     # 2. 세션 상태 초기화
     if 'style_prompt_area' not in st.session_state:
         st.session_state['style_prompt_area'] = PRESET_INFO
@@ -1364,6 +1410,7 @@ with st.sidebar:
     OPT_3D = "3D 다큐멘터리 (Realistic 3D Game Style)"
     OPT_SCIFI = "과학/엔지니어링 (3D Tech & Character)"
     OPT_PAINT = "심플 그림판/졸라맨 (The Paint Explainer Style)" # [NEW]
+    OPT_COMIC_REAL = "실사 + 코믹 페이스 (Hyper Realism + Comic Face)" # [NEW]
     OPT_CUSTOM = "직접 입력 (Custom Style)"
 
     # 3. 콜백 함수: 라디오 버튼 변경 시 -> 텍스트 업데이트
@@ -1381,6 +1428,8 @@ with st.sidebar:
             st.session_state['style_prompt_area'] = PRESET_SCIFI
         elif selection == OPT_PAINT: # [NEW]
             st.session_state['style_prompt_area'] = PRESET_PAINT
+        elif selection == OPT_COMIC_REAL: # [NEW]
+            st.session_state['style_prompt_area'] = PRESET_COMIC_REAL
         # "직접 입력" 선택 시에는 텍스트를 변경하지 않음 (사용자 입력 유지)
 
     # 4. 콜백 함수: 텍스트 직접 수정 시 -> 라디오 버튼을 '직접 입력'으로 변경
@@ -1390,7 +1439,7 @@ with st.sidebar:
     # 5. 라디오 버튼
     genre_select = st.radio(
         "콘텐츠 성격 선택:",
-        (OPT_INFO, OPT_REALISTIC, OPT_HISTORY, OPT_3D, OPT_SCIFI, OPT_PAINT, OPT_CUSTOM), # [NEW] 옵션 추가
+        (OPT_INFO, OPT_REALISTIC, OPT_HISTORY, OPT_3D, OPT_SCIFI, OPT_PAINT, OPT_COMIC_REAL, OPT_CUSTOM), # [NEW] 옵션 추가
         index=0,
         key="genre_radio_key",
         on_change=update_text_from_radio,
@@ -1410,6 +1459,8 @@ with st.sidebar:
         SELECTED_GENRE_MODE = "scifi"
     elif genre_select == OPT_PAINT: # [NEW]
         SELECTED_GENRE_MODE = "paint_explainer"
+    elif genre_select == OPT_COMIC_REAL: # [NEW]
+        SELECTED_GENRE_MODE = "comic_realism"
     else:
         # 직접 입력일 경우, 텍스트 내용에 따라 3D인지 2D인지 대략 판단하거나 기본값 설정
         current_text = st.session_state.get('style_prompt_area', "")
@@ -2280,4 +2331,3 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
-
