@@ -31,6 +31,150 @@ except ImportError:
 # ==========================================
 st.set_page_config(page_title="열정피디 AI 유튜브 대본 구조 분석기 (Pro)", layout="wide", page_icon="🎬")
 
+# ==========================================
+# [UI 개선] 테마 및 스타일 설정 (요청 반영)
+# ==========================================
+# 1. 세션 스테이트에 테마 설정 저장
+if 'ui_theme' not in st.session_state:
+    st.session_state['ui_theme'] = 'Dark'  # 기본값
+
+# 2. CSS 주입 함수 (글자 크기 확대 및 테마 적용)
+def apply_custom_style(theme):
+    # 공통 스타일 (글자 크기 확대, 버튼 크기 확대)
+    base_css = """
+    <style>
+        /* 전체 기본 폰트 사이즈 대폭 확대 */
+        html, body, [class*="css"] {
+            font-size: 18px !important; 
+        }
+        
+        /* 헤더 사이즈 확대 */
+        h1 { font-size: 3rem !important; font-weight: 800 !important; }
+        h2 { font-size: 2.4rem !important; font-weight: 700 !important; }
+        h3 { font-size: 2.0rem !important; font-weight: 700 !important; }
+        p, div, label, span { font-size: 1.1rem !important; line-height: 1.6 !important; }
+        
+        /* 버튼 크기 및 텍스트 확대 */
+        .stButton > button {
+            font-size: 1.3rem !important;
+            padding: 0.8rem 1.5rem !important;
+            height: auto !important;
+            font-weight: bold !important;
+            border-radius: 12px !important;
+        }
+        
+        /* 입력창(Input, Textarea) 크기 및 텍스트 확대 */
+        .stTextInput > div > div > input, .stTextArea > div > div > textarea {
+            font-size: 1.2rem !important;
+            padding: 1rem !important;
+            min-height: 50px;
+        }
+        
+        /* 선택박스(Selectbox) 확대 */
+        .stSelectbox > div > div > div {
+            font-size: 1.2rem !important;
+            padding: 0.5rem !important;
+        }
+        
+        /* Expander(접이식 메뉴) 텍스트 확대 */
+        .streamlit-expanderHeader {
+            font-size: 1.3rem !important;
+            font-weight: 600 !important;
+        }
+
+        /* 탭(Tab) 글씨 확대 */
+        .stTabs [data-baseweb="tab"] {
+            font-size: 1.3rem !important;
+            padding: 10px 20px !important;
+        }
+
+        /* 메인 콘텐츠 영역 좌우 여백 확보 및 중앙 정렬 */
+        .block-container {
+            max-width: 95% !important;
+            padding-top: 2rem !important;
+            padding-bottom: 5rem !important;
+        }
+    </style>
+    """
+
+    # 다크 모드용 색상 오버라이드
+    dark_css = """
+    <style>
+        /* 메인 배경 및 텍스트 */
+        .stApp {
+            background-color: #121212 !important;
+            color: #E0E0E0 !important;
+        }
+        /* 사이드바 배경 */
+        [data-testid="stSidebar"] {
+            background-color: #1E1E1E !important;
+        }
+        /* 입력창 배경 */
+        .stTextInput > div > div > input, .stTextArea > div > div > textarea {
+            background-color: #2C2C2C !important;
+            color: #FFFFFF !important;
+            border: 1px solid #444 !important;
+        }
+        /* Expander 배경 */
+        .streamlit-expanderContent {
+            background-color: #1E1E1E !important;
+            color: #E0E0E0 !important;
+        }
+    </style>
+    """
+
+    # 라이트 모드용 색상 오버라이드
+    light_css = """
+    <style>
+        /* 메인 배경 및 텍스트 */
+        .stApp {
+            background-color: #FFFFFF !important;
+            color: #000000 !important;
+        }
+        /* 사이드바 배경 */
+        [data-testid="stSidebar"] {
+            background-color: #F8F9FA !important;
+        }
+        /* 입력창 배경 */
+        .stTextInput > div > div > input, .stTextArea > div > div > textarea {
+            background-color: #FFFFFF !important;
+            color: #000000 !important;
+            border: 1px solid #CCCCCC !important;
+        }
+        /* Expander 배경 */
+        .streamlit-expanderContent {
+            background-color: #FFFFFF !important;
+            color: #000000 !important;
+        }
+    </style>
+    """
+
+    # CSS 적용
+    if theme == 'Dark':
+        st.markdown(base_css + dark_css, unsafe_allow_html=True)
+    else:
+        st.markdown(base_css + light_css, unsafe_allow_html=True)
+
+# 3. 사이드바 최상단에 테마 선택 버튼 배치
+with st.sidebar:
+    st.title("⚙️ 설정")
+    st.subheader("🎨 화면 모드")
+    theme_selection = st.radio(
+        "테마를 선택하세요:",
+        ('Dark', 'Light'),
+        index=0 if st.session_state['ui_theme'] == 'Dark' else 1,
+        horizontal=True
+    )
+    
+    # 선택 변경 시 세션 업데이트 및 스타일 적용
+    if theme_selection != st.session_state['ui_theme']:
+        st.session_state['ui_theme'] = theme_selection
+        st.rerun()
+
+# 4. 스타일 적용 함수 호출
+apply_custom_style(st.session_state['ui_theme'])
+
+
 # 파일 저장 경로 설정
 BASE_PATH = "./web_result_files"
 IMAGE_OUTPUT_DIR = os.path.join(BASE_PATH, "output_images")
@@ -2086,4 +2230,3 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
-
