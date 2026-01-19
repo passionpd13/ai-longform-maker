@@ -1489,7 +1489,7 @@ with st.sidebar:
     # 5. 라디오 버튼 (옵션에 OPT_SKULL 추가)
     genre_select = st.radio(
         "콘텐츠 성격 선택:",
-        (OPT_INFO, OPT_REALISTIC, OPT_HISTORY, OPT_3D, OPT_SCIFI, OPT_PAINT, OPT_COMIC_REAL, OPT_SKULL, OPT_CUSTOM), # <--- OPT_SKULL 추가됨
+        (OPT_INFO, OPT_REALISTIC, OPT_HISTORY, OPT_3D, OPT_SCIFI, OPT_PAINT, OPT_COMIC_REAL, OPT_CUSTOM), # <--- OPT_SKULL 추가됨
         index=0,
         key="genre_radio_key",
         on_change=update_text_from_radio,
@@ -1511,8 +1511,6 @@ with st.sidebar:
         SELECTED_GENRE_MODE = "paint_explainer"
     elif genre_select == OPT_COMIC_REAL: # [NEW]
         SELECTED_GENRE_MODE = "comic_realism"
-    elif genre_select == OPT_SKULL: # [NEW]
-        SELECTED_GENRE_MODE = "pink_skull"
     else:
         # 직접 입력일 경우, 텍스트 내용에 따라 3D인지 2D인지 대략 판단하거나 기본값 설정
         current_text = st.session_state.get('style_prompt_area', "")
@@ -2383,6 +2381,7 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
+
 
 
 
