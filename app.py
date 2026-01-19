@@ -962,6 +962,51 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
     - **한글**로만 작성하십시오.
         """
 
+    # ---------------------------------------------------------
+    # [모드 7] 핑크 3D 해골 (Pink Translucent Skull) - [NEW!]
+    # ---------------------------------------------------------
+    elif genre_mode == "pink_skull":
+        full_instruction = f"""
+    {common_header}
+    [역할]
+    당신은 **'Helix' 채널 스타일의 3D 아티스트**입니다.
+    기괴하지만 유머러스한 **'투명한 플라스틱/유리 재질의 해골'**이 등장하여 대본의 상황을 연기합니다.
+
+    [전체 영상 주제] "{video_title}"
+    [스타일 가이드] {style_instruction}
+
+    [핵심 비주얼 스타일 가이드 - 절대 준수]
+    1. **[필수 - 배경] 무조건 '단색 핑크 배경 (Solid Pink Background)'**:
+        - 배경은 복잡한 풍경이 아니라, **균일한 분홍색(#FFC0CB ~ #FF69B4)** 스튜디오 배경이어야 합니다.
+        - 배경에 그라데이션이나 다른 사물이 많으면 안 됩니다. 오직 핑크색 여백이 강조되어야 합니다.
+
+    2. **[필수 - 캐릭터] 투명/반투명 해골 (Translucent Skeleton)**:
+        - 진짜 뼈보다는 **'투명한 플라스틱'이나 '유리', '젤리' 같은 재질**의 3D 해골 모델입니다.
+        - 징그럽거나 무서운 느낌(호러)이 아니라, **'키치(Kitsch)하고 힙한' 3D 아트토이** 느낌이어야 합니다.
+        - **표정:** 눈알이 튀어나오거나(Googly eyes), 턱이 툭 떨어지는 등 **과장되고 멍청해 보이는(Goofy)** 표정을 연출하십시오.
+
+    3. **[소품 및 연출 - Mukbang/ASMR 스타일]**:
+        - 해골이 대본에 나오는 **음식, 물건, 돈 등을 직접 먹거나 들고 있어야 합니다.**
+        - 소품(과자, 음료수, 기계 등)은 **극도로 사실적(Hyper-realistic)**이고 채도가 높게 묘사하여 핑크 배경과 대비를 주십시오.
+        - 예: "돈을 잃었다" -> 해골이 텅 빈 지갑을 거꾸로 탈탈 털며 입을 벌리고 있음.
+
+    4. **[조명 및 렌더링]**:
+        - **"Blender 3D, Octane Render, High Glossy"**.
+        - 해골의 투명한 재질이 반짝이도록 **밝고 쨍한 스튜디오 조명**을 사용하십시오.
+
+    5. **[텍스트]**: {lang_guide} {lang_example}
+        - 텍스트는 해골 주변에 3D 오브젝트처럼 둥둥 떠있거나, 해골이 들고 있는 팻말에 적혀있게 연출하십시오.
+
+    [9:16 세로 모드 지침]
+    - 해골이 식탁 앞에 앉아 있거나, 화면 가까이 다가온 **'얼박샷(Face Close-up)'** 구도를 잡으십시오.
+    - 해골의 상반신과 손동작이 화면을 꽉 채워야 합니다.
+
+    [임무]
+    대본을 분석하여 위 스타일이 적용된 프롬프트를 작성하십시오.
+    - **필수 키워드:** "3D render, Translucent clear plastic human skeleton, Solid Pink background, Studio lighting, High fidelity, Surreal, Pop art style"
+    - **한글**로만 작성하십시오.
+        """
+
     else: # Fallback
         full_instruction = f"스타일: {style_instruction}. 비율: {target_layout}. 대본 내용: {text_chunk}. 이미지 프롬프트 작성."
 
@@ -1448,6 +1493,15 @@ with st.sidebar:
 분위기: 고퀄리티 다큐멘터리인 척하는 병맛 코미디. 진지한 상황일수록 표정을 더 단순하고 멍청하게(Derp) 연출.
 절대 이미지에 글씨 연출 전혀 하지 않는다."""
 
+    # [NEW] 핑크 해골 프리셋 (Helix Style)
+    PRESET_SKULL = """3D Render, Translucent Plastic Skeleton, Solid Pink Background.
+배경: 무조건 '단색 핑크(Solid Pink)' 배경 유지. 복잡한 배경 금지.
+캐릭터: 투명하거나 반투명한 재질(유리/플라스틱)의 리얼한 3D 해골.
+분위기: 엽기적이고 유머러스하며, 키치(Kitsch)한 3D 아트 스타일. 공포물 아님.
+연출: 해골이 대본 속 소재(음식, 돈, 게임기 등)를 먹거나 사용하는 '먹방/ASMR' 구도.
+조명: 재질이 반짝이는 고광택 스튜디오 조명.
+9:16 비율 시 해골이 화면 앞으로 다가온 클로즈업 구도."""
+
     # 2. 세션 상태 초기화
     if 'style_prompt_area' not in st.session_state:
         st.session_state['style_prompt_area'] = PRESET_INFO
@@ -1461,6 +1515,7 @@ with st.sidebar:
     OPT_PAINT = "심플 그림판/졸라맨 (The Paint Explainer Style)" # [NEW]
     OPT_COMIC_REAL = "실사 + 코믹 페이스 (Hyper Realism + Comic Face)" # [NEW]
     OPT_CUSTOM = "직접 입력 (Custom Style)"
+    OPT_SKULL = "핑크 3D 해골 (Helix Style Pink Skeleton)"
 
     # 3. 콜백 함수: 라디오 버튼 변경 시 -> 텍스트 업데이트
     def update_text_from_radio():
@@ -1479,16 +1534,18 @@ with st.sidebar:
             st.session_state['style_prompt_area'] = PRESET_PAINT
         elif selection == OPT_COMIC_REAL: # [NEW]
             st.session_state['style_prompt_area'] = PRESET_COMIC_REAL
+        elif selection == OPT_SKULL: # [NEW]
+            st.session_state['style_prompt_area'] = PRESET_SKULL
         # "직접 입력" 선택 시에는 텍스트를 변경하지 않음 (사용자 입력 유지)
 
     # 4. 콜백 함수: 텍스트 직접 수정 시 -> 라디오 버튼을 '직접 입력'으로 변경
     def set_radio_to_custom():
         st.session_state.genre_radio_key = OPT_CUSTOM
 
-    # 5. 라디오 버튼
+    # 5. 라디오 버튼 (옵션에 OPT_SKULL 추가)
     genre_select = st.radio(
         "콘텐츠 성격 선택:",
-        (OPT_INFO, OPT_REALISTIC, OPT_HISTORY, OPT_3D, OPT_SCIFI, OPT_PAINT, OPT_COMIC_REAL, OPT_CUSTOM), # [NEW] 옵션 추가
+        (OPT_INFO, OPT_REALISTIC, OPT_HISTORY, OPT_3D, OPT_SCIFI, OPT_PAINT, OPT_COMIC_REAL, OPT_SKULL, OPT_CUSTOM), # <--- OPT_SKULL 추가됨
         index=0,
         key="genre_radio_key",
         on_change=update_text_from_radio,
@@ -1510,6 +1567,8 @@ with st.sidebar:
         SELECTED_GENRE_MODE = "paint_explainer"
     elif genre_select == OPT_COMIC_REAL: # [NEW]
         SELECTED_GENRE_MODE = "comic_realism"
+    elif genre_select == OPT_SKULL: # [NEW]
+        SELECTED_GENRE_MODE = "pink_skull"
     else:
         # 직접 입력일 경우, 텍스트 내용에 따라 3D인지 2D인지 대략 판단하거나 기본값 설정
         current_text = st.session_state.get('style_prompt_area', "")
@@ -2380,6 +2439,7 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
+
 
 
 
