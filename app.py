@@ -963,7 +963,7 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
         """
 
     # ---------------------------------------------------------
-    # [모드 7] 핑크 3D 해골 (Pink Translucent Skull) - [NEW!]
+    # [모드 7] 핑크 3D 해골 (Pink Translucent Skull) - [UPDATED!]
     # ---------------------------------------------------------
     elif genre_mode == "pink_skull":
         full_instruction = f"""
@@ -978,32 +978,35 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
     [핵심 비주얼 스타일 가이드 - 절대 준수]
     1. **[필수 - 배경] 무조건 '단색 핑크 배경 (Solid Pink Background)'**:
         - 배경은 복잡한 풍경이 아니라, **균일한 분홍색(#FFC0CB ~ #FF69B4)** 스튜디오 배경이어야 합니다.
-        - 배경에 그라데이션이나 다른 사물이 많으면 안 됩니다. 오직 핑크색 여백이 강조되어야 합니다.
+        - 가구(소파, 의자) 외에는 배경에 불필요한 사물을 두지 마십시오.
 
     2. **[필수 - 캐릭터] 투명/반투명 해골 (Translucent Skeleton)**:
-        - 진짜 뼈보다는 **'투명한 플라스틱'이나 '유리', '젤리' 같은 재질**의 3D 해골 모델입니다.
-        - 징그럽거나 무서운 느낌(호러)이 아니라, **'키치(Kitsch)하고 힙한' 3D 아트토이** 느낌이어야 합니다.
-        - **표정:** 눈알이 튀어나오거나(Googly eyes), 턱이 툭 떨어지는 등 **과장되고 멍청해 보이는(Goofy)** 표정을 연출하십시오.
+        - **재질:** 겉은 매끄러운 투명 플라스틱/유리 재질이지만, **'내부의 뼈 구조(Internal Bone Structure)'**가 은은하고 디테일하게 비쳐 보여야 합니다. (단순한 투명 덩어리 X)
+        - **눈(Eyes):** 해골의 눈구멍에 **'장난감 같은 눈알(Googly Eyes)'**이나 **'선명한 눈동자'**가 반드시 있어야 합니다. 
+        - 표정: 눈알이 튀어나오거나, 턱이 빠질 듯 놀라거나, 멍청해 보이는(Goofy) 표정을 지으십시오.
 
-    3. **[소품 및 연출 - Mukbang/ASMR 스타일]**:
-        - 해골이 대본에 나오는 **음식, 물건, 돈 등을 직접 먹거나 들고 있어야 합니다.**
-        - 소품(과자, 음료수, 기계 등)은 **극도로 사실적(Hyper-realistic)**이고 채도가 높게 묘사하여 핑크 배경과 대비를 주십시오.
-        - 예: "돈을 잃었다" -> 해골이 텅 빈 지갑을 거꾸로 탈탈 털며 입을 벌리고 있음.
+    3. **[필수 - 자세 및 가구 (Pose & Furniture)]**:
+        - **기본 자세:** 해골은 공중에 떠 있는 것이 아니라, **'푹신한 소파(Sofa)', '고급 가죽 의자', '책상(Desk)'** 등에 **앉아 있는(Sitting)** 구도를 우선적으로 사용하십시오.
+        - 상황이 역동적일 때만 서 있거나(Standing) 움직이는 자세를 취하십시오.
+        - 가구 묘사: 소파의 주름, 책상의 나무 질감 등 가구는 매우 사실적(Photorealistic)이어야 합니다.
 
-    4. **[조명 및 렌더링]**:
-        - **"Blender 3D, Octane Render, High Glossy"**.
-        - 해골의 투명한 재질이 반짝이도록 **밝고 쨍한 스튜디오 조명**을 사용하십시오.
+    4. **[소품 및 연출]**:
+        - 해골이 대본에 나오는 **음식, 돈, 스마트폰, 게임기 등을 손에 들고 있거나 책상 위에 올려두어야 합니다.**
+        - 소품은 핑크 배경과 대비되는 **채도 높은 색상**으로 사실적으로 묘사하십시오.
 
-    5. **[텍스트]**: {lang_guide} {lang_example}
-        - 텍스트는 해골 주변에 3D 오브젝트처럼 둥둥 떠있거나, 해골이 들고 있는 팻말에 적혀있게 연출하십시오.
+    5. **[조명 및 렌더링]**:
+        - **"Blender 3D, Octane Render, High Glossy, Subsurface Scattering"**.
+        - 해골의 투명한 재질과 눈알이 반짝이도록 **밝고 쨍한 스튜디오 조명**을 사용하십시오.
+
+    6. **[텍스트]**: {lang_guide} {lang_example}
+        - 텍스트는 해골 옆 공간이나, 해골이 들고 있는 팻말에 자연스럽게 배치하십시오.
 
     [9:16 세로 모드 지침]
-    - 해골이 식탁 앞에 앉아 있거나, 화면 가까이 다가온 **'얼박샷(Face Close-up)'** 구도를 잡으십시오.
-    - 해골의 상반신과 손동작이 화면을 꽉 채워야 합니다.
+    - 해골이 의자에 앉아 있는 모습이 잘리거나 작아 보이지 않게, **'무릎 위 상반신(Medium Shot)'**이나 **'얼굴과 상체(Close-up)'** 위주로 꽉 차게 잡으십시오.
 
     [임무]
     대본을 분석하여 위 스타일이 적용된 프롬프트를 작성하십시오.
-    - **필수 키워드:** "3D render, Translucent clear plastic human skeleton, Solid Pink background, Studio lighting, High fidelity, Surreal, Pop art style"
+    - **필수 키워드:** "3D render, Translucent clear plastic human skeleton with visible internal bones, Funny Googly eyes, Sitting on a sofa/chair, Solid Pink background, Studio lighting"
     - **한글**로만 작성하십시오.
         """
 
@@ -1493,14 +1496,18 @@ with st.sidebar:
 분위기: 고퀄리티 다큐멘터리인 척하는 병맛 코미디. 진지한 상황일수록 표정을 더 단순하고 멍청하게(Derp) 연출.
 절대 이미지에 글씨 연출 전혀 하지 않는다."""
 
-    # [NEW] 핑크 해골 프리셋 (Helix Style)
+    # [NEW] 핑크 해골 프리셋 (Helix Style - Updated)
     PRESET_SKULL = """3D Render, Translucent Plastic Skeleton, Solid Pink Background.
-배경: 무조건 '단색 핑크(Solid Pink)' 배경 유지. 복잡한 배경 금지.
-캐릭터: 투명하거나 반투명한 재질(유리/플라스틱)의 리얼한 3D 해골.
-분위기: 엽기적이고 유머러스하며, 키치(Kitsch)한 3D 아트 스타일. 공포물 아님.
-연출: 해골이 대본 속 소재(음식, 돈, 게임기 등)를 먹거나 사용하는 '먹방/ASMR' 구도.
-조명: 재질이 반짝이는 고광택 스튜디오 조명.
-9:16 비율 시 해골이 화면 앞으로 다가온 클로즈업 구도."""
+[캐릭터 외형]
+- 재질: 투명한 플라스틱/유리(Translucent Clear Plastic). 속이 투명하지만 **내부 뼈대의 구조와 윤곽**은 뚜렷하게 보여야 함.
+- **눈(Eyes):** 텅 빈 눈구멍이 절대 아님. **'튀어나올 듯한 큰 눈알(Googly Eyes/Pop-out eyes)'**이 박혀 있어야 하며, 멍청하고 우스꽝스러운 표정 필수.
+[자세 및 연출]
+- **자세(Pose):** 기본적으로 **'소파(Sofa)'나 '책상(Desk) 의자'에 앉아있는(Sitting)'** 모습 위주. (상황에 따라 서 있거나 춤추는 연출 가능).
+- 거만하거나 힙(Hip)하게 걸터앉은 자세.
+[소품 및 배경]
+- 가구: 벨벳 소파, 게이밍 의자, 고급 책상 등 가구의 디테일한 묘사.
+- 소품: 대본 속 물건(돈, 음식, 기계)을 사실적으로 표현.
+- 배경: 무조건 **'단색 핑크(Solid Pink)'** 유지."""
 
     # 2. 세션 상태 초기화
     if 'style_prompt_area' not in st.session_state:
@@ -2439,6 +2446,7 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
+
 
 
 
