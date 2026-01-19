@@ -565,9 +565,7 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
     [❗❗ 9:16 세로 화면 필수 지침 (Vertical Mode) ❗❗]
     1. **구도(Composition):** 가로로 넓은 풍경(Landscape)을 절대 그리지 마십시오.
     2. **배치(Placement):** 피사체는 화면 중앙에 수직으로 배치되어야 합니다. (위아래로 길게)
-    3. **거리(Distance):** 카메라를 피사체에 가까이 가져가십시오(Close-up / Medium Shot). 
-       - 전신(Full body)을 그릴 경우 캐릭터가 너무 작아집니다. **무릎 위(Knee-up)나 허리 위(Waist-up)**로 잘라서 캐릭터가 화면에 꽉 차게 그리십시오.
-    4. **치타/동물 예시:** 동물이 달리는 장면이라면, 옆모습(Side view) 대신 **정면에서 달려오는 모습(Front view)**이나 대각선 구도를 사용하여 세로 화면을 채우십시오.
+    3. **치타/동물 예시:** 동물이 달리는 장면이라면, 옆모습(Side view) 대신 **정면에서 달려오는 모습(Front view)**을 구도를 사용하여 세로 화면을 채우십시오.
         """
 
     # 공통 헤더 (모든 모드에 주입)
@@ -942,7 +940,12 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
     
     5. **[텍스트]:** {lang_guide} {lang_example}
         - [필수] 텍스트는 간판 이런게 아닌이상 거의 연출하지 않는다. 특히 그래픽 같이 자연스럽지 않게 텍스트는 절대 나오지 않는다.
-        - 말풍선선 연출하지 않는다.
+        - 말풍선 연출하지 않는다.
+
+    [🎭 대본 연출 및 행동 지침 (Action & Storytelling) - 중요]
+    캐릭터가 단순히 서 있는 정적인 장면은 피하십시오. **대본 내용을 '온몸으로' 연기해야 합니다.**
+    - 캐릭터의 **몸(Body)**은 헐리우드 액션 영화나 비극적인 다큐멘터리 주인공처럼 **매우 진지하고 역동적인 포즈**를 취해야 합니다. (예: 절규하며 무릎 꿇기, 다급하게 도망치기, 비장하게 지휘하기)
+    - 대본을 표현하는 동물들의 행동 연출 극대화.
 
     [🚨 9:16 세로 모드 필수 지침 (Vertical Layout) 🚨]
     - **환경(Environment)보다 캐릭터(Character)가 우선입니다.**
@@ -2377,6 +2380,7 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
+
 
 
 
