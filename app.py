@@ -522,7 +522,7 @@ def analyze_character_image(api_key, image_bytes):
 # ==========================================
 # [함수] 프롬프트 생성 (수정됨: 9:16 세로 최적화 강화)
 # ==========================================
-def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, genre_mode="info", target_language="Korean", character_desc="", target_layout="16:9 와이드 비율"):
+def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, genre_mode="info", target_language="Korean", character_desc="", target_layout="16:9 와이드 시네마틱 비율"):
     scene_num = index + 1
     url = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_TEXT_MODEL_NAME}:generateContent?key={api_key}"
     headers = {'Content-Type': 'application/json'}
@@ -565,7 +565,9 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
     [❗❗ 9:16 세로 화면 필수 지침 (Vertical Mode) ❗❗]
     1. **구도(Composition):** 가로로 넓은 풍경(Landscape)을 절대 그리지 마십시오.
     2. **배치(Placement):** 피사체는 화면 중앙에 수직으로 배치되어야 합니다. (위아래로 길게)
-    3. **치타/동물 예시:** 동물이 달리는 장면이라면, 옆모습(Side view) 대신 **정면에서 달려오는 모습(Front view)**을 구도를 사용하여 세로 화면을 채우십시오.
+    3. **거리(Distance):** 카메라를 피사체에 가까이 가져가십시오(Close-up / Medium Shot). 
+       - 전신(Full body)을 그릴 경우 캐릭터가 너무 작아집니다. **무릎 위(Knee-up)나 허리 위(Waist-up)**로 잘라서 캐릭터가 화면에 꽉 차게 그리십시오.
+    4. **치타/동물 예시:** 동물이 달리는 장면이라면, 옆모습(Side view) 대신 **정면에서 달려오는 모습(Front view)**이나 대각선 구도를 사용하여 세로 화면을 채우십시오.
         """
 
     # 공통 헤더 (모든 모드에 주입)
@@ -661,7 +663,7 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
         - 감정 표현: 얼굴 표정은 단순하게 가되, **어깨의 처짐, 주먹 쥔 손, 다급한 달리기, 무릎 꿇기 등 '몸짓(Body Language)'**으로 감정을 전달하십시오.
 
     5. **언어(Text):** {lang_guide} {lang_example} (자막 연출보다는 배경 속 간판, 서류, 화면 등 자연스러운 텍스트 위주로)
-    6. **구도:** 분할 화면(Split Screen) 금지. **{target_layout}** 꽉 찬 구도 사용.
+    6. **구도:** 분할 화면(Split Screen) 금지. **{target_layout}** 꽉 찬 시네마틱 구도 사용.
 
     [임무]
     제공된 대본 조각(Script Segment)을 읽고, 그 상황을 가장 잘 보여주는 **한 장면의 영화 스틸컷** 같은 프롬프트를 작성하십시오.
@@ -741,10 +743,8 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
     대본 내용이 비극적이거나 폭력적일 경우, 반드시 아래의 **부드러운 상징물**로 대체하여 묘사하십시오.
     
     [출력 형식]
-    - **무조건 한국어**로만 작성하십시오.
+    - **무조건 한국어(한글)**로만 작성하십시오.
     - 부가적인 설명 없이 **오직 프롬프트 텍스트만** 출력하십시오.
-    - (지문) 같은 부연설명 연출 지시어는 제외한다.
-
     - 프롬프트에 '얼굴이 둥근 2d 스틱맨' 무조건 들어간다.
         """
 
@@ -797,7 +797,6 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
     [출력 형식]
     - **무조건 한국어(한글)**로만 작성하십시오. (단, Unreal Engine 5 같은 핵심 영단어는 혼용 가능)
     - 부가 설명 없이 **오직 프롬프트 텍스트만** 출력하십시오.
-    - (지문) 같은 부연설명 연출 지시어는 제외한다.
         """
         
     # ---------------------------------------------------------
@@ -939,26 +938,19 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
     4. **조명 및 분위기:** - 조명은 **매우 진지하고 웅장하게(Cinematic & Epic)** 연출하여, 우스꽝스러운 얼굴과 대비를 극대화하십시오.
     
     5. **[텍스트]:** {lang_guide} {lang_example}
-        - [필수] 텍스트는 간판 이런게 아닌이상 거의 연출하지 않는다. 특히 그래픽 같이 자연스럽지 않게 텍스트는 절대 나오지 않는다.
-        - 말풍선 연출하지 않는다.
-
-    [🎭 대본 연출 및 행동 지침 (Action & Storytelling) - 중요]
-    캐릭터가 단순히 서 있는 정적인 장면은 피하십시오. **대본 내용을 '온몸으로' 연기해야 합니다.**
-    - 캐릭터의 **몸(Body)**은 헐리우드 액션 영화나 비극적인 다큐멘터리 주인공처럼 **매우 진지하고 역동적인 포즈**를 취해야 합니다. (예: 절규하며 무릎 꿇기, 다급하게 도망치기, 비장하게 지휘하기)
-    - 대본을 표현하는 동물들의 행동 연출 극대화.
+        - 텍스트는 간판 이런게 아닌이상 거의 연출하지 않는다. 특히 그래픽 같이 자연스럽지 않게 텍스트는 절대 나오지 않는다.
 
     [🚨 9:16 세로 모드 필수 지침 (Vertical Layout) 🚨]
     - **환경(Environment)보다 캐릭터(Character)가 우선입니다.**
     - 광활한 초원을 멀리서 찍지 마십시오. (캐릭터가 점으로 보이면 실패입니다.)
     - **구도:** 카메라 렌즈를 캐릭터 코앞까지 가져오십시오 (Extreme Close-up / Selfie angle).
-    - **치타/동물:** 동물이 화면 밖으로 튀어나올 듯이 **정면으로 달려오는 구도**나, **얼굴이 화면에 적당히 차는 구도**를 묘사하십시오.
-    - 배경은 캐릭터 뒤로 흐릿하게 날아가거나(Depth of field), 위아래로 뻗은 나무/건물/빙하/우주/눈/도시 등을 이용해 수직감을 주십시오.
+    - **치타/동물:** 동물이 화면 밖으로 튀어나올 듯이 **정면으로 달려오는 구도**나, **얼굴이 화면에 꽉 차는 구도**를 묘사하십시오.
+    - 배경은 캐릭터 뒤로 흐릿하게 날아가거나(Depth of field), 위아래로 뻗은 나무/건물 등을 이용해 수직감을 주십시오.
 
     [임무]
     대본을 분석하여 위 스타일이 적용된 프롬프트를 작성하십시오.
     - **필수 키워드 포함:** "Photorealistic 8k render, Unreal Engine 5, Cinematic lighting, Funny 2D cartoon face on realistic body, 2D cartoon eyes (white sclera, black dot pupil) on animal, Visual comedy, Meme style collage, Vertical Portrait Composition, Close-up"
     - **상황 연출:** 대본의 심각한 상황(예: 멸종, 전쟁)을 묘사하되, 캐릭터들의 표정은 멍청하거나(Derp) 과장되게 묘사하십시오.
-    - (지문) 같은 부연설명 연출 지시어는 제외한다.
     - **한글**로만 작성하십시오.
         """
 
@@ -1378,7 +1370,7 @@ with st.sidebar:
         """
     else:
         TARGET_RATIO = "16:9"
-        LAYOUT_KOREAN = "16:9 와이드 비율."
+        LAYOUT_KOREAN = "16:9 와이드 시네마틱 비율, 영화 스크린 구도."
 
     st.markdown("---")
     st.subheader("⏱️ 장면 분할 설정")
@@ -1446,8 +1438,7 @@ with st.sidebar:
 - **표정:** 당황, 공포, 혼란, 술에 취한 듯한 '병맛' 표정 강조.
 동물 눈: 털과 몸은 다큐멘터리급 실사지만, 눈만 '흰색 흰자와 검은 점 눈동자'로 된 2D 만화 눈으로 연출.
 분위기: 고퀄리티 다큐멘터리인 척하는 병맛 코미디. 진지한 상황일수록 표정을 더 단순하고 멍청하게(Derp) 연출.
-절대 이미지에 글씨 연출 전혀 하지 않는다."""
-
+글씨 연출 전혀 하지 않는다."""
 
     # 2. 세션 상태 초기화
     if 'style_prompt_area' not in st.session_state:
@@ -1486,10 +1477,10 @@ with st.sidebar:
     def set_radio_to_custom():
         st.session_state.genre_radio_key = OPT_CUSTOM
 
-    # 5. 라디오 버튼 (옵션에 OPT_SKULL 추가)
+    # 5. 라디오 버튼
     genre_select = st.radio(
         "콘텐츠 성격 선택:",
-        (OPT_INFO, OPT_REALISTIC, OPT_HISTORY, OPT_3D, OPT_SCIFI, OPT_PAINT, OPT_COMIC_REAL, OPT_CUSTOM), # <--- OPT_SKULL 추가됨
+        (OPT_INFO, OPT_REALISTIC, OPT_HISTORY, OPT_3D, OPT_SCIFI, OPT_PAINT, OPT_COMIC_REAL, OPT_CUSTOM), # [NEW] 옵션 추가
         index=0,
         key="genre_radio_key",
         on_change=update_text_from_radio,
@@ -2381,13 +2372,3 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
-
-
-
-
-
-
-
-
-
-
