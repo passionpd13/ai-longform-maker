@@ -962,55 +962,6 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
     - **한글**로만 작성하십시오.
         """
 
-    # ---------------------------------------------------------
-    # [모드 7] 핑크 3D 해골 (Pink Translucent Skull) - [UPDATED!]
-    # ---------------------------------------------------------
-    elif genre_mode == "pink_skull":
-        full_instruction = f"""
-    {common_header}
-    [역할]
-    당신은 **'Helix' 채널 스타일의 3D 아티스트**입니다.
-    기괴하지만 유머러스한 **'투명한 플라스틱/유리 재질의 해골'**이 등장하여 대본의 상황을 연기합니다.
-
-    [전체 영상 주제] "{video_title}"
-    [스타일 가이드] {style_instruction}
-
-    [핵심 비주얼 스타일 가이드 - 절대 준수]
-    1. **[필수 - 배경] 무조건 '단색 핑크 배경 (Solid Pink Background)'**:
-        - 배경은 복잡한 풍경이 아니라, **균일한 분홍색(#FFC0CB ~ #FF69B4)** 스튜디오 배경이어야 합니다.
-        - 가구(소파, 의자) 외에는 배경에 불필요한 사물을 두지 마십시오.
-
-    2. **[필수 - 캐릭터] 투명/반투명 해골 (Translucent Skeleton)**:
-        - **재질:** 겉은 매끄러운 투명 플라스틱/유리 재질이지만, **'내부의 뼈 구조(Internal Bone Structure)'**가 은은하고 디테일하게 비쳐 보여야 합니다. (단순한 투명 덩어리 X)
-        - **눈(Eyes) - 가장 중요:** - 해골의 눈구멍이 비어있으면 절대 안 됩니다. 
-            - 반드시 **'선명한 하얀색 눈알(Bright White Eyeballs)'**을 끼워 넣으십시오.
-            - 눈알 위에는 **작은 검은색 동공(Small Black Pupils)**을 그려 넣어, **멍청하거나(Goofy) 놀란 표정**을 명확히 만드십시오.
-
-    3. **[필수 - 자세 및 가구 (Pose & Furniture)]**:
-        - **기본 자세:** 해골은 공중에 떠 있는 것이 아니라, **'푹신한 소파(Sofa)', '고급 가죽 의자', '책상(Desk)'** 등에 **앉아 있는(Sitting)** 구도를 우선적으로 사용하십시오.
-        - 상황이 역동적일 때만 서 있거나(Standing) 움직이는 자세를 취하십시오.
-        - 가구 묘사: 소파의 주름, 책상의 나무 질감 등 가구는 매우 사실적(Photorealistic)이어야 합니다.
-
-    4. **[소품 및 연출]**:
-        - 해골이 대본에 나오는 **음식, 돈, 스마트폰, 게임기 등을 손에 들고 있거나 책상 위에 올려두어야 합니다.**
-        - 소품은 핑크 배경과 대비되는 **채도 높은 색상**으로 사실적으로 묘사하십시오.
-
-    5. **[조명 및 렌더링]**:
-        - **"Blender 3D, Octane Render, High Glossy, Subsurface Scattering"**.
-        - 해골의 투명한 재질과 눈알이 반짝이도록 **밝고 쨍한 스튜디오 조명**을 사용하십시오.
-
-    6. **[텍스트]**: {lang_guide} {lang_example}
-        - 텍스트는 해골 옆 공간이나, 해골이 들고 있는 팻말에 자연스럽게 배치하십시오.
-
-    [9:16 세로 모드 지침]
-    - 해골이 의자에 앉아 있는 모습이 잘리거나 작아 보이지 않게, **'무릎 위 상반신(Medium Shot)'**이나 **'얼굴과 상체(Close-up)'** 위주로 꽉 차게 잡으십시오.
-
-    [임무]
-    대본을 분석하여 위 스타일이 적용된 프롬프트를 작성하십시오.
-    - **필수 키워드:** "3D render, Translucent clear plastic human skeleton with visible internal bones, Funny Googly eyes, Sitting on a sofa/chair, Solid Pink background, Studio lighting"
-    - **한글**로만 작성하십시오.
-        """
-
     else: # Fallback
         full_instruction = f"스타일: {style_instruction}. 비율: {target_layout}. 대본 내용: {text_chunk}. 이미지 프롬프트 작성."
 
@@ -1497,17 +1448,6 @@ with st.sidebar:
 분위기: 고퀄리티 다큐멘터리인 척하는 병맛 코미디. 진지한 상황일수록 표정을 더 단순하고 멍청하게(Derp) 연출.
 절대 이미지에 글씨 연출 전혀 하지 않는다."""
 
-    # [NEW] 핑크 해골 프리셋 (Helix Style - Updated)
-    PRESET_SKULL = """3D Render, Translucent Plastic Skeleton, Solid Pink Background.
-[캐릭터 외형]
-- 재질: 투명한 플라스틱/유리(Translucent Clear Plastic). 속이 투명하지만 **내부 뼈대의 구조와 윤곽**은 뚜렷하게 보여야 함.
-- **눈(Eyes):** 텅 빈 눈구멍 절대 금지. **'선명하고 하얀 눈동자(Bright White Eyeballs)'**가 박혀 있어야 함. (검은색 작은 동공). 멍청하고 우스꽝스러운 표정 필수.[자세 및 연출]
-- **자세(Pose):** 기본적으로 **'소파(Sofa)'나 '책상(Desk) 의자'에 앉아있는(Sitting)'** 모습 위주. (상황에 따라 서 있거나 춤추는 연출 가능).
-- 거만하거나 힙(Hip)하게 걸터앉은 자세.
-[소품 및 배경]
-- 가구: 벨벳 소파, 게이밍 의자, 고급 책상 등 가구의 디테일한 묘사.
-- 소품: 대본 속 물건(돈, 음식, 기계)을 사실적으로 표현.
-- 배경: 무조건 **'단색 핑크(Solid Pink)'** 유지."""
 
     # 2. 세션 상태 초기화
     if 'style_prompt_area' not in st.session_state:
@@ -1522,7 +1462,6 @@ with st.sidebar:
     OPT_PAINT = "심플 그림판/졸라맨 (The Paint Explainer Style)" # [NEW]
     OPT_COMIC_REAL = "실사 + 코믹 페이스 (Hyper Realism + Comic Face)" # [NEW]
     OPT_CUSTOM = "직접 입력 (Custom Style)"
-    OPT_SKULL = "핑크 3D 해골 (Helix Style Pink Skeleton)"
 
     # 3. 콜백 함수: 라디오 버튼 변경 시 -> 텍스트 업데이트
     def update_text_from_radio():
@@ -1541,8 +1480,6 @@ with st.sidebar:
             st.session_state['style_prompt_area'] = PRESET_PAINT
         elif selection == OPT_COMIC_REAL: # [NEW]
             st.session_state['style_prompt_area'] = PRESET_COMIC_REAL
-        elif selection == OPT_SKULL: # [NEW]
-            st.session_state['style_prompt_area'] = PRESET_SKULL
         # "직접 입력" 선택 시에는 텍스트를 변경하지 않음 (사용자 입력 유지)
 
     # 4. 콜백 함수: 텍스트 직접 수정 시 -> 라디오 버튼을 '직접 입력'으로 변경
@@ -2446,6 +2383,7 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
+
 
 
 
