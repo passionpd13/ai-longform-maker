@@ -982,8 +982,9 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
 
     2. **[필수 - 캐릭터] 투명/반투명 해골 (Translucent Skeleton)**:
         - **재질:** 겉은 매끄러운 투명 플라스틱/유리 재질이지만, **'내부의 뼈 구조(Internal Bone Structure)'**가 은은하고 디테일하게 비쳐 보여야 합니다. (단순한 투명 덩어리 X)
-        - **눈(Eyes):** 해골의 눈구멍에 **'장난감 같은 눈알(Googly Eyes)'**이나 **'선명한 눈동자'**가 반드시 있어야 합니다. 
-        - 표정: 눈알이 튀어나오거나, 턱이 빠질 듯 놀라거나, 멍청해 보이는(Goofy) 표정을 지으십시오.
+        - **눈(Eyes) - 가장 중요:** - 해골의 눈구멍이 비어있으면 절대 안 됩니다. 
+            - 반드시 **'선명한 하얀색 눈알(Bright White Eyeballs)'**을 끼워 넣으십시오.
+            - 눈알 위에는 **작은 검은색 동공(Small Black Pupils)**을 그려 넣어, **멍청하거나(Goofy) 놀란 표정**을 명확히 만드십시오.
 
     3. **[필수 - 자세 및 가구 (Pose & Furniture)]**:
         - **기본 자세:** 해골은 공중에 떠 있는 것이 아니라, **'푹신한 소파(Sofa)', '고급 가죽 의자', '책상(Desk)'** 등에 **앉아 있는(Sitting)** 구도를 우선적으로 사용하십시오.
@@ -1500,8 +1501,7 @@ with st.sidebar:
     PRESET_SKULL = """3D Render, Translucent Plastic Skeleton, Solid Pink Background.
 [캐릭터 외형]
 - 재질: 투명한 플라스틱/유리(Translucent Clear Plastic). 속이 투명하지만 **내부 뼈대의 구조와 윤곽**은 뚜렷하게 보여야 함.
-- **눈(Eyes):** 텅 빈 눈구멍이 절대 아님. **'튀어나올 듯한 큰 눈알(Googly Eyes/Pop-out eyes)'**이 박혀 있어야 하며, 멍청하고 우스꽝스러운 표정 필수.
-[자세 및 연출]
+- **눈(Eyes):** 텅 빈 눈구멍 절대 금지. **'선명하고 하얀 눈동자(Bright White Eyeballs)'**가 박혀 있어야 함. (검은색 작은 동공). 멍청하고 우스꽝스러운 표정 필수.[자세 및 연출]
 - **자세(Pose):** 기본적으로 **'소파(Sofa)'나 '책상(Desk) 의자'에 앉아있는(Sitting)'** 모습 위주. (상황에 따라 서 있거나 춤추는 연출 가능).
 - 거만하거나 힙(Hip)하게 걸터앉은 자세.
 [소품 및 배경]
@@ -2446,6 +2446,7 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
+
 
 
 
