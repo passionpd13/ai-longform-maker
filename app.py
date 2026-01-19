@@ -522,7 +522,7 @@ def analyze_character_image(api_key, image_bytes):
 # ==========================================
 # [함수] 프롬프트 생성 (수정됨: 9:16 세로 최적화 강화)
 # ==========================================
-def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, genre_mode="info", target_language="Korean", character_desc="", target_layout="16:9 와이드 시네마틱 비율"):
+def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, genre_mode="info", target_language="Korean", character_desc="", target_layout="16:9 와이드 비율"):
     scene_num = index + 1
     url = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_TEXT_MODEL_NAME}:generateContent?key={api_key}"
     headers = {'Content-Type': 'application/json'}
@@ -661,7 +661,7 @@ def generate_prompt(api_key, index, text_chunk, style_instruction, video_title, 
         - 감정 표현: 얼굴 표정은 단순하게 가되, **어깨의 처짐, 주먹 쥔 손, 다급한 달리기, 무릎 꿇기 등 '몸짓(Body Language)'**으로 감정을 전달하십시오.
 
     5. **언어(Text):** {lang_guide} {lang_example} (자막 연출보다는 배경 속 간판, 서류, 화면 등 자연스러운 텍스트 위주로)
-    6. **구도:** 분할 화면(Split Screen) 금지. **{target_layout}** 꽉 찬 시네마틱 구도 사용.
+    6. **구도:** 분할 화면(Split Screen) 금지. **{target_layout}** 꽉 찬 구도 사용.
 
     [임무]
     제공된 대본 조각(Script Segment)을 읽고, 그 상황을 가장 잘 보여주는 **한 장면의 영화 스틸컷** 같은 프롬프트를 작성하십시오.
@@ -1378,7 +1378,7 @@ with st.sidebar:
         """
     else:
         TARGET_RATIO = "16:9"
-        LAYOUT_KOREAN = "16:9 와이드 시네마틱 비율, 영화 스크린 구도."
+        LAYOUT_KOREAN = "16:9 와이드 비율."
 
     st.markdown("---")
     st.subheader("⏱️ 장면 분할 설정")
@@ -2380,6 +2380,7 @@ if st.session_state['generated_results']:
                     with open(item['path'], "rb") as file:
                         st.download_button("⬇️ 이미지 저장", data=file, file_name=item['filename'], mime="image/png", key=f"btn_down_{item['scene']}")
                 except: pass
+
 
 
 
